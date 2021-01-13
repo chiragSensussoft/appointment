@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "148622577769",
+    "project_id": "chirag-appointment",
+    "storage_bucket": "chirag-appointment.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:148622577769:android:07d62102ffed6ee52b12f8",
+        "android_client_info": {
+          "package_name": "com.ck.appointment"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "148622577769-fd9jl88qgf26b3iat3on6ri3261kkqdd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ck.appointment",
+            "certificate_hash": "2a76ea02a8a5dd9ca84c7e0ef8b64fcdf54498da"
+          }
+        },
+        {
+          "client_id": "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNN40AFNkribnAz_CxbZIC8MUPOb2KNcY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "148622577769-htljcgvui6541ra9s21n66cogigb95vt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ck.appointment"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
