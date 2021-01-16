@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:appointment/home/Home.dart';
 import 'package:appointment/login/DBProvider.dart';
+import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class Login extends StatefulWidget {
@@ -20,34 +22,50 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        margin: const EdgeInsets.only(left: 20,right: 20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Center(
-                child: Container(
-                  width: 200,
-                   child: FlatButton(
-                     onPressed: (){
-                       signInWithGoogle();
-                     },
-                     color: Colors.amber,
-                     child: Text('Google Login'),
-                   ),
-                 ),
+              
+              Column(
+                children: [
+                  Center(
+                    child: Container(
+                      child: SvgPicture.asset('images/appointment.svg',height: 100,width: 100,),
+                    ),
+                  ),
+
+                  Container(
+                    margin: const EdgeInsets.only(top: 40),
+                    child: Text(
+                      'Using Digital Appointments will make managing your beauty saloons, hair styling, makeup, cosmetics and everything else that requires appointments a walk in the park.',
+                      textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
+                    ),
+                  ),
+                ],
               ),
-              Container(
-                width: 200,
-                child: FlatButton(
-                  onPressed: (){
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => Home()
-                    ));
-                  },
-                  color: Colors.amber,
-                  child: Text('Microsoft Login'),
-                ),
-              ),
+
+              Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 200,
+                      height: 40,
+                      child:RoundShapeButton(onPressed: signInWithGoogle,text: 'Login with Google',radius: 25,
+                      icon: Image.asset('images/search.png',width: 20,height: 20,),)
+                    ),
+                  ),
+                  SizedBox(height: 10,),
+                  Container(
+                    width: 200,
+                    height: 40,
+                    child: RoundShapeButton(text: 'Login with Outlook',onPressed: (){},radius: 25,
+                      icon: Image.asset('images/outlook.png',height: 20,width: 20,),)
+                  ),
+                ],
+              )
+
             ],
           ),
         ),
@@ -118,7 +136,6 @@ class _LoginState extends State<Login> {
     await googleSignIn.signOut();
     print("User Sign Out");
   }
-
 
   void update(String fName,String lName,String email,String loginType,String idToken,String accessToken) async {
     Map<String, dynamic> row = {
