@@ -37,9 +37,8 @@ dependencies:
 
   cupertino_icons: ^1.0.1
 
-flutter_native_splash:
-  image: images/appointment_logo.png
-  color: 42a5f5
+  http: ^0.12.2
+  dio: any
 
 dev_dependencies:
   flutter_test:

@@ -5,14 +5,10 @@ import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
-import 'package:appointment/utils/values/Strings/StringEn.dart';
-import 'package:appointment/utils/values/Strings/StringGu.dart';
-import 'package:appointment/utils/values/Strings/StringHi.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,110 +33,122 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
-          margin: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  margin: EdgeInsets.only(top: 15),
-                  alignment: Alignment.topRight,
-                  child: DropdownButton(
-                      underline: Container(height: 0,),
-                      icon: Icon(Icons.language),
-                      value: _value,
-                      items: [
-                        DropdownMenuItem(
-                          child: Text('English',style: TextStyle(fontSize: 14),),
-                          onTap: (){
-                            setState(() {
-                              Constant.languageCode = 'en';
-                              languageCode(code: Constant.languageCode);
-                            });
-                          },
-                          value: 1,
-                        ),
-                        DropdownMenuItem(
-                          child: Text("Hindi",style: TextStyle(fontSize: 14)),
-                          onTap: (){
-                            setState(() {
-                              Constant.languageCode = 'hi';
-                              languageCode(code: Constant.languageCode);
-                            });
-                          },
-                          value: 2,
-                        ),
-                        DropdownMenuItem(
-                            child: Text("Gujarati",style: TextStyle(fontSize: 14)),
-                            onTap: (){
-                              setState(() {
-                                Constant.languageCode = 'gu';
-                                languageCode(code: Constant.languageCode);
-                              });
-                            },
-                            value: 3
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _value = value;
-                        });
-                      }),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(40),
+        child:  Container(
+          margin: EdgeInsets.only(right: Dimen().dp_20,top: 35),
+          alignment: Alignment.topRight,
+          child: DropdownButton(
+              underline: Container(height: 0,),
+              icon: Icon(Icons.language),
+              value: _value,
+              items: [
+                DropdownMenuItem(
+                  child: Text('English',style: TextStyle(fontSize: 14),),
+                  onTap: (){
+                    setState(() {
+                      Constant.languageCode = 'en';
+                      languageCode(code: Constant.languageCode);
+                    });
+                  },
+                  value: 1,
                 ),
-                Expanded(
-                  flex: 1,
-                  child:Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Center(
-                          child: Container(
-                            child: SvgPicture.asset('images/appointment.svg',height: 100,width: 100,),
-                          ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.only(top: 40),
-                          child: Text(Resources.from(context,Constant.languageCode).strings.title,
-                            textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
-                          ),
-                        ),
-                      ],
-                    ),
+                DropdownMenuItem(
+                  child: Text("Hindi",style: TextStyle(fontSize: 14)),
+                  onTap: (){
+                    setState(() {
+                      Constant.languageCode = 'hi';
+                      languageCode(code: Constant.languageCode);
+                    });
+                  },
+                  value: 2,
                 ),
-
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.only(bottom: 10),
-                        child: Text( Resources.from(context,Constant.languageCode).strings.signInText,style: TextStyle(
-                          fontSize: 16,fontFamily: 'poppins_medium'
-                        ),),
-                      ),
-                      Center(
-                        child: Container(
-                          width: 200,
-                          height: 40,
-                          child:RoundShapeButton(onPressed: signInWithGoogle,text: Resources.from(context,Constant.languageCode).strings.googleBtnText,radius: 25,
-                          icon: Image.asset('images/search.png',width: 20,height: 20,),)
-                        ),
-                      ),
-                      SizedBox(height: 10,),
-                     Container(
-                       width: 200,
-                       height: 40,
-                       child:RoundShapeButton(text: Resources.from(context,Constant.languageCode).strings.outLookBtnText,onPressed: (){},radius: 25,
-                         icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
-                     ),
-
-                    ],
-                  ),
-                )
+                DropdownMenuItem(
+                    child: Text("Gujarati",style: TextStyle(fontSize: 14)),
+                    onTap: (){
+                      setState(() {
+                        Constant.languageCode = 'gu';
+                        languageCode(code: Constant.languageCode);
+                      });
+                    },
+                    value: 3
+                ),
               ],
-            ),
+              onChanged: (value) {
+                setState(() {
+                  _value = value;
+                });
+              }),
+        ),
+      ),
+        body: Container(
+          height: MediaQuery.of(context).size.height,
+          alignment: Alignment.center,
+          child: SingleChildScrollView(
+            child: Container(
+              margin: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      child:Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: Container(
+                                child: Image.asset('images/appointment.png',height: 100,width: 100,),
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.only(top: 40),
+                              child: Text(Resources.from(context,Constant.languageCode).strings.title,
+                                textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ),
+                    SizedBox(height: 50,),
+                    Container(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(bottom: 10),
+                            child: Text( Resources.from(context,Constant.languageCode).strings.signInText,style: TextStyle(
+                              fontSize: 16,fontFamily: 'poppins_medium'
+                            ),),
+                          ),
+                          Center(
+                            child: Container(
+                              width: 200,
+                              height: 40,
+                              child:RoundShapeButton(onPressed: signInWithGoogle,text: Resources.from(context,Constant.languageCode).strings.googleBtnText,radius: 25,
+                              icon: Image.asset('images/search.png',width: 20,height: 20,),)
+                            ),
+                          ),
+                          SizedBox(height: 10,),
+                         Container(
+                           width: 200,
+                           height: 40,
+                           child:RoundShapeButton(text: Resources.from(context,Constant.languageCode).strings.outLookBtnText,
+                             onPressed: (){
+                             Navigator.push(context, MaterialPageRoute(
+                               builder: (_) => Home(name: 'Chirag Kalathiya',)
+                             ));
+                             },radius: 25,
+                             icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
+                         ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 30,),
+                  ],
+                ),
+              ),
           ),
+        ),
       );
   }
 
@@ -214,10 +222,9 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     final FirebaseUser currentUser = await _auth.currentUser();
     assert(user.uid == currentUser.uid);
 
-
     if(user!=null){
-
-      update(firstName, lastName, user.email, 'Google', googleSignInAuthentication.idToken, googleSignInAuthentication.accessToken);
+      _sharedPreferences.setString('name', user.displayName);
+      update(firstName, lastName, user.email, 'Google', googleSignInAuthentication.idToken, googleSignInAuthentication.accessToken,user.displayName);
     }
     return 'signInWithGoogle succeeded: $user';
   }
@@ -227,7 +234,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     print("User Sign Out");
   }
 
-  void update(String fName,String lName,String email,String loginType,String idToken,String accessToken) async {
+  void update(String fName,String lName,String email,String loginType,String idToken,String accessToken,String name) async {
     Map<String, dynamic> row = {
       DatabaseHelper.columnfName: fName,
       DatabaseHelper.columnlName: lName,
@@ -243,7 +250,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     if (data.length != 0) {
       dbHelper.update(row, data[0]['_id']);
       Navigator.push(context, MaterialPageRoute(
-          builder: (_) => Home()
+          builder: (_) => Home(name: name,)
       ));
     }
     else {

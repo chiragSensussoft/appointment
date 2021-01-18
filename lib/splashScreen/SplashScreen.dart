@@ -4,7 +4,6 @@ import 'package:appointment/login/Login.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -50,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
                           scale: _animation,
                           child: Center(
                               child:
-                              SizedBox(height: 200, child:SvgPicture.asset('images/appointment.svg'))))
+                              SizedBox(height: 200, child:Image.asset('images/appointment.png'))))
                     ),
                 ),
                 Container(padding: const EdgeInsets.only(bottom: 10),
