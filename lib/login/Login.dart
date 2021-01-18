@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:appointment/home/Home.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
+import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Strings/StringEn.dart';
 import 'package:appointment/utils/values/Strings/StringGu.dart';
@@ -13,21 +14,26 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
 }
 
-class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
+SharedPreferences _sharedPreferences;
 
+class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   final dbHelper = DatabaseHelper.instance;
+
   @override
   void initState() {
     super.initState();
+    setState(() {
+      setValue();
+    });
   }
-  String code;
-  var _value = 1;
+  var _value;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,8 +55,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                           child: Text('English',style: TextStyle(fontSize: 14),),
                           onTap: (){
                             setState(() {
-                              code = 'en';
-                              StringsEnglish();
+                              Constant.languageCode = 'en';
+                              languageCode(code: Constant.languageCode);
                             });
                           },
                           value: 1,
@@ -59,8 +65,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                           child: Text("Hindi",style: TextStyle(fontSize: 14)),
                           onTap: (){
                             setState(() {
-                              code = 'hi';
-                              StringsHindi();
+                              Constant.languageCode = 'hi';
+                              languageCode(code: Constant.languageCode);
                             });
                           },
                           value: 2,
@@ -69,8 +75,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                             child: Text("Gujarati",style: TextStyle(fontSize: 14)),
                             onTap: (){
                               setState(() {
-                                code = 'gu';
-                                StringsGujarati();
+                                Constant.languageCode = 'gu';
+                                languageCode(code: Constant.languageCode);
                               });
                             },
                             value: 3
@@ -94,7 +100,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                         ),
                         Container(
                           margin: const EdgeInsets.only(top: 40),
-                          child: Text(Resources.from(context,code).strings.title,
+                          child: Text(Resources.from(context,Constant.languageCode).strings.title,
                             textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
                           ),
                         ),
@@ -109,7 +115,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                     children: [
                       Container(
                         margin: EdgeInsets.only(bottom: 10),
-                        child: Text( Resources.from(context,code).strings.signInText,style: TextStyle(
+                        child: Text( Resources.from(context,Constant.languageCode).strings.signInText,style: TextStyle(
                           fontSize: 16,fontFamily: 'poppins_medium'
                         ),),
                       ),
@@ -117,7 +123,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                         child: Container(
                           width: 200,
                           height: 40,
-                          child:RoundShapeButton(onPressed: signInWithGoogle,text: Resources.from(context,code).strings.googleBtnText,radius: 25,
+                          child:RoundShapeButton(onPressed: signInWithGoogle,text: Resources.from(context,Constant.languageCode).strings.googleBtnText,radius: 25,
                           icon: Image.asset('images/search.png',width: 20,height: 20,),)
                         ),
                       ),
@@ -125,7 +131,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                      Container(
                        width: 200,
                        height: 40,
-                       child:RoundShapeButton(text: Resources.from(context,code).strings.outLookBtnText,onPressed: (){},radius: 25,
+                       child:RoundShapeButton(text: Resources.from(context,Constant.languageCode).strings.outLookBtnText,onPressed: (){},radius: 25,
                          icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
                      ),
 
@@ -137,6 +143,26 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
           ),
       );
   }
+
+  Future<void> languageCode({String code})async{
+    _sharedPreferences = await SharedPreferences.getInstance();
+    _sharedPreferences.setString(Constant().languageKey, code);
+  }
+
+  setValue()async{
+    _sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      switch(_sharedPreferences.getString(Constant().languageKey)){
+        case 'gu':
+          return _value = 3;
+        case 'hi':
+          return _value = 2;
+        default:
+          return _value = 1;
+      }
+    });
+  }
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: ["email",

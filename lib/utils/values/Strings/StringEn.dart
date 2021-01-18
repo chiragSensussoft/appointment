@@ -4,7 +4,7 @@ import 'Strings.dart';
 class StringsEnglish extends Strings {
 
   @override
-  String get title => 'Using Digital Appointments will make managing your beauty saloons, hair styling, makeup, cosmetics and everything else that requires appointments a walk in the park.';
+  String get title => 'Using this Appointment app you can comfortably manage your appointments and have them always in view. This is a very productive App to help you manage your Client and Business Appointments, Customer Contacts and Billing.';
 
   @override
   String get googleBtnText => "Google";

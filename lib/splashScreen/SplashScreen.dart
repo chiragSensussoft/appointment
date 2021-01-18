@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:appointment/login/Login.dart';
+import 'package:appointment/utils/values/Constant.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -14,16 +16,20 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
   AnimationController _animationController;
   Animation _animation;
   int _duration = 4500;
-
+  SharedPreferences _sharedPreferences;
   @override
   void initState() {
     super.initState();
-    if (_duration < 1000) _duration = 2000;
+
     _animationController = new AnimationController(
         vsync: this, duration: Duration(milliseconds: 1200));
+
     _animation = Tween(begin: 1.0, end: 0.5).animate(CurvedAnimation(
         parent: _animationController, curve: Curves.easeInCirc));
     _animationController.forward();
+
+    checkLanguage();
+
     Future.delayed(Duration(milliseconds: _duration)).then((value) {
       Navigator.of(context).pushReplacement(CupertinoPageRoute(
           builder: (BuildContext context) => Login()));
@@ -40,11 +46,7 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
                 Center(
                     child: Container(
                       alignment: Alignment.center,
-                      // width: MediaQuery.of(context).size.width,
-                      child:
-                      // SvgPicture.asset('images/appointment.svg',height: 200,width: 200,)
-
-                      ScaleTransition(
+                      child: ScaleTransition(
                           scale: _animation,
                           child: Center(
                               child:
@@ -60,4 +62,16 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
       )
     );
   }
+
+  checkLanguage()async{
+    _sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      if(_sharedPreferences.getString(Constant().languageKey) != null){
+        setState(() {
+          Constant.languageCode = _sharedPreferences.getString(Constant().languageKey);
+        });
+      }
+    });
+  }
+
 }
