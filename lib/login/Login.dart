@@ -1,11 +1,9 @@
 import 'dart:convert';
 
 import 'package:appointment/home/Home.dart';
-import 'package:appointment/login/DBProvider.dart';
-import 'package:appointment/utils/RippleEffect/FadeRouteBuilder.dart';
-import 'package:appointment/utils/Palette.dart';
-import 'package:appointment/utils/RippleEffect/Ripple.dart';
+import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
+import 'package:appointment/utils/values/Dimen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,21 +18,15 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
 
   final dbHelper = DatabaseHelper.instance;
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
-  final pageKey = RipplePage.createGlobalKey();
-  final effectKey = RippleEffect.createGlobalKey();
   @override
   Widget build(BuildContext context) {
-    return RipplePage(
-      pageKey: pageKey,
-      child: Scaffold(
+    return Scaffold(
         body: Container(
-          margin: const EdgeInsets.only(left: 20,right: 20),
+          margin: const EdgeInsets.only(left: Dimen.dp_20,right: Dimen.dp_20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -68,30 +60,19 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                       ),
                     ),
                     SizedBox(height: 10,),
-                    RippleEffect(
-                      pageKey: pageKey,
-                      effectKey: effectKey,
-                      color: Palette.colorPrimary,
-                      child: Container(
-                          width: 200,
-                          height: 40,
-                        child: RoundShapeButton(text: 'Login with Outlook',onPressed: (){RippleEffect.start(effectKey, toNextPage);},radius: 25,
-                          icon: Image.asset('images/outlook.png',height: 20,width: 20,),)
-                      ),
-                    ),
+                   Container(
+                     width: 200,
+                     height: 40,
+                     child:RoundShapeButton(text: 'Login with Outlook',onPressed: (){},radius: 25,
+                       icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
+                   )
                   ],
                 )
               ],
             ),
           ),
-      ),
-    );
+      );
   }
-  Future<void> toNextPage() => Navigator.of(context).push(
-    FadeRouteBuilder(
-      page: Home(),
-    ),
-  );
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: ["email",

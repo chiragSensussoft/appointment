@@ -1,5 +1,5 @@
-import 'package:appointment/login/DBProvider.dart';
-import 'package:appointment/utils/Palette.dart';
+import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/values/Palette.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
