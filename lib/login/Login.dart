@@ -42,7 +42,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                   alignment: Alignment.topRight,
                   child: DropdownButton(
                       underline: Container(height: 0,),
-                      icon: Icon(Icons.language,size: 20,),
+                      icon: Icon(Icons.language),
                       value: _value,
                       items: [
                         DropdownMenuItem(

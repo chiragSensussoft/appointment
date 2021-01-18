@@ -22,7 +22,7 @@ class Resources {
         return StringsHindi();
       case 'gu':
         return StringsGujarati();
-      case 'en':
+      default:
         return StringsEnglish();
     }
   }
