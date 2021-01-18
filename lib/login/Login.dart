@@ -26,47 +26,54 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   Widget build(BuildContext context) {
     return Scaffold(
         body: Container(
-          margin: const EdgeInsets.only(left: Dimen.dp_20,right: Dimen.dp_20),
+          margin: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Column(
-                  children: [
-                    Center(
-                      child: Container(
-                        child: SvgPicture.asset('images/appointment.svg',height: 100,width: 100,),
-                      ),
+                Expanded(
+                  flex: 1,
+                  child:Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Center(
+                          child: Container(
+                            child: SvgPicture.asset('images/appointment.svg',height: 100,width: 100,),
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 40),
+                          child: Text(
+                            'Using Digital Appointments will make managing your beauty saloons, hair styling, makeup, cosmetics and everything else that requires appointments a walk in the park.',
+                            textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
+                          ),
+                        ),
+                      ],
                     ),
-
-                    Container(
-                      margin: const EdgeInsets.only(top: 40),
-                      child: Text(
-                        'Using Digital Appointments will make managing your beauty saloons, hair styling, makeup, cosmetics and everything else that requires appointments a walk in the park.',
-                        textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
-                      ),
-                    ),
-                  ],
                 ),
 
-                Column(
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 200,
-                        height: 40,
-                        child:RoundShapeButton(onPressed: signInWithGoogle,text: 'Login with Google',radius: 25,
-                        icon: Image.asset('images/search.png',width: 20,height: 20,),)
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 200,
+                          height: 40,
+                          child:RoundShapeButton(onPressed: signInWithGoogle,text: 'Login with Google',radius: 25,
+                          icon: Image.asset('images/search.png',width: 20,height: 20,),)
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 10,),
-                   Container(
-                     width: 200,
-                     height: 40,
-                     child:RoundShapeButton(text: 'Login with Outlook',onPressed: (){},radius: 25,
-                       icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
-                   )
-                  ],
+                      SizedBox(height: 10,),
+                     Container(
+                       width: 200,
+                       height: 40,
+                       child:RoundShapeButton(text: 'Login with Outlook',onPressed: (){},radius: 25,
+                         icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
+                     )
+                    ],
+                  ),
                 )
               ],
             ),
