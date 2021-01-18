@@ -4,6 +4,10 @@ import 'package:appointment/home/Home.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/values/Dimen.dart';
+import 'package:appointment/utils/values/Strings/StringEn.dart';
+import 'package:appointment/utils/values/Strings/StringGu.dart';
+import 'package:appointment/utils/values/Strings/StringHi.dart';
+import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +26,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   void initState() {
     super.initState();
   }
+  String code;
+  var _value = 1;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,6 +37,51 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Container(
+                  margin: EdgeInsets.only(top: 15),
+                  alignment: Alignment.topRight,
+                  child: DropdownButton(
+                      underline: Container(height: 0,),
+                      icon: Icon(Icons.language,size: 20,),
+                      value: _value,
+                      items: [
+                        DropdownMenuItem(
+                          child: Text('English',style: TextStyle(fontSize: 14),),
+                          onTap: (){
+                            setState(() {
+                              code = 'en';
+                              StringsEnglish();
+                            });
+                          },
+                          value: 1,
+                        ),
+                        DropdownMenuItem(
+                          child: Text("Hindi",style: TextStyle(fontSize: 14)),
+                          onTap: (){
+                            setState(() {
+                              code = 'hi';
+                              StringsHindi();
+                            });
+                          },
+                          value: 2,
+                        ),
+                        DropdownMenuItem(
+                            child: Text("Gujarati",style: TextStyle(fontSize: 14)),
+                            onTap: (){
+                              setState(() {
+                                code = 'gu';
+                                StringsGujarati();
+                              });
+                            },
+                            value: 3
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          _value = value;
+                        });
+                      }),
+                ),
                 Expanded(
                   flex: 1,
                   child:Column(
@@ -43,8 +94,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                         ),
                         Container(
                           margin: const EdgeInsets.only(top: 40),
-                          child: Text(
-                            'Using Digital Appointments will make managing your beauty saloons, hair styling, makeup, cosmetics and everything else that requires appointments a walk in the park.',
+                          child: Text(Resources.from(context,code).strings.title,
                             textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
                           ),
                         ),
@@ -57,11 +107,17 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Container(
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: Text( Resources.from(context,code).strings.signInText,style: TextStyle(
+                          fontSize: 16,fontFamily: 'poppins_medium'
+                        ),),
+                      ),
                       Center(
                         child: Container(
                           width: 200,
                           height: 40,
-                          child:RoundShapeButton(onPressed: signInWithGoogle,text: 'Login with Google',radius: 25,
+                          child:RoundShapeButton(onPressed: signInWithGoogle,text: Resources.from(context,code).strings.googleBtnText,radius: 25,
                           icon: Image.asset('images/search.png',width: 20,height: 20,),)
                         ),
                       ),
@@ -69,9 +125,10 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                      Container(
                        width: 200,
                        height: 40,
-                       child:RoundShapeButton(text: 'Login with Outlook',onPressed: (){},radius: 25,
+                       child:RoundShapeButton(text: Resources.from(context,code).strings.outLookBtnText,onPressed: (){},radius: 25,
                          icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
-                     )
+                     ),
+
                     ],
                   ),
                 )
