@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
 
-  static final _databaseName = "tbl_User.db";
+  static final _databaseName = "tbl_User1.db";
   static final _databaseVersion = 1;
 
   static final table = 'User_table';
@@ -39,7 +39,7 @@ class DatabaseHelper {
 
   // SQL code to create the database table
   Future _onCreate(Database db, int version) async {
-    await db.execute("CREATE TABLE $table ($columnId INTEGER PRIMARY KEY, $columnfName TEXT NOT NULL,$columnlName TEXT NOT NULL,$columnAccessToken TEXT NOT NULL,$columnIdToken TEXT NOT NULL, $columnEmail TEXT NOT NULL UNIQUE, $columnIsLoginWith TEXT NOT NULL)");
+    await db.execute("CREATE TABLE $table ($columnId INTEGER PRIMARY KEY, $columnfName TEXT NOT NULL,$columnlName TEXT NOT NULL, $columnEmail TEXT NOT NULL UNIQUE, $columnIsLoginWith TEXT NOT NULL,$columnAccessToken TEXT NOT NULL,$columnIdToken TEXT NOT NULL)");
   }
 
   Future<int> insert(Map<String, dynamic> row) async {

@@ -32,6 +32,7 @@ dependencies:
   #Sqflite
   sqflite: ^1.3.2+1
   path_provider: any
+
   flutter_native_splash:
 
   cupertino_icons: ^1.0.1

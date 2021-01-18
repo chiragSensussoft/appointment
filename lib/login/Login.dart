@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:appointment/home/Home.dart';
 import 'package:appointment/login/DBProvider.dart';
+import 'package:appointment/utils/RippleEffect/FadeRouteBuilder.dart';
+import 'package:appointment/utils/Palette.dart';
+import 'package:appointment/utils/RippleEffect/Ripple.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,65 +17,81 @@ class Login extends StatefulWidget {
   _LoginState createState() => _LoginState();
 }
 
-class _LoginState extends State<Login> {
+class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
 
   final dbHelper = DatabaseHelper.instance;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+  final pageKey = RipplePage.createGlobalKey();
+  final effectKey = RippleEffect.createGlobalKey();
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.only(left: 20,right: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              
-              Column(
-                children: [
-                  Center(
-                    child: Container(
-                      child: SvgPicture.asset('images/appointment.svg',height: 100,width: 100,),
+    return RipplePage(
+      pageKey: pageKey,
+      child: Scaffold(
+        body: Container(
+          margin: const EdgeInsets.only(left: 20,right: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    Center(
+                      child: Container(
+                        child: SvgPicture.asset('images/appointment.svg',height: 100,width: 100,),
+                      ),
                     ),
-                  ),
 
-                  Container(
-                    margin: const EdgeInsets.only(top: 40),
-                    child: Text(
-                      'Using Digital Appointments will make managing your beauty saloons, hair styling, makeup, cosmetics and everything else that requires appointments a walk in the park.',
-                      textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
+                    Container(
+                      margin: const EdgeInsets.only(top: 40),
+                      child: Text(
+                        'Using Digital Appointments will make managing your beauty saloons, hair styling, makeup, cosmetics and everything else that requires appointments a walk in the park.',
+                        textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
 
-              Column(
-                children: [
-                  Center(
-                    child: Container(
-                      width: 200,
-                      height: 40,
-                      child:RoundShapeButton(onPressed: signInWithGoogle,text: 'Login with Google',radius: 25,
-                      icon: Image.asset('images/search.png',width: 20,height: 20,),)
+                Column(
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 200,
+                        height: 40,
+                        child:RoundShapeButton(onPressed: signInWithGoogle,text: 'Login with Google',radius: 25,
+                        icon: Image.asset('images/search.png',width: 20,height: 20,),)
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10,),
-                  Container(
-                    width: 200,
-                    height: 40,
-                    child: RoundShapeButton(text: 'Login with Outlook',onPressed: (){},radius: 25,
-                      icon: Image.asset('images/outlook.png',height: 20,width: 20,),)
-                  ),
-                ],
-              )
-
-            ],
+                    SizedBox(height: 10,),
+                    RippleEffect(
+                      pageKey: pageKey,
+                      effectKey: effectKey,
+                      color: Palette.colorPrimary,
+                      child: Container(
+                          width: 200,
+                          height: 40,
+                        child: RoundShapeButton(text: 'Login with Outlook',onPressed: (){RippleEffect.start(effectKey, toNextPage);},radius: 25,
+                          icon: Image.asset('images/outlook.png',height: 20,width: 20,),)
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
           ),
-        ),
-
+      ),
     );
   }
-
+  Future<void> toNextPage() => Navigator.of(context).push(
+    FadeRouteBuilder(
+      page: Home(),
+    ),
+  );
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: ["email",
@@ -141,10 +160,11 @@ class _LoginState extends State<Login> {
     Map<String, dynamic> row = {
       DatabaseHelper.columnfName: fName,
       DatabaseHelper.columnlName: lName,
-      DatabaseHelper.columnAccessToken : accessToken,
-      DatabaseHelper.columnIdToken : idToken,
       DatabaseHelper.columnEmail: email,
       DatabaseHelper.columnIsLoginWith: loginType,
+      // DatabaseHelper.columnAccessToken : accessToken,
+      // DatabaseHelper.columnIdToken : idToken,
+
     };
 
     final data = await dbHelper.select(email);
@@ -167,10 +187,11 @@ class _LoginState extends State<Login> {
     Map<String, dynamic> row = {
       DatabaseHelper.columnfName : fName,
       DatabaseHelper.columnlName : lName,
-      DatabaseHelper.columnAccessToken : accessToken,
-      DatabaseHelper.columnIdToken : idToken,
       DatabaseHelper.columnEmail : email,
       DatabaseHelper.columnIsLoginWith : loginType,
+      DatabaseHelper.columnAccessToken : accessToken,
+      DatabaseHelper.columnIdToken : idToken,
+
     };
     dbHelper.insert(row);
   }
