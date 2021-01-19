@@ -19,12 +19,13 @@ class APIClient extends BasePresenter<OnHomeView>{
     print(body);
 
     try {
+      //it Check internet connectivity
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
 
         switch(method){
           case Method.POST:
-            dio.options.headers["Bearer Token"] = token;
+            dio.options.headers["Authorization"] = "Bearer " + token;
             try {
               response = await dio.post(BASEURL + apiName, data: body);
               responseJson = _returnResponse(response);

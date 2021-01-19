@@ -1,5 +1,6 @@
 import 'package:appointment/home/createAppointment/CreateAppointment.dart';
 import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:flutter/cupertino.dart';
@@ -75,13 +76,14 @@ class _HomeState extends State<Home> {
         child: Icon(Icons.add),
         backgroundColor: Palette.colorPrimary,
         onPressed: (){
-          _modalBottomSheetMenu();
-          // Navigator.push(context, CupertinoPageRoute(
-          //     builder: (_) => CreateAppointment(),
-          // )
-          //);
-        },
-      ),
+        // _modalBottomSheetMenu();
+        // Navigator.push(context, CupertinoPageRoute(
+        //     builder: (_) => CreateAppointment(),
+        // )
+        // );
+        MyStatelessWidget();
+      }
+      )
     );
   }
   _selectDate(BuildContext context) async {
@@ -102,13 +104,14 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.transparent,
         context: context,
         isScrollControlled: true,
-        isDismissible: true,
+        // isDismissible: true,
         builder: (BuildContext context) {
           return DraggableScrollableSheet(
               initialChildSize: 0.90,
               expand: true,
               builder: (context, scrollController) {
                 return Container(
+                  padding: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.only(
@@ -120,9 +123,53 @@ class _HomeState extends State<Home> {
                             child: Icon(Icons.remove,size: 40,color: Palette.colorPrimary,),
                           ),
                           Container(
-                            child: Text('Hii ${widget.name}'),
+                            child: Text('Hii ${widget.name} create a appointment',style: TextStyle(
+                              fontSize: 15,fontFamily: 'poppins_medium'
+                            ),),
                           ),
-
+                          Container(
+                            margin: EdgeInsets.only(top: Dimen().dp_20),
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(width: 1,color: Colors.black54)
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                               GestureDetector(
+                                 child:  Container(
+                                   padding: EdgeInsets.only(left: Dimen().dp_20),
+                                   child: Text('Start Time :'),
+                                 ),
+                                 onTap: (){
+                                   setState(() {
+                                     _selectDate(context);
+                                   });
+                                 },
+                               ),
+                                Container(
+                                  padding: EdgeInsets.only(left: Dimen().dp_20),
+                                  margin: EdgeInsets.only(top: 5,bottom: Dimen().dp_10),
+                                  child: Text(_dateTime.toString()),
+                                ),
+                                Divider(
+                                  height: 1,
+                                  color: Colors.black54,
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(top: Dimen().dp_10),
+                                  padding: EdgeInsets.only(left: Dimen().dp_20),
+                                  child: Text('Start Time :'),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.only(left: Dimen().dp_20),
+                                  margin: EdgeInsets.only(top: 5),
+                                  child: Text('Time'),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                     ));
               }
@@ -131,4 +178,39 @@ class _HomeState extends State<Home> {
     );
   }
 
+}
+class MyStatelessWidget extends StatelessWidget {
+  MyStatelessWidget({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ElevatedButton(
+        child: const Text('showBottomSheet'),
+        onPressed: () {
+          Scaffold.of(context).showBottomSheet<void>(
+                (BuildContext context) {
+              return Container(
+                height: 200,
+                color: Colors.amber,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      const Text('BottomSheet'),
+                      ElevatedButton(
+                        child: const Text('Close BottomSheet'),
+                        onPressed: () => Navigator.pop(context),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
 }
