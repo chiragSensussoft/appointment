@@ -27,6 +27,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     super.initState();
     setState(() {
       setValue();
+      checkIfLogin();
     });
   }
   var _value;
@@ -171,6 +172,17 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     });
   }
 
+
+
+  checkIfLogin()async{
+    _sharedPreferences = await SharedPreferences.getInstance();
+    if(_sharedPreferences.getBool('isLogin')==true){
+      Navigator.push(context, MaterialPageRoute(
+          builder: (_) => Home()
+      ));
+    }
+  }
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: ["email",
@@ -223,7 +235,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     assert(user.uid == currentUser.uid);
 
     if(user!=null){
-      _sharedPreferences.setString('name', user.displayName);
+      _sharedPreferences.setBool('isLogin',true);
       update(firstName, lastName, user.email, 'Google', googleSignInAuthentication.idToken, googleSignInAuthentication.accessToken,user.displayName);
     }
     return 'signInWithGoogle succeeded: $user';
@@ -240,9 +252,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
       DatabaseHelper.columnlName: lName,
       DatabaseHelper.columnEmail: email,
       DatabaseHelper.columnIsLoginWith: loginType,
-      // DatabaseHelper.columnAccessToken : accessToken,
-      // DatabaseHelper.columnIdToken : idToken,
-
+      DatabaseHelper.columnAccessToken : accessToken,
+      DatabaseHelper.columnIdToken : idToken,
     };
 
     final data = await dbHelper.select(email);
@@ -273,12 +284,5 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     };
     dbHelper.insert(row);
   }
-  void _query() async {
-    final allRows = await dbHelper.queryAllRows();
-    allRows.forEach((row) {
-      print(row);
-    });
-  }
-
 
 }

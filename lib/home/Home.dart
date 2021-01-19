@@ -4,7 +4,6 @@ import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(MyApp());
 
@@ -76,15 +75,15 @@ class _HomeState extends State<Home> {
         child: Icon(Icons.add),
         backgroundColor: Palette.colorPrimary,
         onPressed: (){
-          Navigator.push(context, CupertinoPageRoute(
-              builder: (_) => CreateAppointment(),
-          )
-          );
+          _modalBottomSheetMenu();
+          // Navigator.push(context, CupertinoPageRoute(
+          //     builder: (_) => CreateAppointment(),
+          // )
+          //);
         },
       ),
     );
   }
-
   _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
       context: context,
@@ -97,6 +96,39 @@ class _HomeState extends State<Home> {
         _dateTime = picked;
       });
     print(_dateTime);
+  }
+  void _modalBottomSheetMenu(){
+    showModalBottomSheet(
+        backgroundColor: Colors.transparent,
+        context: context,
+        isScrollControlled: true,
+        isDismissible: true,
+        builder: (BuildContext context) {
+          return DraggableScrollableSheet(
+              initialChildSize: 0.90,
+              expand: true,
+              builder: (context, scrollController) {
+                return Container(
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(20.0),
+                            topRight: const Radius.circular(20.0))),
+                    child: Column(
+                        children: [
+                          Container(
+                            child: Icon(Icons.remove,size: 40,color: Palette.colorPrimary,),
+                          ),
+                          Container(
+                            child: Text('Hii ${widget.name}'),
+                          ),
+
+                        ],
+                    ));
+              }
+          );
+        }
+    );
   }
 
 }
