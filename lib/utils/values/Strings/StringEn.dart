@@ -15,4 +15,22 @@ class StringsEnglish extends Strings {
   @override
   String get signInText => 'Sign In With';
 
+  @override
+  String get bottomSheetTitle => "";
+
+  @override
+  String get createAppointmentBtn => "";
+
+  @override
+  String get from => "";
+
+  @override
+  String get to => "";
+
+  @override
+  String get bottomSheetTfDesc => "";
+
+  @override
+  String get bottomSheetTfTitle => "";
+
 }

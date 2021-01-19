@@ -125,7 +125,10 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                             child: Container(
                               width: 200,
                               height: 40,
-                              child:RoundShapeButton(onPressed: signInWithGoogle,text: Resources.from(context,Constant.languageCode).strings.googleBtnText,radius: 25,
+                              child:RoundShapeButton(onPressed: signInWithGoogle,
+                                width: 1,
+                                color: Colors.white,
+                                text: Resources.from(context,Constant.languageCode).strings.googleBtnText,radius: 25,
                               icon: Image.asset('images/search.png',width: 20,height: 20,),)
                             ),
                           ),
@@ -134,6 +137,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                            width: 200,
                            height: 40,
                            child:RoundShapeButton(text: Resources.from(context,Constant.languageCode).strings.outLookBtnText,
+                             width: 1,
+                             color: Colors.white,
                              onPressed: (){
                              Navigator.push(context, MaterialPageRoute(
                                builder: (_) => Home(name: 'Chirag Kalathiya',)

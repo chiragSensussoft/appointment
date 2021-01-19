@@ -11,18 +11,20 @@ class RoundShapeButton extends StatelessWidget {
   final double fontSize;
   final double radius;
   final Image icon;
+  final Color color;
+  final double width;
 
-  RoundShapeButton({this.onPressed, this.text,this.fontFamily,this.fontSize,this.radius,this.icon});
+  RoundShapeButton({this.onPressed, this.text,this.fontFamily,this.fontSize,this.radius,this.icon,this.color,this.width});
 
   @override
   Widget build(BuildContext context) {
     return RaisedButton(
       elevation: 5,
       onPressed: onPressed,
-      color: Colors.white,
+      color: color,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
-          side: BorderSide(width: 1,color: Colors.black)
+          side: BorderSide(width: width,color: Colors.black)
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

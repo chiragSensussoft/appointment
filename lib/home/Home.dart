@@ -3,6 +3,7 @@ import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
+import 'package:appointment/widget/BottomSheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +28,9 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
+DateTime _dateTime = DateTime.now();
+DateTime _currentTime = DateTime.now();
+
 class _HomeState extends State<Home> {
   final dbHelper = DatabaseHelper.instance;
   var data;
@@ -42,10 +46,6 @@ class _HomeState extends State<Home> {
       print(row);
     });
   }
-
-
-  DateTime _dateTime = DateTime.now();
-  DateTime _currentTime = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -76,102 +76,28 @@ class _HomeState extends State<Home> {
         child: Icon(Icons.add),
         backgroundColor: Palette.colorPrimary,
         onPressed: (){
-        // _modalBottomSheetMenu();
+        _modalBottomSheetMenu(context,widget.name);
         // Navigator.push(context, CupertinoPageRoute(
         //     builder: (_) => CreateAppointment(),
         // )
         // );
-        MyStatelessWidget();
+        // MyBottomSheet(name: widget.name);
       }
       )
     );
   }
-  _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
-      context: context,
-      initialDate: _currentTime,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(_currentTime.year + 25),
-    );
-    if (picked != null && picked != _dateTime)
-      setState(() {
-        _dateTime = picked;
-      });
-    print(_dateTime);
-  }
-  void _modalBottomSheetMenu(){
-    showModalBottomSheet(
+  _modalBottomSheetMenu(BuildContext context,String name){
+    showModalBottomSheet<void>(
         backgroundColor: Colors.transparent,
         context: context,
         isScrollControlled: true,
-        // isDismissible: true,
-        builder: (BuildContext context) {
+        isDismissible: true,
+        builder: (context) {
           return DraggableScrollableSheet(
               initialChildSize: 0.90,
               expand: true,
               builder: (context, scrollController) {
-                return Container(
-                  padding: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                            topLeft: const Radius.circular(20.0),
-                            topRight: const Radius.circular(20.0))),
-                    child: Column(
-                        children: [
-                          Container(
-                            child: Icon(Icons.remove,size: 40,color: Palette.colorPrimary,),
-                          ),
-                          Container(
-                            child: Text('Hii ${widget.name} create a appointment',style: TextStyle(
-                              fontSize: 15,fontFamily: 'poppins_medium'
-                            ),),
-                          ),
-                          Container(
-                            margin: EdgeInsets.only(top: Dimen().dp_20),
-                            width: MediaQuery.of(context).size.width,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(width: 1,color: Colors.black54)
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                               GestureDetector(
-                                 child:  Container(
-                                   padding: EdgeInsets.only(left: Dimen().dp_20),
-                                   child: Text('Start Time :'),
-                                 ),
-                                 onTap: (){
-                                   setState(() {
-                                     _selectDate(context);
-                                   });
-                                 },
-                               ),
-                                Container(
-                                  padding: EdgeInsets.only(left: Dimen().dp_20),
-                                  margin: EdgeInsets.only(top: 5,bottom: Dimen().dp_10),
-                                  child: Text(_dateTime.toString()),
-                                ),
-                                Divider(
-                                  height: 1,
-                                  color: Colors.black54,
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(top: Dimen().dp_10),
-                                  padding: EdgeInsets.only(left: Dimen().dp_20),
-                                  child: Text('Start Time :'),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.only(left: Dimen().dp_20),
-                                  margin: EdgeInsets.only(top: 5),
-                                  child: Text('Time'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                    ));
+                return MyBottomSheet(name: name,);
               }
           );
         }
@@ -179,38 +105,4 @@ class _HomeState extends State<Home> {
   }
 
 }
-class MyStatelessWidget extends StatelessWidget {
-  MyStatelessWidget({Key key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
-        child: const Text('showBottomSheet'),
-        onPressed: () {
-          Scaffold.of(context).showBottomSheet<void>(
-                (BuildContext context) {
-              return Container(
-                height: 200,
-                color: Colors.amber,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      const Text('BottomSheet'),
-                      ElevatedButton(
-                        child: const Text('Close BottomSheet'),
-                        onPressed: () => Navigator.pop(context),
-                      )
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}

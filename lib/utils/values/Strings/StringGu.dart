@@ -13,4 +13,21 @@ class StringsGujarati extends Strings {
   @override
   String get signInText => 'સાથે સાઇન ઇન કરો';
 
+  @override
+  String get bottomSheetTitle => "નિમણૂક માં બનાવો";
+
+  @override
+  String get createAppointmentBtn => "નિમણૂક બનાવો";
+
+  @override
+  String get from => "";
+
+  @override
+  String get to => "";
+
+  @override
+  String get bottomSheetTfDesc => "";
+
+  @override
+  String get bottomSheetTfTitle => "";
 }

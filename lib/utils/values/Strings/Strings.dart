@@ -9,6 +9,13 @@ abstract class Strings {
   String get googleBtnText;
   String get outLookBtnText;
   String get signInText;
+  String get createAppointmentBtn;
+  String get bottomSheetTitle;
+  String get from;
+  String get to;
+  String get bottomSheetTfTitle;
+  String get bottomSheetTfDesc;
+
 }
 
 class Resources {

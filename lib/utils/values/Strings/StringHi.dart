@@ -12,4 +12,22 @@ class StringsHindi extends Strings {
 
   @override
   String get signInText => 'के साथ साइन इन करें';
+
+  @override
+  String get bottomSheetTitle => "";
+
+  @override
+  String get createAppointmentBtn => "";
+
+  @override
+  String get from => "";
+
+  @override
+  String get to => "";
+
+  @override
+  String get bottomSheetTfDesc => "";
+
+  @override
+  String get bottomSheetTfTitle => "";
 }
