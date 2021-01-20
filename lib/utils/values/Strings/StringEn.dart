@@ -16,21 +16,21 @@ class StringsEnglish extends Strings {
   String get signInText => 'Sign In With';
 
   @override
-  String get bottomSheetTitle => "";
+  String get saveBtn => "Save";
 
   @override
-  String get createAppointmentBtn => "";
+  String get startTime => "Start Time";
 
   @override
-  String get from => "";
+  String get endTime => "End Time";
 
   @override
-  String get to => "";
+  String get bottomSheetTfDesc => "Add Description";
 
   @override
-  String get bottomSheetTfDesc => "";
+  String get bottomSheetTfTitle => "Add Title";
 
   @override
-  String get bottomSheetTfTitle => "";
+  String get event => "Current Calendar";
 
 }

@@ -9,12 +9,12 @@ abstract class Strings {
   String get googleBtnText;
   String get outLookBtnText;
   String get signInText;
-  String get createAppointmentBtn;
-  String get bottomSheetTitle;
-  String get from;
-  String get to;
+  String get saveBtn;
+  String get startTime;
+  String get endTime;
   String get bottomSheetTfTitle;
   String get bottomSheetTfDesc;
+  String get event;
 
 }
 

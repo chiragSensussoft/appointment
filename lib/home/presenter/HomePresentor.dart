@@ -14,18 +14,19 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
   String timeZone;
   String startDate;
   String summary;
-  HomePresenter(this.view,{this.endDate,this.timeZone,this.startDate,this.summary}) {
+  String token;
+  HomePresenter(this.view,{this.endDate,this.timeZone,this.startDate,this.summary,this.token}) {
     apiHelper = APIClient(view);
   }
 
-  var token = 'ya29.a0AfH6SMC3NeAgbrgCpIUrA-B9vwpYSIYqY6TYhHBeULxPQri4ZvuDWTph8vIJVBi2gkopSj55qJQaRh6ZzMt_S0T9VYgdK11yCVZNNZYaRpS9oAmZlrgF2BXNIyueYmYthfvUS7dgbTRqtBjALOOMT_pQ0PZ8-sua0k_k6HlkOvw';
+  // var token = 'ya29.a0AfH6SMAynmQVP8rt-t-e3cJk25Rj5HAEYC44OH60dqr6s3NVe-Yls_yAA67vFiXsUMju2obc3QH4k_zQvvrffzz3TR8CNXS22e5t-qeFTREzgtGAWaXA4py1vFAqF2Wa9es5PiAnlZT3ur4tBRXQ9vgAwH2YkjLr3vk3sd6T0Lc';
 
       Future getText() async {
         view.onShowLoader();
 
-        Response response = await apiHelper.api(
-            Constant().event, Method.POST,
-            jsonEncode({
+        Response postResponse = await apiHelper.api(
+             apiName:Constant().event,method:  Method.POST,
+            body:jsonEncode({
               "end": {
                 "dateTime": endDate,
                 "timeZone": timeZone
@@ -35,14 +36,27 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
                 "timeZone": timeZone
               },
               "summary": summary
-            }), token);
+            }),token: token);
 
-        if (response.statusCode == 200) {
-          isViewAttached ? getView().onSuccessRes(response.data['data']) : null;
+        if (postResponse.statusCode == 200) {
+          isViewAttached ? getView().onSuccessRes(postResponse.data['data']) : null;
           view.onHideLoader();
 
         } else {
           view.onHideLoader();
     }
   }
+
+  Future getCalendar()async{
+    view.onShowLoader();
+    Response getCalendarList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().calendar);
+
+    if (getCalendarList.statusCode == 200) {
+      isViewAttached ? getView().onSuccessRes(getCalendarList.data['items']) : null;
+      view.onHideLoader();
+    } else {
+      view.onHideLoader();
+    }
+  }
+
 }

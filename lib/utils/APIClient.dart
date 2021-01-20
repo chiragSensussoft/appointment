@@ -9,14 +9,15 @@ import 'BasePresenter.dart';
 class APIClient extends BasePresenter<OnHomeView>{
 
   static final BASEURL = 'https://www.googleapis.com/calendar/v3/calendars/chirag.1sensussoft@gmail.com/';
+  final calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/";
   Dio dio = new Dio();
   OnHomeView view;
   APIClient(this.view);
 
-  Future<dynamic> api(String apiName, method, dynamic body, String token) async{
+  Future<dynamic> api({String apiName, method,dynamic body, String token}) async{
     Response response;
     var responseJson;
-    print(body);
+    // print(body);
 
     try {
       //it Check internet connectivity
@@ -36,7 +37,14 @@ class APIClient extends BasePresenter<OnHomeView>{
             break;
 
           case Method.GET:
-            response = await dio.get(BASEURL + apiName);
+            dio.options.headers["Authorization"] = "Bearer " + token;
+            try {
+              response = await dio.get(calendarListUrl + apiName);
+              responseJson = _returnResponse(response);
+
+            } on DioError catch (e) {
+              responseJson = _returnResponse(e.response);
+            }
             break;
 
           case Method.PUT:
@@ -58,7 +66,7 @@ class APIClient extends BasePresenter<OnHomeView>{
   dynamic _returnResponse(Response response) {
     switch (response.statusCode) {
       case 200:
-        print('STATUS::::$response');
+        // print('STATUS::::$response');
         return response;
 
       case 400:
@@ -73,18 +81,6 @@ class APIClient extends BasePresenter<OnHomeView>{
         view.onErrorHandler('Internal server');
         break;
     }
-  }
-
-}
-
-Future<bool> IsInternetConencted() async {
-  try {
-    final result = await InternetAddress.lookup('google.com');
-    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-     return true;
-    }
-  } on SocketException catch (_) {
-    return false;
   }
 }
 

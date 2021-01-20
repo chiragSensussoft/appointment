@@ -14,20 +14,20 @@ class StringsHindi extends Strings {
   String get signInText => 'के साथ साइन इन करें';
 
   @override
-  String get bottomSheetTitle => "";
+  String get saveBtn => "सेव करो ";
 
   @override
-  String get createAppointmentBtn => "";
+  String get startTime => "समय शुरू";
 
   @override
-  String get from => "";
+  String get endTime => "अंतिम समय";
 
   @override
-  String get to => "";
+  String get bottomSheetTfDesc => "विवरण जोड़ें";
 
   @override
-  String get bottomSheetTfDesc => "";
+  String get bottomSheetTfTitle => "शीर्षक जोड़ें";
 
   @override
-  String get bottomSheetTfTitle => "";
+  String get event => "वर्तमान कैलेंडर";
 }

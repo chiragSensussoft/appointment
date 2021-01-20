@@ -177,8 +177,6 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     });
   }
 
-
-
   checkIfLogin()async{
     _sharedPreferences = await SharedPreferences.getInstance();
     if(_sharedPreferences.getBool('isLogin')==true){
@@ -241,7 +239,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
 
     if(user!=null){
       _sharedPreferences.setBool('isLogin',true);
-      update(firstName, lastName, user.email, 'Google', googleSignInAuthentication.idToken, googleSignInAuthentication.accessToken,user.displayName);
+      update(firstName, lastName, user.email, 'Google', googleSignInAuthentication.idToken, googleSignInAuthentication.accessToken,user.displayName,user.photoUrl);
+      print(user.reauthenticateWithCredential(credential));
     }
     return 'signInWithGoogle succeeded: $user';
   }
@@ -251,7 +250,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     print("User Sign Out");
   }
 
-  void update(String fName,String lName,String email,String loginType,String idToken,String accessToken,String name) async {
+  void update(String fName,String lName,String email,String loginType,String idToken,String accessToken,String name,String photoUrl) async {
     Map<String, dynamic> row = {
       DatabaseHelper.columnfName: fName,
       DatabaseHelper.columnlName: lName,
@@ -259,6 +258,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
       DatabaseHelper.columnIsLoginWith: loginType,
       DatabaseHelper.columnAccessToken : accessToken,
       DatabaseHelper.columnIdToken : idToken,
+      DatabaseHelper.columnPhotoUrl : photoUrl
     };
 
     final data = await dbHelper.select(email);
@@ -266,18 +266,18 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     if (data.length != 0) {
       dbHelper.update(row, data[0]['_id']);
       Navigator.push(context, MaterialPageRoute(
-          builder: (_) => Home(name: name,)
+          builder: (_) => Home(name: name,accessToken: accessToken,)
       ));
     }
     else {
-      insertWithSocial(fName, lName, email, loginType,idToken,accessToken);
+      insertWithSocial(fName, lName, email, loginType,idToken,accessToken,photoUrl);
       Navigator.push(context, MaterialPageRoute(
-          builder: (_) => Home()
+          builder: (_) => Home(accessToken:accessToken,)
       ));
     }
   }
 
-  void insertWithSocial(String fName,String lName,String email,String loginType,String idToken,String accessToken){
+  void insertWithSocial(String fName,String lName,String email,String loginType,String idToken,String accessToken,String photoUrl){
     Map<String, dynamic> row = {
       DatabaseHelper.columnfName : fName,
       DatabaseHelper.columnlName : lName,
@@ -285,6 +285,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
       DatabaseHelper.columnIsLoginWith : loginType,
       DatabaseHelper.columnAccessToken : accessToken,
       DatabaseHelper.columnIdToken : idToken,
+      DatabaseHelper.columnPhotoUrl : photoUrl
 
     };
     dbHelper.insert(row);

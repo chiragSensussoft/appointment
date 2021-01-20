@@ -14,20 +14,20 @@ class StringsGujarati extends Strings {
   String get signInText => 'સાથે સાઇન ઇન કરો';
 
   @override
-  String get bottomSheetTitle => "નિમણૂક માં બનાવો";
+  String get saveBtn => "સેવ કરો ";
 
   @override
-  String get createAppointmentBtn => "નિમણૂક બનાવો";
+  String get startTime => "પ્રારંભ સમય";
 
   @override
-  String get from => "";
+  String get endTime => "અંત સમય";
 
   @override
-  String get to => "";
+  String get bottomSheetTfDesc => "વર્ણન ઉમેરો";
 
   @override
-  String get bottomSheetTfDesc => "";
+  String get bottomSheetTfTitle => "શીર્ષક ઉમેરો";
 
   @override
-  String get bottomSheetTfTitle => "";
+  String get event => "વર્તમાન કેલેન્ડર";
 }
