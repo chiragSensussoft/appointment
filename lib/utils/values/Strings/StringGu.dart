@@ -17,7 +17,7 @@ class StringsGujarati extends Strings {
   String get saveBtn => "સેવ કરો ";
 
   @override
-  String get startTime => "પ્રારંભ સમય";
+  String get startTime => "તારીખ";
 
   @override
   String get endTime => "અંત સમય";

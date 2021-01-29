@@ -4,11 +4,14 @@ import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/home/BottomSheet.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'OnHomeView.dart';
+import 'detail_screen/DetailScreen.dart';
 import 'model/CalendarList.dart';
 
 void main() => runApp(MyApp());
@@ -25,7 +28,7 @@ class MyApp extends StatelessWidget {
 
 class Home extends StatefulWidget {
   final String name;
-  final String accessToken;
+  String accessToken;
 
 
   Home({this.name,this.accessToken});
@@ -45,13 +48,15 @@ class _HomeState extends State<Home> implements OnHomeView{
   String email;
 
   List<Item> _list = new List();
+  List<Item> itemList = List();
+
   HomePresenter _presenter;
   bool isVisible;
   @override
   void initState() {
     super.initState();
     _query();
-    _presenter = new HomePresenter(this,token: widget.accessToken);
+    _presenter = new HomePresenter(this,token: widget.accessToken,);
     _presenter.attachView(this);
     _presenter.getCalendar();
     
@@ -129,15 +134,24 @@ class _HomeState extends State<Home> implements OnHomeView{
       body: isVisible == false ?Container(
         color: Colors.grey[200],
         child: ListView.builder(
-          itemCount: 10,
+          itemCount: itemList.length,
           itemBuilder: (_,index){
-            return Container(
-              padding: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
-              height: 40,
-              child: Card(
-                color: Colors.white,
-                child: Text("Item $index",textAlign: TextAlign.center,),
+            return GestureDetector(
+              child: Container(
+                padding: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
+                height: 40,
+                child: Card(
+                  color: Colors.white,
+                  child: Container(
+                    padding: EdgeInsets.only(left: 5),
+                    alignment: Alignment.centerLeft,
+                    child: Text(itemList[index].summary,textAlign: TextAlign.left,),
+                  ),
+                ),
               ),
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (_) => DetailScreen()));
+              },
             );
           },
         ),
@@ -154,6 +168,7 @@ class _HomeState extends State<Home> implements OnHomeView{
       )
     );
   }
+
   _modalBottomSheetMenu(BuildContext context,String name){
     showModalBottomSheet<void>(
         backgroundColor: Colors.transparent,
@@ -162,10 +177,10 @@ class _HomeState extends State<Home> implements OnHomeView{
         isDismissible: true,
         builder: (context) {
           return DraggableScrollableSheet(
-              initialChildSize: 0.90,
+              initialChildSize: 0.80,
               expand: true,
               builder: (context, scrollController) {
-                return MyBottomSheet(name: name,list: _list,);
+                return MyBottomSheet(token: widget.accessToken,list: _list,itemList: itemList);
               }
           );
         }
@@ -182,7 +197,6 @@ class _HomeState extends State<Home> implements OnHomeView{
   @override
   onHideLoader() {
     setState(() {
-      // print("OnHide");
       isVisible = false;
     });
   }
@@ -205,7 +219,12 @@ class _HomeState extends State<Home> implements OnHomeView{
       List<dynamic> data = response;
       setState(() {
         _list.addAll(data.map((i) => Item.fromJson(i)).toList());
-        // print('LENGTH::::${_list.length}');
+        print("Access Role ${data[0]['id']}");
+        for(int i=0;i<data.length;i++){
+          if(data[i]['accessRole']=="owner"){
+            itemList.add(Item.fromJson(data[i]));
+          }
+        }
       });
     });
   }

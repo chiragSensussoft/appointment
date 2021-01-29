@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:appointment/home/OnHomeView.dart';
+import 'package:appointment/utils/values/Constant.dart';
 import 'package:dio/dio.dart';
 
 import 'BasePresenter.dart';
@@ -8,8 +9,9 @@ import 'BasePresenter.dart';
 
 class APIClient extends BasePresenter<OnHomeView>{
 
-  static final BASEURL = 'https://www.googleapis.com/calendar/v3/calendars/chirag.1sensussoft@gmail.com/';
+  static final BASEURL = 'https://www.googleapis.com/calendar/v3/calendars/';
   final calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/";
+  final calendarEventList= "https://www.googleapis.com/calendar/v3/calendars/";
   Dio dio = new Dio();
   OnHomeView view;
   APIClient(this.view);
@@ -23,12 +25,13 @@ class APIClient extends BasePresenter<OnHomeView>{
       //it Check internet connectivity
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-
         switch(method){
           case Method.POST:
+            print("Email ${Constant.email}");
+
             dio.options.headers["Authorization"] = "Bearer " + token;
             try {
-              response = await dio.post(BASEURL + apiName, data: body);
+              response = await dio.post(BASEURL+ Constant.email+"/"+ apiName, data: body);
               responseJson = _returnResponse(response);
 
             } on DioError catch (e) {
@@ -45,6 +48,14 @@ class APIClient extends BasePresenter<OnHomeView>{
             } on DioError catch (e) {
               responseJson = _returnResponse(e.response);
             }
+            /// calendar Event List
+            // try {
+            //   response = await dio.get(calendarEventList + Constant.email + "/"+ apiName);
+            //   responseJson = _returnResponse(response);
+            //
+            // } on DioError catch (e) {
+            //   responseJson = _returnResponse(e.response);
+            // }
             break;
 
           case Method.PUT:

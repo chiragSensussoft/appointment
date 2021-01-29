@@ -21,25 +21,27 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
 
   // var token = 'ya29.a0AfH6SMAynmQVP8rt-t-e3cJk25Rj5HAEYC44OH60dqr6s3NVe-Yls_yAA67vFiXsUMju2obc3QH4k_zQvvrffzz3TR8CNXS22e5t-qeFTREzgtGAWaXA4py1vFAqF2Wa9es5PiAnlZT3ur4tBRXQ9vgAwH2YkjLr3vk3sd6T0Lc';
 
-      Future getText() async {
+      Future setAppointment() async {
+    print("Token $token");
+    print("End Date $endDate:00");
+    print("Start Date $startDate:00");
         view.onShowLoader();
-
         Response postResponse = await apiHelper.api(
              apiName:Constant().event,method:  Method.POST,
             body:jsonEncode({
               "end": {
-                "dateTime": endDate,
+                "dateTime": endDate+":"+"00",
                 "timeZone": timeZone
               },
               "start": {
-                "dateTime": startDate,
+                "dateTime": startDate+":"+"00",
                 "timeZone": timeZone
               },
               "summary": summary
             }),token: token);
 
         if (postResponse.statusCode == 200) {
-          isViewAttached ? getView().onSuccessRes(postResponse.data['data']) : null;
+          isViewAttached ? getView().onSuccessRes(postResponse.data) : null;
           view.onHideLoader();
 
         } else {
@@ -57,6 +59,17 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     } else {
       view.onHideLoader();
     }
+  }
+  
+  Future getCalendarList() async{
+    view.onShowLoader();
+    Response getCalendarEventList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().event);
+    if(getCalendarEventList.statusCode == 200){
+      isViewAttached ? getView().onSuccessRes(getCalendarEventList.data['item']) : null;
+      view.onHideLoader();
+    }
+    else
+      view.onHideLoader();
   }
 
 }

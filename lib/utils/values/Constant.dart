@@ -5,4 +5,5 @@ class Constant{
   /// Api end points
   final event = 'events';
   final calendar = "calendarList";
+  static String email;
 }

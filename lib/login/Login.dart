@@ -141,7 +141,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                              color: Colors.white,
                              onPressed: (){
                              Navigator.push(context, MaterialPageRoute(
-                               builder: (_) => Home(name: 'Chirag Kalathiya',)
+                               builder: (_) => Home(name: 'Chirag Kalathiya')
                              ));
                              },radius: 25,
                              icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
@@ -189,7 +189,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: ["email",
-        "https://www.googleapis.com/auth/calendar"]
+        "https://www.googleapis.com/auth/calendar"],clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
   );
 
   static Map<String, dynamic> parseJwt(String token) {
@@ -238,9 +238,9 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     assert(user.uid == currentUser.uid);
 
     if(user!=null){
+      Constant.email = user.email;
       _sharedPreferences.setBool('isLogin',true);
       update(firstName, lastName, user.email, 'Google', googleSignInAuthentication.idToken, googleSignInAuthentication.accessToken,user.displayName,user.photoUrl);
-      print(user.reauthenticateWithCredential(credential));
     }
     return 'signInWithGoogle succeeded: $user';
   }
@@ -265,14 +265,15 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
 
     if (data.length != 0) {
       dbHelper.update(row, data[0]['_id']);
+
       Navigator.push(context, MaterialPageRoute(
-          builder: (_) => Home(name: name,accessToken: accessToken,)
+          builder: (_) => Home(name: name,accessToken: accessToken)
       ));
     }
     else {
       insertWithSocial(fName, lName, email, loginType,idToken,accessToken,photoUrl);
       Navigator.push(context, MaterialPageRoute(
-          builder: (_) => Home(accessToken:accessToken,)
+          builder: (_) => Home(accessToken:accessToken)
       ));
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/Toast.dart';
@@ -8,30 +10,32 @@ import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class MyBottomSheet extends StatefulWidget {
-  final String name;
-  final List<Item> list;
+import 'OnHomeView.dart';
 
-  MyBottomSheet({this.name,this.list});
+class MyBottomSheet extends StatefulWidget {
+  final String token;
+  final List<Item> list;
+  final List<Item> itemList;
+
+  MyBottomSheet({this.token,this.list,this.itemList});
 
   @override
   _MyBottomSheetState createState() => _MyBottomSheetState();
 }
 
-class _MyBottomSheetState extends State<MyBottomSheet> {
-  DateTime _dateTime = DateTime.now();
+class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
+  DateTime _startDateTime = DateTime.now();
   DateTime _currentTime = DateTime.now();
+  DateTime _endDateTime = DateTime.now();
 
   HomePresenter _presenter;
+  TextEditingController title =  TextEditingController();
+  TextEditingController desc = TextEditingController();
   bool isVisible;
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-        initialChildSize: 0.90,
-        expand: true,
-        builder: (context, scrollController) {
-          return  Container(
+    return Container(
                 padding: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
                 decoration: BoxDecoration(
                     color: Colors.white,
@@ -45,6 +49,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
                     ),
                     Container(
                         child: TextFormField(
+                          controller: title,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.only(top: Dimen().dp_10,bottom: Dimen().dp_10,left: 12),
                               border: OutlineInputBorder(
@@ -89,13 +94,13 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
                         )
                     ),
                      onTap: (){
-                      print( widget.list.map((element) => element.accessRole=="owner"?print(element.accessRole):"Null").toList().length);
                        calendarListDialog();
                        },
                    ),
                     Container(
                         margin: EdgeInsets.only(top: Dimen().dp_10),
                         child: TextFormField(
+                          controller: desc,
                           decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -122,30 +127,14 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
                       child: Text(Resources.from(context,Constant.languageCode).strings.startTime,style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
                     ),
                     Container(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
                             child: FlatButton(
                               onPressed: (){
                                 _selectDate(context);
                               },
-                              minWidth: MediaQuery.of(context).size.width * 0.50,
                               color: Colors.grey[200],
-                              child: Text(date??"Tue, 19 Jan, 2021",style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                              child: Text(startDate??"Tue, 19 Jan, 2021",style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
                             ),
                           ),
-                          Container(
-                            child: FlatButton(
-                              onPressed: (){},
-                              minWidth: MediaQuery.of(context).size.width * 0.30,
-                              color: Colors.grey[200],
-                              child: Text('18:00',style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
                     Container(
                       margin: EdgeInsets.only(top: Dimen().dp_10),
                       alignment: Alignment.centerLeft,
@@ -157,18 +146,22 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
                         children: [
                           Container(
                             child: FlatButton(
-                              onPressed: (){},
-                              minWidth: MediaQuery.of(context).size.width * 0.50,
+                              onPressed: (){
+                                _selectTime(context);
+                              },
+                              minWidth: MediaQuery.of(context).size.width * 0.40,
                               color: Colors.grey[200],
-                              child: Text('Tue, 19 Jan, 2021',style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                              child: Text('18:00',style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
                             ),
                           ),
                           Container(
                             child: FlatButton(
-                              onPressed: (){},
-                              minWidth: MediaQuery.of(context).size.width * 0.30,
+                              onPressed: (){
+                                _endSelectTime(context);
+                              },
+                              minWidth: MediaQuery.of(context).size.width * 0.40,
                               color: Colors.grey[200],
-                              child: Text('19:00',style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                              child: Text(_endTime??'19:00',style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
                             ),
                           ),
                         ],
@@ -183,18 +176,19 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                           onPressed: (){
-
+                            _presenter = new HomePresenter(this,endDate: endDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: desc.text,token: widget.token);
+                            _presenter.attachView(this);
+                            _presenter.setAppointment();
                           },
                           color: Palette.colorPrimary,
                         )
                     ),
                   ],
                 )
-          );
-        }
     );
   }
-  String date;
+  ///Start Date
+  String startDate;
   _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
       context: context,
@@ -202,34 +196,68 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
       firstDate: DateTime.now(),
       lastDate: DateTime(_currentTime.year + 25),
     );
-    if (picked != null && picked != _dateTime)
+    if (picked != null && picked != _startDateTime)
       setState(() {
-        _dateTime = picked;
-        date = _dateTime.year.toString() + "-" + _dateTime.day.toString() + "-" +_dateTime.month.toString() ;
+        _startDateTime = picked;
+        startDate = _startDateTime.year.toString()  + "-" +_startDateTime.month.toString() + "-" + _startDateTime.day.toString();
       });
-    print(_dateTime);
+    print(startDate);
     return picked;
   }
-  
-  String _hour, _minute, _time;
-  String dateTime;
-  DateTime selectedDate = DateTime.now();
 
-  TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00,);
+
+  ///Start Time
+  String _hour, startTime,_minute;
+
+  TimeOfDay selectedTime = TimeOfDay();
   Future<Null> _selectTime(BuildContext context) async {
     final TimeOfDay picked = await showTimePicker(
       context: context,
-      initialTime: selectedTime,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null)
+      setState(() {
+          selectedTime = picked;
+        _hour = selectedTime.hour.toString();
+        _minute = selectedTime.minute.toString();
+        startTime = _hour +":"+ _minute.toString();
+      });
+  }
+
+  ///End Time
+  String _endHour, _endTime,_endMinute;
+
+  TimeOfDay endSelectedTime = TimeOfDay();
+  Future<Null> _endSelectTime(BuildContext context) async {
+    final TimeOfDay picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
     );
     if (picked != null)
       setState(() {
         selectedTime = picked;
-        _hour = selectedTime.hour.toString();
-        _minute = selectedTime.minute.toString();
-        _time = _hour + ':' + _minute ;
+        _endHour = selectedTime.hour.toString();
+        _endMinute = selectedTime.minute.toString();
+        _endTime = _endHour +":"+ _endMinute.toString();
       });
   }
-
+  ///End Date
+  String endDate;
+  _endSelectDate(BuildContext context) async {
+    final DateTime picked = await showDatePicker(
+      context: context,
+      initialDate: _currentTime,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(_currentTime.year + 25),
+    );
+    if (picked != null && picked !=_endDateTime)
+      setState(() {
+        _endDateTime = picked;
+        endDate = _endDateTime.year.toString() + "-" +_endDateTime.month.toString() + "-" + _endDateTime.day.toString() ;
+      });
+    print(endDate);
+    return picked;
+  }
 
   calendarListDialog(){
     return showDialog(
@@ -240,7 +268,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
             padding: EdgeInsets.all(Dimen().dp_20),
             height: MediaQuery.of(context).size.height * 0.30,
             child: ListView.builder(
-              itemCount: widget.list.map((element) => element.accessRole=="owner").toList().length,
+              itemCount: widget.itemList.length,
               itemBuilder: (_,index){
                 return Column(
                   children: [
@@ -248,18 +276,19 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
                     Row(
                       children: [
                         Container(
+                          margin: EdgeInsets.only(right: 10),
                           height: 20,
                           width: 20,
-                          child:CircleAvatar(),
+                          child:CircleAvatar(
+                            backgroundColor: nextColor(),
+                          ),
                         ),
                         Column(
                             children: [
                               Container(
                                 width: MediaQuery.of(context).size.width /2,
-                                alignment: Alignment.centerLeft,
-                                // margin: EdgeInsets.only(left: 10,),
                                 child: Text(
-                                  widget.list[index].accessRole == "owner"?widget.list[index].id:"",overflow: TextOverflow.ellipsis,
+                                  widget.itemList[index].summary,overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                       fontSize: 15,
                                       fontFamily: 'poppins_regular',
@@ -281,4 +310,40 @@ class _MyBottomSheetState extends State<MyBottomSheet> {
       }
     );
   }
+  
+  static const _MAX_VALUE = 0xFF00B8D4;
+  final _random = Random();
+  Color nextColor() => Color(_random.nextInt(_MAX_VALUE));
+
+  @override
+  onShowLoader() {
+    setState(() {
+      isVisible = true;
+    });
+  }
+
+  @override
+  onHideLoader() {
+    setState(() {
+      isVisible = false;
+    });
+  }
+
+  @override
+  onErrorHandler(String message) {
+    setState(() {
+      isVisible = false;
+    });
+    Toast toast = Toast();
+    toast.overLay = false;
+    toast.showOverLay(message, Colors.white, Colors.black54, context);
+    // print('onError:::$message');
+  }
+
+  @override
+  onSuccessRes(response) {
+    print('onSucess:::$response');
+
+  }
+
 }
