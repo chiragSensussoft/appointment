@@ -10,7 +10,7 @@ class RoundShapeButton extends StatelessWidget {
   final String fontFamily;
   final double fontSize;
   final double radius;
-  final Image icon;
+  final Widget icon;
   final Color color;
   final double width;
 

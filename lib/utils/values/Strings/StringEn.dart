@@ -19,10 +19,10 @@ class StringsEnglish extends Strings {
   String get saveBtn => "Save";
 
   @override
-  String get startTime => "Start Time";
+  String get date => "Date";
 
   @override
-  String get endTime => "End Time";
+  String get start => "Start Time";
 
   @override
   String get bottomSheetTfDesc => "Add Description";
@@ -32,5 +32,8 @@ class StringsEnglish extends Strings {
 
   @override
   String get event => "Current Calendar";
+
+  @override
+  String get end => "End Time";
 
 }

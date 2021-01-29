@@ -10,11 +10,12 @@ abstract class Strings {
   String get outLookBtnText;
   String get signInText;
   String get saveBtn;
-  String get startTime;
-  String get endTime;
+  String get date;
+  String get start;
   String get bottomSheetTfTitle;
   String get bottomSheetTfDesc;
   String get event;
+  String get end;
 
 }
 

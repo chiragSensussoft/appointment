@@ -17,10 +17,10 @@ class StringsGujarati extends Strings {
   String get saveBtn => "સેવ કરો ";
 
   @override
-  String get startTime => "તારીખ";
+  String get date => "તારીખ";
 
   @override
-  String get endTime => "અંત સમય";
+  String get start => "શરૂઆત સમય";
 
   @override
   String get bottomSheetTfDesc => "વર્ણન ઉમેરો";
@@ -30,4 +30,7 @@ class StringsGujarati extends Strings {
 
   @override
   String get event => "વર્તમાન કેલેન્ડર";
+
+  @override
+  String get end => "અંત સમય";
 }

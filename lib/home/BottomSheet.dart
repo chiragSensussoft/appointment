@@ -9,7 +9,7 @@ import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:intl/intl.dart';
 import 'OnHomeView.dart';
 
 class MyBottomSheet extends StatefulWidget {
@@ -26,12 +26,22 @@ class MyBottomSheet extends StatefulWidget {
 class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   DateTime _startDateTime = DateTime.now();
   DateTime _currentTime = DateTime.now();
-  DateTime _endDateTime = DateTime.now();
 
   HomePresenter _presenter;
   TextEditingController title =  TextEditingController();
   TextEditingController desc = TextEditingController();
   bool isVisible;
+  int temp;
+  @override
+  void initState() {
+    super.initState();
+    startTime = _startDateTime.hour.toString() + ":" + _startDateTime.minute.toString();
+    tempDate = DateFormat('EE, d MMM, yyyy').format(_currentTime);
+    temp = _startDateTime.hour + 1;
+    _endTime = temp.toString() + ":" + "00" ;
+    print(_endTime);
+    print(startTime);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +134,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                     Container(
                       margin: EdgeInsets.only(top: Dimen().dp_10),
                       alignment: Alignment.centerLeft,
-                      child: Text(Resources.from(context,Constant.languageCode).strings.startTime,style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                      child: Text(Resources.from(context,Constant.languageCode).strings.date,style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
                     ),
                     Container(
                             child: FlatButton(
@@ -132,38 +142,53 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                                 _selectDate(context);
                               },
                               color: Colors.grey[200],
-                              child: Text(startDate??"Tue, 19 Jan, 2021",style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                              child: Text(tempDate??DateFormat('EE, d MMM, yyyy').format(_currentTime),style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
                             ),
                           ),
-                    Container(
-                      margin: EdgeInsets.only(top: Dimen().dp_10),
-                      alignment: Alignment.centerLeft,
-                      child: Text(Resources.from(context,Constant.languageCode).strings.endTime,style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
-                    ),
                     Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            child: FlatButton(
-                              onPressed: (){
-                                _selectTime(context);
-                              },
-                              minWidth: MediaQuery.of(context).size.width * 0.40,
-                              color: Colors.grey[200],
-                              child: Text('18:00',style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                margin: EdgeInsets.only(top: Dimen().dp_10),
+                                alignment: Alignment.centerLeft,
+                                child: Text(Resources.from(context,Constant.languageCode).strings.start,style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                              ),
+                              Container(
+                                child: FlatButton(
+                                  onPressed: (){
+                                    _selectTime(context);
+                                  },
+                                  minWidth: MediaQuery.of(context).size.width * 0.40,
+                                  color: Colors.grey[200],
+                                  child: Text(startTime??"",style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                                ),
+                              ),
+                            ],
                           ),
-                          Container(
-                            child: FlatButton(
-                              onPressed: (){
-                                _endSelectTime(context);
-                              },
-                              minWidth: MediaQuery.of(context).size.width * 0.40,
-                              color: Colors.grey[200],
-                              child: Text(_endTime??'19:00',style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
-                            ),
-                          ),
+                         Column(
+                           children: [
+                             Container(
+                               margin: EdgeInsets.only(top: Dimen().dp_10),
+                               alignment: Alignment.centerLeft,
+                               child: Text(Resources.from(context,Constant.languageCode).strings.end,style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                             ),
+                             Container(
+                               child: FlatButton(
+                                 onPressed: (){
+                                   _endSelectTime(context);
+                                 },
+                                 minWidth: MediaQuery.of(context).size.width * 0.40,
+                                 color: Colors.grey[200],
+                                 child: Text(_endTime??"",style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                               ),
+                             ),
+                           ],
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                         )
                         ],
                       ),
                     ),
@@ -176,7 +201,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                             borderRadius: BorderRadius.circular(30),
                           ),
                           onPressed: (){
-                            _presenter = new HomePresenter(this,endDate: endDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: desc.text,token: widget.token);
+                            // Constant.email = "chirag.1sensussoft@gmail.com";
+                            _presenter = new HomePresenter(this,endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: desc.text,token: widget.token);
                             _presenter.attachView(this);
                             _presenter.setAppointment();
                           },
@@ -188,6 +214,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     );
   }
   ///Start Date
+  String tempDate;
   String startDate;
   _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -199,6 +226,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     if (picked != null && picked != _startDateTime)
       setState(() {
         _startDateTime = picked;
+        tempDate = DateFormat('EE, d MMM, yyyy').format(_startDateTime);
         startDate = _startDateTime.year.toString()  + "-" +_startDateTime.month.toString() + "-" + _startDateTime.day.toString();
       });
     print(startDate);
@@ -208,7 +236,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
 
   ///Start Time
   String _hour, startTime,_minute;
-
   TimeOfDay selectedTime = TimeOfDay();
   Future<Null> _selectTime(BuildContext context) async {
     final TimeOfDay picked = await showTimePicker(
@@ -240,23 +267,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
         _endMinute = selectedTime.minute.toString();
         _endTime = _endHour +":"+ _endMinute.toString();
       });
-  }
-  ///End Date
-  String endDate;
-  _endSelectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
-      context: context,
-      initialDate: _currentTime,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(_currentTime.year + 25),
-    );
-    if (picked != null && picked !=_endDateTime)
-      setState(() {
-        _endDateTime = picked;
-        endDate = _endDateTime.year.toString() + "-" +_endDateTime.month.toString() + "-" + _endDateTime.day.toString() ;
-      });
-    print(endDate);
-    return picked;
   }
 
   calendarListDialog(){
@@ -343,6 +353,11 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   @override
   onSuccessRes(response) {
     print('onSucess:::$response');
+
+  }
+
+  @override
+  onEventSuccess(response) {
 
   }
 

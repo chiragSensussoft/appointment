@@ -12,14 +12,15 @@ class APIClient extends BasePresenter<OnHomeView>{
   static final BASEURL = 'https://www.googleapis.com/calendar/v3/calendars/';
   final calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/";
   final calendarEventList= "https://www.googleapis.com/calendar/v3/calendars/";
+  final deleteApi = "https://www.googleapis.com/calendar/v3/calendars/";
+
   Dio dio = new Dio();
   OnHomeView view;
   APIClient(this.view);
 
-  Future<dynamic> api({String apiName, method,dynamic body, String token}) async{
+  Future<dynamic> api({String apiName, method,dynamic body, String token,String endPoint,String user}) async{
     Response response;
     var responseJson;
-    // print(body);
 
     try {
       //it Check internet connectivity
@@ -41,29 +42,36 @@ class APIClient extends BasePresenter<OnHomeView>{
 
           case Method.GET:
             dio.options.headers["Authorization"] = "Bearer " + token;
-            try {
-              response = await dio.get(calendarListUrl + apiName);
-              responseJson = _returnResponse(response);
+            switch(endPoint){
+              case "calendarList" :
+                try {
+                  response = await dio.get(calendarListUrl + apiName);
+                  responseJson = _returnResponse(response);
 
-            } on DioError catch (e) {
-              responseJson = _returnResponse(e.response);
+                } on DioError catch (e) {
+                  responseJson = _returnResponse(e.response);
+                }
+                break;
+              case "events":
+                /// calendar Event List
+                try {
+                  response = await dio.get(calendarEventList+ Constant.email+"/"+ apiName);
+                  responseJson = _returnResponse(response);
+
+                } on DioError catch (e) {
+                  responseJson = _returnResponse(e.response);
+                }
+                break;
             }
-            /// calendar Event List
-            // try {
-            //   response = await dio.get(calendarEventList + Constant.email + "/"+ apiName);
-            //   responseJson = _returnResponse(response);
-            //
-            // } on DioError catch (e) {
-            //   responseJson = _returnResponse(e.response);
-            // }
             break;
 
           case Method.PUT:
-            response = await dio.put(BASEURL + apiName, data: body);
+            response = await dio.put(BASEURL + endPoint, data: body);
             break;
 
           case Method.DELETE:
-            response = await dio.delete(BASEURL + apiName, data: body);
+            dio.options.headers["Authorization"] = "Bearer " + token;
+            response = await dio.delete(deleteApi+user+"/"+apiName+"/"+endPoint);
             break;
         }
       }

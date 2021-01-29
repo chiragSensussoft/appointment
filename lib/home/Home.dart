@@ -1,13 +1,14 @@
+import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/Toast.dart';
+import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/home/BottomSheet.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'OnHomeView.dart';
@@ -37,18 +38,17 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-DateTime _dateTime = DateTime.now();
-DateTime _currentTime = DateTime.now();
-
 class _HomeState extends State<Home> implements OnHomeView{
   final dbHelper = DatabaseHelper.instance;
   var data;
   String url;
   String userName;
   String email;
+  bool visibility = true;
 
-  List<Item> _list = new List();
-  List<Item> itemList = List();
+  List<Item> _list = List.empty(growable: true);
+  List<Item> itemList = List.empty(growable: true);
+  List<EventItem> eventItem = List.empty(growable: true);
 
   HomePresenter _presenter;
   bool isVisible;
@@ -59,13 +59,12 @@ class _HomeState extends State<Home> implements OnHomeView{
     _presenter = new HomePresenter(this,token: widget.accessToken,);
     _presenter.attachView(this);
     _presenter.getCalendar();
+    _presenter.getCalendarEvent();
     
   }
 
   _query() async {
-    // get a reference to the database
     Database db = await DatabaseHelper.instance.database;
-    // get single row
     List<String> columnsToSelect = [
       DatabaseHelper.columnfName,
       DatabaseHelper.columnEmail,
@@ -81,12 +80,9 @@ class _HomeState extends State<Home> implements OnHomeView{
         where: whereString,
         whereArgs: whereArguments);
 
-    // print the results
     url = result[0]['photoUrl'];
     userName = result[0]['fName'];
     email = result[0]['email'];
-    result.forEach((row) => print(row));
-    // {_id: 1, name: Bob, age: 23}
   }
 
   @override
@@ -115,7 +111,6 @@ class _HomeState extends State<Home> implements OnHomeView{
                           child: Text(userName??"Default User",style: TextStyle(fontSize: 17),)
                       ),
                       Container(
-                        // padding: const EdgeInsets.all(8.0),
                           child: Text(email??"",style: TextStyle(fontSize: 12),)
                       ),
                     ],
@@ -134,24 +129,61 @@ class _HomeState extends State<Home> implements OnHomeView{
       body: isVisible == false ?Container(
         color: Colors.grey[200],
         child: ListView.builder(
-          itemCount: itemList.length,
+          itemCount: eventItem.length,
           itemBuilder: (_,index){
-            return GestureDetector(
-              child: Container(
-                padding: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
-                height: 40,
-                child: Card(
-                  color: Colors.white,
-                  child: Container(
-                    padding: EdgeInsets.only(left: 5),
-                    alignment: Alignment.centerLeft,
-                    child: Text(itemList[index].summary,textAlign: TextAlign.left,),
+            return Padding(
+              padding: EdgeInsets.all(5),
+              child: Material(
+                elevation: 1,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)
                   ),
-                ),
+                      child: Container(
+                        height: 60,
+                          padding: EdgeInsets.all(6),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+
+                                children: [
+                                  Container(
+                                    child: Text('Creator'),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(top: 5),
+                                    child: Text(eventItem[index].creator.email),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(right: 10),
+                                alignment: Alignment.bottomCenter,
+                                child: Row(
+                                  children: [
+                                    GestureDetector(
+                                      child:Icon(Icons.done,color: Colors.green,size: 20,),
+                                    ),
+                                    GestureDetector(
+                                      child:  Icon(Icons.delete_forever_rounded,color: Colors.red,size: 20,),
+                                      onTap: (){
+                                        _presenter = new HomePresenter(this,token: widget.accessToken,);
+                                        _presenter.attachView(this);
+                                        _presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          )
+                  ),
+
               ),
-              onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (_) => DetailScreen()));
-              },
             );
           },
         ),
@@ -162,8 +194,10 @@ class _HomeState extends State<Home> implements OnHomeView{
         child: Icon(Icons.add),
         backgroundColor: Palette.colorPrimary,
         onPressed: (){
-
-        _modalBottomSheetMenu(context,widget.name);
+          Constant.email = itemList[0].id;
+          _presenter.getCalendarEvent();
+          print(itemList[0].id);
+          _modalBottomSheetMenu(context,widget.name);
       }
       )
     );
@@ -209,23 +243,28 @@ class _HomeState extends State<Home> implements OnHomeView{
     Toast toast = Toast();
     toast.overLay = false;
     toast.showOverLay(message, Colors.white, Colors.black54, context);
-    // print('onError:::$message');
   }
 
   @override
   onSuccessRes(response) {
-    // print('onSucess:::$response');
     setState(() {
       List<dynamic> data = response;
-      setState(() {
         _list.addAll(data.map((i) => Item.fromJson(i)).toList());
-        print("Access Role ${data[0]['id']}");
+
         for(int i=0;i<data.length;i++){
           if(data[i]['accessRole']=="owner"){
             itemList.add(Item.fromJson(data[i]));
           }
         }
-      });
+    });
+  }
+
+  @override
+  onEventSuccess(response) {
+    print("success $response");
+    setState(() {
+      List<dynamic> data = response;
+      eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
     });
   }
 

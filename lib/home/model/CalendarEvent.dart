@@ -19,7 +19,7 @@ class CalendarEvent {
   String accessRole;
   List<DefaultReminder> defaultReminders;
   String nextSyncToken;
-  List<Item> items;
+  List<EventItem> items;
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent(
     kind: json["kind"],
@@ -30,7 +30,7 @@ class CalendarEvent {
     accessRole: json["accessRole"],
     defaultReminders: List<DefaultReminder>.from(json["defaultReminders"].map((x) => DefaultReminder.fromJson(x))),
     nextSyncToken: json["nextSyncToken"],
-    items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
+    items: List<EventItem>.from(json["items"].map((x) => EventItem.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -66,8 +66,8 @@ class DefaultReminder {
   };
 }
 
-class Item {
-  Item({
+class EventItem {
+  EventItem({
     this.kind,
     this.etag,
     this.id,
@@ -101,7 +101,7 @@ class Item {
   int sequence;
   Reminders reminders;
 
-  factory Item.fromJson(Map<String, dynamic> json) => Item(
+  factory EventItem.fromJson(Map<String, dynamic> json) => EventItem(
     kind: json["kind"],
     etag: json["etag"],
     id: json["id"],

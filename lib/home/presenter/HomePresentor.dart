@@ -22,9 +22,9 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
   // var token = 'ya29.a0AfH6SMAynmQVP8rt-t-e3cJk25Rj5HAEYC44OH60dqr6s3NVe-Yls_yAA67vFiXsUMju2obc3QH4k_zQvvrffzz3TR8CNXS22e5t-qeFTREzgtGAWaXA4py1vFAqF2Wa9es5PiAnlZT3ur4tBRXQ9vgAwH2YkjLr3vk3sd6T0Lc';
 
       Future setAppointment() async {
-    print("Token $token");
-    print("End Date $endDate:00");
-    print("Start Date $startDate:00");
+        print("Token $token");
+        print("End Date $endDate:00");
+        print("Start Date $startDate:00");
         view.onShowLoader();
         Response postResponse = await apiHelper.api(
              apiName:Constant().event,method:  Method.POST,
@@ -51,7 +51,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
 
   Future getCalendar()async{
     view.onShowLoader();
-    Response getCalendarList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().calendar);
+    Response getCalendarList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().calendar,endPoint:Constant().calendar );
 
     if (getCalendarList.statusCode == 200) {
       isViewAttached ? getView().onSuccessRes(getCalendarList.data['items']) : null;
@@ -61,15 +61,28 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     }
   }
   
-  Future getCalendarList() async{
+  Future getCalendarEvent() async{
     view.onShowLoader();
-    Response getCalendarEventList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().event);
+    Response getCalendarEventList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().event,endPoint: Constant().event);
     if(getCalendarEventList.statusCode == 200){
-      isViewAttached ? getView().onSuccessRes(getCalendarEventList.data['item']) : null;
+      isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items']) : null;
+      view.onHideLoader();
+    }else{
       view.onHideLoader();
     }
-    else
-      view.onHideLoader();
+  }
+
+  Future deleteEvent(id,email)async{
+    // view.onShowLoader();
+    Response deleteCalendarEvent = await apiHelper.api(method: Method.DELETE,token: token,endPoint: id,apiName: Constant().event,user: email);
+    print("Status Code ${deleteCalendarEvent.statusCode}");
+    // if(deleteCalendarEvent.statusCode == 204){
+    //   isViewAttached ? getView().onEventSuccess(deleteCalendarEvent.data) : null;
+    //   view.onHideLoader();
+    // }
+    // else{
+    //   view.onHideLoader();
+    // }
   }
 
 }

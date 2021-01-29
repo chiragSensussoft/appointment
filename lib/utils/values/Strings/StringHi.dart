@@ -17,10 +17,10 @@ class StringsHindi extends Strings {
   String get saveBtn => "सेव करो ";
 
   @override
-  String get startTime => "समय शुरू";
+  String get date => "तारीख";
 
   @override
-  String get endTime => "अंतिम समय";
+  String get start => "शुरुवात समय";
 
   @override
   String get bottomSheetTfDesc => "विवरण जोड़ें";
@@ -30,4 +30,7 @@ class StringsHindi extends Strings {
 
   @override
   String get event => "वर्तमान कैलेंडर";
+
+  @override
+  String get end => "अंतिम समय";
 }
