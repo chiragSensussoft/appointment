@@ -10,18 +10,14 @@ import '../OnHomeView.dart';
 class HomePresenter extends BasePresenter<OnHomeView>  {
   OnHomeView view;
   APIClient apiHelper;
-  String endDate;
-  String timeZone;
-  String startDate;
-  String summary;
   String token;
-  HomePresenter(this.view,{this.endDate,this.timeZone,this.startDate,this.summary,this.token}) {
+  HomePresenter(this.view,{this.token}) {
     apiHelper = APIClient(view);
   }
 
   // var token = 'ya29.a0AfH6SMAynmQVP8rt-t-e3cJk25Rj5HAEYC44OH60dqr6s3NVe-Yls_yAA67vFiXsUMju2obc3QH4k_zQvvrffzz3TR8CNXS22e5t-qeFTREzgtGAWaXA4py1vFAqF2Wa9es5PiAnlZT3ur4tBRXQ9vgAwH2YkjLr3vk3sd6T0Lc';
 
-      Future setAppointment() async {
+      Future setAppointment({String description, String summary,String startDate, String endDate,String timeZone}) async {
         print("Token $token");
         print("End Date $endDate:00");
         print("Start Date $startDate:00");
@@ -37,7 +33,8 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
                 "dateTime": startDate+":"+"00",
                 "timeZone": timeZone
               },
-              "summary": summary
+              "summary": summary,
+              "description": description
             }),token: token);
 
         if (postResponse.statusCode == 200) {

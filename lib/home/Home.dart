@@ -1,17 +1,11 @@
-import 'dart:io';
-
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
-import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/Toast.dart';
-import 'package:appointment/utils/values/Constant.dart';
-import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:sliding_sheet/sliding_sheet.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'OnHomeView.dart';
@@ -142,8 +136,8 @@ class _HomeState extends State<Home> implements OnHomeView{
                     borderRadius: BorderRadius.circular(10)
                 ),
                 child: Container(
-                    height: 80,
-                    padding: EdgeInsets.all(6),
+                    height: 110,
+                    padding: EdgeInsets.all(8),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -152,18 +146,20 @@ class _HomeState extends State<Home> implements OnHomeView{
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
-
                           children: [
                             Container(
-                              child: Text('Creator'),
+                              margin: EdgeInsets.only(top: 5),
+                              child: Text("Title",style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
+                            ),
+                            Container(
+                              child: Text(eventItem[index].summary.toString(),style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
                             ),
                             Container(
                               margin: EdgeInsets.only(top: 5),
-                              child: Text(eventItem[index].creator.email),
+                              child: Text('Creator',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium")),
                             ),
                             Container(
-                              margin: EdgeInsets.only(top: 5),
-                              child: Text(eventItem[index].summary.toString()??""),
+                              child: Text(eventItem[index].creator.email,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
                             ),
                           ],
                         ),
@@ -222,62 +218,9 @@ class _HomeState extends State<Home> implements OnHomeView{
                 );
               }
           );
-
       }
       )
     );
-  }
-
-  void showAsBottomSheet() async {
-    final result = await
-    showSlidingBottomSheet(
-        context,
-        builder: (context) {
-          return SlidingSheetDialog(
-            elevation: 8,
-            cornerRadius: 16,
-            snapSpec: const SnapSpec(
-              snap: true,
-              snappings: [0.4, 0.7, 1.0],
-              positioning: SnapPositioning.relativeToAvailableSpace,
-            ),
-            builder: (context, state) {
-              return Container(
-                height: 400,
-                child: Center(
-                  child: Material(
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context, 'This is the result.'),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          'This is the content of the sheet',
-                          style: Theme.of(context).textTheme.body1,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        }
-    );
-
-    print(result);
-  }
-
-  void internet() async{
-    try {
-      final result = await InternetAddress.lookup('google.com');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        print('connected');
-      }
-    } on SocketException catch (_) {
-      Toast toast = Toast();
-      toast.overLay = false;
-      toast.showOverLay("inter not connected", Colors.white, Colors.black54, context);
-    }
   }
 
   @override

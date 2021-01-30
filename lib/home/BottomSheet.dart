@@ -36,7 +36,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   void initState() {
     super.initState();
     startTime = _startDateTime.hour.toString() + ":" + _startDateTime.minute.toString();
-    tempDate = DateFormat('EE, d MMM, yyyy').format(_currentTime);
+    startDate = DateFormat('EE, d MMM, yyyy').format(_startDateTime);
     temp = _startDateTime.hour + 1;
     _endTime = temp.toString() + ":" + "00" ;
     print(_endTime);
@@ -142,7 +142,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                                 _selectDate(context);
                               },
                               color: Colors.grey[200],
-                              child: Text(tempDate??DateFormat('EE, d MMM, yyyy').format(_currentTime),style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                              child: Text(startDate??DateFormat('EE, d MMM, yyyy').format(_currentTime),style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
                             ),
                           ),
                     Container(
@@ -201,12 +201,26 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                             borderRadius: BorderRadius.circular(30),
                           ),
                           onPressed: (){
+
+                            if(title.text.isEmpty||desc.text.isEmpty||startDate == ""){
+                              print(startDate);
+                                toast.overLay = false;
+                                toast.showOverLay("Fill all details", Colors.white, Colors.black54, context);
+                            }
+                            else if(startDate == DateFormat('EE, d MMM, yyyy').format(_currentTime)){
+                              toast.overLay = false;
+                              toast.showOverLay("Select Date", Colors.white, Colors.black54, context);
+                            }
+                            else{
+                              _presenter = new HomePresenter(this,token: widget.token);
+                              _presenter.attachView(this);
+                              _presenter.setAppointment(endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: title.text,description: desc.text);
+                            }
+
                             // Constant.email = "chirag.1sensussoft@gmail.com";
-                            _presenter = new HomePresenter(this,endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: desc.text,token: widget.token);
-                            _presenter.attachView(this);
-                            _presenter.setAppointment();
+
                             
-                            Navigator.pop(context);
+                            // Navigator.pop(context);
                           },
                           color: Palette.colorPrimary,
                         )
@@ -215,8 +229,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                 )
     );
   }
+  Toast toast = Toast();
+
   ///Start Date
-  String tempDate;
   String startDate;
   _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -228,7 +243,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     if (picked != null && picked != _startDateTime)
       setState(() {
         _startDateTime = picked;
-        tempDate = DateFormat('EE, d MMM, yyyy').format(_startDateTime);
         startDate = _startDateTime.year.toString()  + "-" +_startDateTime.month.toString() + "-" + _startDateTime.day.toString();
       });
     print(startDate);
