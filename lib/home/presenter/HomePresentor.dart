@@ -44,6 +44,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
         } else {
           view.onHideLoader();
     }
+
   }
 
   Future getCalendar()async{
