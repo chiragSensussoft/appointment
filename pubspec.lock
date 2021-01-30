@@ -139,6 +139,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_microsoft_authentication:
+    dependency: "direct main"
+    description:
+      name: flutter_microsoft_authentication
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.1"
   flutter_svg:
     dependency: "direct main"
     description:

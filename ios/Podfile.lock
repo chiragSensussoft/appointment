@@ -48,6 +48,9 @@ PODS:
     - GoogleUtilities/UserDefaults (~> 6.7)
     - PromisesObjC (~> 1.2)
   - Flutter (1.0.0)
+  - flutter_microsoft_authentication (0.0.3):
+    - Flutter
+    - MSAL (~> 1.0.3)
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
@@ -93,6 +96,9 @@ PODS:
   - GTMSessionFetcher/Core (1.5.0)
   - GTMSessionFetcher/Full (1.5.0):
     - GTMSessionFetcher/Core (= 1.5.0)
+  - MSAL (1.0.7):
+    - MSAL/app-lib (= 1.0.7)
+  - MSAL/app-lib (1.0.7)
   - nanopb (1.30906.0):
     - nanopb/decode (= 1.30906.0)
     - nanopb/encode (= 1.30906.0)
@@ -111,6 +117,7 @@ DEPENDENCIES:
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - Flutter (from `Flutter`)
+  - flutter_microsoft_authentication (from `.symlinks/plugins/flutter_microsoft_authentication/ios`)
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
@@ -132,6 +139,7 @@ SPEC REPOS:
     - GoogleUtilities
     - GTMAppAuth
     - GTMSessionFetcher
+    - MSAL
     - nanopb
     - PromisesObjC
 
@@ -142,6 +150,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_core/ios"
   Flutter:
     :path: Flutter
+  flutter_microsoft_authentication:
+    :path: ".symlinks/plugins/flutter_microsoft_authentication/ios"
   google_sign_in:
     :path: ".symlinks/plugins/google_sign_in/ios"
   path_provider:
@@ -161,7 +171,8 @@ SPEC CHECKSUMS:
   FirebaseCore: d3a978a3cfa3240bf7e4ba7d137fdf5b22b628ec
   FirebaseCoreDiagnostics: 770ac5958e1372ce67959ae4b4f31d8e127c3ac1
   FirebaseInstallations: 466c7b4d1f58fe16707693091da253726a731ed2
-  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  flutter_microsoft_authentication: 121074a9b2f1babd8a335043111eb05820f1b6ac
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   google_sign_in: 6bd214b9c154f881422f5fe27b66aaa7bbd580cc
   GoogleAppMeasurement: a6a3a066369828db64eda428cb2856dc1cdc7c4e
@@ -170,12 +181,13 @@ SPEC CHECKSUMS:
   GoogleUtilities: 7f2f5a07f888cdb145101d6042bc4422f57e70b3
   GTMAppAuth: 197a8dabfea5d665224aa00d17f164fc2248dab9
   GTMSessionFetcher: b3503b20a988c4e20cc189aa798fd18220133f52
+  MSAL: e4c1cbcf59e04073b427ce9fbfc0346b54abb62e
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   PromisesObjC: 8c196f5a328c2cba3e74624585467a557dcb482f
   shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
 
-PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+PODFILE CHECKSUM: 21b64fbb12492d731c9be90cbe0f2d328bef4b49
 
-COCOAPODS: 1.10.0
+COCOAPODS: 1.10.1

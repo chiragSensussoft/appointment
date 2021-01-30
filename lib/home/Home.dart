@@ -137,63 +137,101 @@ class _HomeState extends State<Home> implements OnHomeView{
             return Padding(
               padding: EdgeInsets.all(5),
               child: Material(
-                elevation: 1,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)
-                ),
-                child: Container(
-                    height: 80,
-                    padding: EdgeInsets.all(6),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
+                elevation: 2,
+                shadowColor: Colors.white.withOpacity(0.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
 
-                          children: [
-                            Container(
-                              child: Text('Creator'),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(top: 5),
-                              child: Text(eventItem[index].creator.email),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(top: 5),
-                              child: Text(eventItem[index].summary.toString()??""),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(right: 10),
-                          alignment: Alignment.bottomCenter,
-                          child: Row(
+                child: GestureDetector(
+                  onTap: (){
+                    showModalBottomSheet(
+                        backgroundColor: Colors.transparent,
+                        context: context,
+                        isScrollControlled: true,
+                        isDismissible: true,
+                        enableDrag: true,
+                        builder: (context) {
+                          return DraggableScrollableSheet(
+                              initialChildSize: 0.80,
+                              expand: true,
+                              builder: (context, scrollController) {
+                                return MyBottomSheet(
+                                    token: widget.accessToken,
+                                    list: _list,
+                                    itemList: itemList);
+                              });
+                        });
+                  },
+
+                  child: Container(
+                      height: 80,
+                      padding: EdgeInsets.all(6),
+
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+
+                        children: [
+                          Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            mainAxisAlignment:
+                            MainAxisAlignment.center,
                             children: [
-                             Container(
-                               margin: EdgeInsets.only(right: 10),
-                               child:  GestureDetector(
-                                 child:Icon(Icons.edit_outlined,color: Colors.green,size: 22,),
-                                 onTap: (){
-                                   Navigator.push(context, MaterialPageRoute(builder: (_) => DetailScreen()));
-                                 },
-                               ),
-                             ),
-                              GestureDetector(
-                                child:  Icon(Icons.delete_forever_rounded,color: Colors.red,size: 20,),
-                                onTap: (){
-                                  _presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
-                                },
+                              Container(
+                                child: Text('Creator'),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 5),
+                                child: Text(
+                                    eventItem[index].creator.email),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 5),
+                                child: Text(eventItem[index].summary.toString() ?? ""),
                               ),
                             ],
                           ),
-                        )
-                      ],
-                    )
+                          Container(
+                            margin: EdgeInsets.only(right: 10),
+                            alignment: Alignment.bottomCenter,
+                            child: Row(
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(right: 10),
+                                  child: GestureDetector(
+                                    child: Icon(
+                                      Icons.edit_outlined,
+                                      color: Colors.green,
+                                      size: 22,
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  DetailScreen()));
+                                    },
+                                  ),
+                                ),
+                                GestureDetector(
+                                  child: Icon(
+                                    Icons.delete_forever_rounded,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  onTap: () {
+                                    _presenter.deleteEvent(
+                                        eventItem[index].id,
+                                        eventItem[index].creator.email);
+                                  },
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      )),
                 ),
-
               ),
             );
           },
