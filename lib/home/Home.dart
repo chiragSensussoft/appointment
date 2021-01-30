@@ -86,6 +86,7 @@ class HomeState extends State<Home> implements OnHomeView{
 
   @override
   Widget build(BuildContext context) {
+    model = HomeViewModel(this);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Palette.colorPrimary,
@@ -175,7 +176,7 @@ class HomeState extends State<Home> implements OnHomeView{
                                child:  GestureDetector(
                                  child:Icon(Icons.edit_outlined,color: Colors.green,size: 22,),
                                  onTap: (){
-                                   // Navigator.push(context, MaterialPageRoute(builder: (_) => );
+                                   model.detailSheet(index);
                                  },
                                ),
                              ),
