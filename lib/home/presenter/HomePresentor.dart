@@ -62,7 +62,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     view.onShowLoader();
     Response getCalendarEventList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().event,endPoint: Constant().event);
     if(getCalendarEventList.statusCode == 200){
-      isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items']) : null;
+      isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items'],getCalendarEventList.data) : null;
       view.onHideLoader();
     }else{
       view.onHideLoader();
@@ -76,10 +76,9 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
       print("RunTimeType${deleteCalendarEvent.runtimeType}");
     }
     else{
-      // view.onShowLoader();
       Response getCalendarEventList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().event,endPoint: Constant().event);
       if(getCalendarEventList.statusCode == 200){
-        isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items']) : null;
+        isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items'],getCalendarEventList.data) : null;
         view.onHideLoader();
         print("RunTimeType${deleteCalendarEvent.runtimeType}");
       }else{

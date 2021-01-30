@@ -32,6 +32,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   TextEditingController desc = TextEditingController();
   bool loader = false;
   int temp;
+  String setEmail;
+
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +44,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     _endTime = temp.toString() + ":" + "00" ;
     print(_endTime);
     print(startTime);
+    // widget.itemList.length!=0?setEmail = widget.itemList[0].id:'abc';
+
   }
 
   @override
@@ -82,31 +87,50 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                         )
                     ),
                    GestureDetector(
-                     child:Container(
+                      child:Container(
                         margin: EdgeInsets.only(top: Dimen().dp_10),
-                        child: Container(
-                          padding: EdgeInsets.all(12),
-                          alignment: Alignment.centerLeft,
-                          color: Colors.grey[200],
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(Resources.from(context,Constant.languageCode).strings.event,style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),textAlign: TextAlign.end,),
-                                  Text('chirag.1sensussoft@gmail.com',style: TextStyle(fontSize: 12,fontFamily: 'poppins_regular'),textAlign: TextAlign.end,overflow: TextOverflow.ellipsis,)
-                                ],
-                              ),
-                              Icon(Icons.keyboard_arrow_down,size: 25,)
-                            ],
+                        child:  Expanded(
+                          child: Container(
+                            padding: EdgeInsets.all(12),
+                            alignment: Alignment.centerLeft,
+                            color: Colors.grey[200],
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        Resources.from(context, Constant.languageCode)
+                                            .strings
+                                            .event,
+                                        style: TextStyle(
+                                            fontSize: 15, fontFamily: 'poppins_medium'),
+                                        textAlign: TextAlign.end,
+                                      ),
+                                      Text(
+                                        setEmail??"",
+                                        style: TextStyle(
+                                            fontSize: 12, fontFamily: 'poppins_regular'),
+                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.keyboard_arrow_down,
+                                  size: 25,
+                                )
+                              ],
+                            ),
                           ),
-                        )
-                    ),
-                     onTap: (){
-                       calendarListDialog();
-                       },
-                   ),
+                        ),
+                      ),
+                      onTap: (){
+                           calendarListDialog();
+                           },
+                       ),
                     Container(
                         margin: EdgeInsets.only(top: Dimen().dp_10),
                         child: TextFormField(
@@ -296,38 +320,41 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
             child: ListView.builder(
               itemCount: widget.itemList.length,
               itemBuilder: (_,index){
-                return Column(
-                  children: [
-                    SizedBox(height: Dimen().dp_20,),
-                    Row(
+                return GestureDetector(
+                  onTap: (){
+                    setState(() {
+                      setEmail = widget.itemList[index].id;
+                      Constant.email = setEmail;
+                      Navigator.pop(context);
+                    });
+                  },
+
+                  child: Container(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Row(
                       children: [
                         Container(
                           margin: EdgeInsets.only(right: 10),
                           height: 20,
                           width: 20,
-                          child:CircleAvatar(
-                            backgroundColor: nextColor(),
+                          child: CircleAvatar(
+                              backgroundColor:widget.itemList[index].id ==setEmail? Palette.colorPrimary:Colors.grey),
+                        ),
+
+                        Container(
+                          width: MediaQuery.of(context).size.width / 2,
+                          child: Text(
+                            widget.itemList[index].summary,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontFamily: 'poppins_regular',
+                                color: Colors.black),
                           ),
                         ),
-                        Column(
-                            children: [
-                              Container(
-                                width: MediaQuery.of(context).size.width /2,
-                                child: Text(
-                                  widget.itemList[index].summary,overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 15,
-                                      fontFamily: 'poppins_regular',
-                                      color:
-                                      Colors.black),
-                                ),
-                              ),
-
-                            ],
-                          ),
                       ],
                     ),
-                  ],
+                  ),
                 );
               },
             )
@@ -372,7 +399,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   }
 
   @override
-  onEventSuccess(response) {
+  onEventSuccess(response,calendarResponse) {
 
   }
 
