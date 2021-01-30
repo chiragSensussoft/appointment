@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
@@ -9,6 +11,7 @@ import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:sliding_sheet/sliding_sheet.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'OnHomeView.dart';
@@ -126,99 +129,155 @@ class _HomeState extends State<Home> implements OnHomeView{
           )
 
       ),
-      body: isVisible == false ?Container(
+      body: RefreshIndicator(child: Container(
         color: Colors.grey[200],
-        child: ListView.builder(
+        child: isVisible == false ?ListView.builder(
           itemCount: eventItem.length,
           itemBuilder: (_,index){
             return Padding(
               padding: EdgeInsets.all(5),
               child: Material(
                 elevation: 1,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)
-                  ),
-                      child: Container(
-                        height: 60,
-                          padding: EdgeInsets.all(6),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)
+                ),
+                child: Container(
+                    height: 80,
+                    padding: EdgeInsets.all(6),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
 
-                                children: [
-                                  Container(
-                                    child: Text('Creator'),
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.only(top: 5),
-                                    child: Text(eventItem[index].creator.email),
-                                  ),
-                                ],
+                          children: [
+                            Container(
+                              child: Text('Creator'),
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(top: 5),
+                              child: Text(eventItem[index].creator.email),
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(top: 5),
+                              child: Text(eventItem[index].summary.toString()??""),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(right: 10),
+                          alignment: Alignment.bottomCenter,
+                          child: Row(
+                            children: [
+                             Container(
+                               margin: EdgeInsets.only(right: 10),
+                               child:  GestureDetector(
+                                 child:Icon(Icons.edit_outlined,color: Colors.green,size: 22,),
+                                 onTap: (){
+                                   Navigator.push(context, MaterialPageRoute(builder: (_) => DetailScreen()));
+                                 },
+                               ),
+                             ),
+                              GestureDetector(
+                                child:  Icon(Icons.delete_forever_rounded,color: Colors.red,size: 20,),
+                                onTap: (){
+                                  _presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
+                                },
                               ),
-                              Container(
-                                margin: EdgeInsets.only(right: 10),
-                                alignment: Alignment.bottomCenter,
-                                child: Row(
-                                  children: [
-                                    GestureDetector(
-                                      child:Icon(Icons.done,color: Colors.green,size: 20,),
-                                    ),
-                                    GestureDetector(
-                                      child:  Icon(Icons.delete_forever_rounded,color: Colors.red,size: 20,),
-                                      onTap: (){
-                                        _presenter = new HomePresenter(this,token: widget.accessToken,);
-                                        _presenter.attachView(this);
-                                        _presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              )
                             ],
-                          )
-                  ),
+                          ),
+                        )
+                      ],
+                    )
+                ),
 
               ),
             );
           },
+        ):Center(
+          child: CircularProgressIndicator(),
         ),
-      ):Center(
-        child: CircularProgressIndicator(),
-      ),
+      ), onRefresh: _presenter.getCalendarEvent),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         backgroundColor: Palette.colorPrimary,
         onPressed: (){
-          Constant.email = itemList[0].id;
-          _presenter.getCalendarEvent();
-          print(itemList[0].id);
-          _modalBottomSheetMenu(context,widget.name);
+
+          showModalBottomSheet(
+              backgroundColor: Colors.transparent,
+              context: context,
+              isScrollControlled: true,
+              isDismissible: true,
+              enableDrag: true,
+              builder: (context) {
+                return DraggableScrollableSheet(
+                    initialChildSize: 0.80,
+                    expand: true,
+                    builder: (context, scrollController) {
+                      return MyBottomSheet(token: widget.accessToken,list: _list,itemList: itemList);
+                    }
+                );
+              }
+          );
+
       }
       )
     );
   }
 
-  _modalBottomSheetMenu(BuildContext context,String name){
-    showModalBottomSheet<void>(
-        backgroundColor: Colors.transparent,
-        context: context,
-        isScrollControlled: true,
-        isDismissible: true,
+  void showAsBottomSheet() async {
+    final result = await
+    showSlidingBottomSheet(
+        context,
         builder: (context) {
-          return DraggableScrollableSheet(
-              initialChildSize: 0.80,
-              expand: true,
-              builder: (context, scrollController) {
-                return MyBottomSheet(token: widget.accessToken,list: _list,itemList: itemList);
-              }
+          return SlidingSheetDialog(
+            elevation: 8,
+            cornerRadius: 16,
+            snapSpec: const SnapSpec(
+              snap: true,
+              snappings: [0.4, 0.7, 1.0],
+              positioning: SnapPositioning.relativeToAvailableSpace,
+            ),
+            builder: (context, state) {
+              return Container(
+                height: 400,
+                child: Center(
+                  child: Material(
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context, 'This is the result.'),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          'This is the content of the sheet',
+                          style: Theme.of(context).textTheme.body1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           );
         }
     );
+
+    print(result);
+  }
+
+  void internet() async{
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('connected');
+      }
+    } on SocketException catch (_) {
+      Toast toast = Toast();
+      toast.overLay = false;
+      toast.showOverLay("inter not connected", Colors.white, Colors.black54, context);
+    }
   }
 
   @override
@@ -236,13 +295,14 @@ class _HomeState extends State<Home> implements OnHomeView{
   }
 
   @override
-  onErrorHandler(String message) {
-    setState(() {
-      isVisible = false;
-    });
+  onErrorHandler(String message){
     Toast toast = Toast();
     toast.overLay = false;
     toast.showOverLay(message, Colors.white, Colors.black54, context);
+    setState(() {
+      isVisible = false;
+    });
+
   }
 
   @override
@@ -263,6 +323,7 @@ class _HomeState extends State<Home> implements OnHomeView{
   onEventSuccess(response) {
     print("success $response");
     setState(() {
+      eventItem.clear();
       List<dynamic> data = response;
       eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
     });

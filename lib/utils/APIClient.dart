@@ -87,7 +87,6 @@ class APIClient extends BasePresenter<OnHomeView>{
       case 200:
         // print('STATUS::::$response');
         return response;
-
       case 400:
         view.onErrorHandler('Unauthorized Error');
         break;

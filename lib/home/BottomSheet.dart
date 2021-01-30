@@ -30,7 +30,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   HomePresenter _presenter;
   TextEditingController title =  TextEditingController();
   TextEditingController desc = TextEditingController();
-  bool isVisible;
+  bool loader = false;
   int temp;
   @override
   void initState() {
@@ -205,6 +205,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                             _presenter = new HomePresenter(this,endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: desc.text,token: widget.token);
                             _presenter.attachView(this);
                             _presenter.setAppointment();
+                            
+                            Navigator.pop(context);
                           },
                           color: Palette.colorPrimary,
                         )
@@ -328,26 +330,25 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   @override
   onShowLoader() {
     setState(() {
-      isVisible = true;
+      loader = true;
     });
   }
 
   @override
   onHideLoader() {
     setState(() {
-      isVisible = false;
+      loader = false;
     });
   }
 
   @override
   onErrorHandler(String message) {
     setState(() {
-      isVisible = false;
+      loader = true;
     });
     Toast toast = Toast();
     toast.overLay = false;
     toast.showOverLay(message, Colors.white, Colors.black54, context);
-    // print('onError:::$message');
   }
 
   @override

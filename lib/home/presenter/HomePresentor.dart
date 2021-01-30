@@ -73,16 +73,23 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
   }
 
   Future deleteEvent(id,email)async{
-    // view.onShowLoader();
+    view.onShowLoader();
     Response deleteCalendarEvent = await apiHelper.api(method: Method.DELETE,token: token,endPoint: id,apiName: Constant().event,user: email);
-    print("Status Code ${deleteCalendarEvent.statusCode}");
-    // if(deleteCalendarEvent.statusCode == 204){
-    //   isViewAttached ? getView().onEventSuccess(deleteCalendarEvent.data) : null;
-    //   view.onHideLoader();
-    // }
-    // else{
-    //   view.onHideLoader();
-    // }
+    if(deleteCalendarEvent.runtimeType == null){
+      print("RunTimeType${deleteCalendarEvent.runtimeType}");
+    }
+    else{
+      // view.onShowLoader();
+      Response getCalendarEventList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().event,endPoint: Constant().event);
+      if(getCalendarEventList.statusCode == 200){
+        isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items']) : null;
+        view.onHideLoader();
+        print("RunTimeType${deleteCalendarEvent.runtimeType}");
+      }else{
+        view.onHideLoader();
+        print("RunTimeType${deleteCalendarEvent.runtimeType}");
+      }
+    }
   }
 
 }
