@@ -1,17 +1,11 @@
-import 'dart:io';
-
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
-import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/Toast.dart';
-import 'package:appointment/utils/values/Constant.dart';
-import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:sliding_sheet/sliding_sheet.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'OnHomeView.dart';
@@ -29,7 +23,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 
 class Home extends StatefulWidget {
   final String name;
@@ -64,7 +57,7 @@ class _HomeState extends State<Home> implements OnHomeView{
     _presenter.attachView(this);
     _presenter.getCalendar();
     _presenter.getCalendarEvent();
-    
+
   }
 
   _query() async {
@@ -92,104 +85,81 @@ class _HomeState extends State<Home> implements OnHomeView{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Palette.colorPrimary,
-        automaticallyImplyLeading: false,
-          title: new Row
-            (
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children:
-            [
-             Row(
-               children: [
-                 url != null ?CircleAvatar(
-                   backgroundImage: NetworkImage(url,),
-                 ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 32,),
+        appBar: AppBar(
+            backgroundColor: Palette.colorPrimary,
+            automaticallyImplyLeading: false,
+            title: new Row
+              (
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children:
+              [
+                Row(
+                  children: [
+                    url != null ?CircleAvatar(
+                      backgroundImage: NetworkImage(url,),
+                    ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 32,),
+
+                    Container(
+                      margin: EdgeInsets.only(left: 10,right: 10),
+                      child:Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                              child: Text(userName??"Default User",style: TextStyle(fontSize: 17),)
+                          ),
+                          Container(
+                              child: Text(email??"",style: TextStyle(fontSize: 12),)
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
 
                 Container(
-                  margin: EdgeInsets.only(left: 10,right: 10),
-                  child:Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                          child: Text(userName??"Default User",style: TextStyle(fontSize: 17),)
-                      ),
-                      Container(
-                          child: Text(email??"",style: TextStyle(fontSize: 12),)
-                      ),
-                    ],
-                  ),
+                  child: Icon(Icons.settings,size: 30,),
                 )
-               ],
-             ),
+              ],
+            )
 
-              Container(
-                child: Icon(Icons.settings,size: 30,),
-              )
-            ],
-          )
-
-      ),
-      body: RefreshIndicator(child: Container(
-        color: Colors.grey[200],
-        child: isVisible == false ?ListView.builder(
-          itemCount: eventItem.length,
-          itemBuilder: (_,index){
-            return Padding(
-              padding: EdgeInsets.all(5),
-              child: Material(
-                elevation: 2,
-                shadowColor: Colors.white.withOpacity(0.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-
-                child: GestureDetector(
-                  onTap: (){
-                    showModalBottomSheet(
-                        backgroundColor: Colors.transparent,
-                        context: context,
-                        isScrollControlled: true,
-                        isDismissible: true,
-                        enableDrag: true,
-                        builder: (context) {
-                          return DraggableScrollableSheet(
-                              initialChildSize: 0.80,
-                              expand: true,
-                              builder: (context, scrollController) {
-                                return MyBottomSheet(
-                                    token: widget.accessToken,
-                                    list: _list,
-                                    itemList: itemList);
-                              });
-                        });
-                  },
-
+        ),
+        body: RefreshIndicator(child: Container(
+          color: Colors.grey[200],
+          child: isVisible == false ?ListView.builder(
+            itemCount: eventItem.length,
+            itemBuilder: (_,index){
+              return Padding(
+                padding: EdgeInsets.all(5),
+                child: Material(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)
+                  ),
                   child: Container(
-                      height: 80,
-                      padding: EdgeInsets.all(6),
-
+                      height: 110,
+                      padding: EdgeInsets.all(8),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
-
                         children: [
                           Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            mainAxisAlignment:
-                            MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Container(
-                                child: Text('Creator'),
+                                margin: EdgeInsets.only(top: 5),
+                                child: Text("Title",style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
+                              ),
+                              Container(
+                                child: Text(eventItem[index].summary.toString(),style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
                               ),
                               Container(
                                 margin: EdgeInsets.only(top: 5),
-                                child: Text(
-                                    eventItem[index].creator.email),
+                                child: Text('Creator',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium")),
                               ),
                               Container(
-                                margin: EdgeInsets.only(top: 5),
-                                child: Text(eventItem[index].summary.toString() ?? ""),
+                                child: Text(eventItem[index].creator.email,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
                               ),
                             ],
                           ),
@@ -200,123 +170,57 @@ class _HomeState extends State<Home> implements OnHomeView{
                               children: [
                                 Container(
                                   margin: EdgeInsets.only(right: 10),
-                                  child: GestureDetector(
-                                    child: Icon(
-                                      Icons.edit_outlined,
-                                      color: Colors.green,
-                                      size: 22,
-                                    ),
-                                    onTap: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) =>
-                                                  DetailScreen()));
+                                  child:  GestureDetector(
+                                    child:Icon(Icons.edit_outlined,color: Colors.green,size: 22,),
+                                    onTap: (){
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => DetailScreen()));
                                     },
                                   ),
                                 ),
                                 GestureDetector(
-                                  child: Icon(
-                                    Icons.delete_forever_rounded,
-                                    color: Colors.red,
-                                    size: 20,
-                                  ),
-                                  onTap: () {
-                                    _presenter.deleteEvent(
-                                        eventItem[index].id,
-                                        eventItem[index].creator.email);
+                                  child:  Icon(Icons.delete_forever_rounded,color: Colors.red,size: 20,),
+                                  onTap: (){
+                                    _presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
                                   },
                                 ),
                               ],
                             ),
                           )
                         ],
-                      )),
-                ),
-              ),
-            );
-          },
-        ):Center(
-          child: CircularProgressIndicator(),
-        ),
-      ), onRefresh: _presenter.getCalendarEvent),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        backgroundColor: Palette.colorPrimary,
-        onPressed: (){
-
-          showModalBottomSheet(
-              backgroundColor: Colors.transparent,
-              context: context,
-              isScrollControlled: true,
-              isDismissible: true,
-              enableDrag: true,
-              builder: (context) {
-                return DraggableScrollableSheet(
-                    initialChildSize: 0.80,
-                    expand: true,
-                    builder: (context, scrollController) {
-                      return MyBottomSheet(token: widget.accessToken,list: _list,itemList: itemList);
-                    }
-                );
-              }
-          );
-
-      }
-      )
-    );
-  }
-
-  void showAsBottomSheet() async {
-    final result = await
-    showSlidingBottomSheet(
-        context,
-        builder: (context) {
-          return SlidingSheetDialog(
-            elevation: 8,
-            cornerRadius: 16,
-            snapSpec: const SnapSpec(
-              snap: true,
-              snappings: [0.4, 0.7, 1.0],
-              positioning: SnapPositioning.relativeToAvailableSpace,
-            ),
-            builder: (context, state) {
-              return Container(
-                height: 400,
-                child: Center(
-                  child: Material(
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context, 'This is the result.'),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          'This is the content of the sheet',
-                          style: Theme.of(context).textTheme.body1,
-                        ),
-                      ),
-                    ),
+                      )
                   ),
+
                 ),
               );
             },
-          );
-        }
+          ):Center(
+            child: CircularProgressIndicator(),
+          ),
+        ), onRefresh: _presenter.getCalendarEvent),
+        floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.add),
+            backgroundColor: Palette.colorPrimary,
+            onPressed: (){
+
+              showModalBottomSheet(
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  enableDrag: true,
+                  builder: (context) {
+                    return DraggableScrollableSheet(
+                        initialChildSize: 0.80,
+                        expand: true,
+                        builder: (context, scrollController) {
+                          return MyBottomSheet(token: widget.accessToken,list: _list,itemList: itemList);
+                        }
+                    );
+                  }
+              );
+            }
+        )
     );
-
-    print(result);
-  }
-
-  void internet() async{
-    try {
-      final result = await InternetAddress.lookup('google.com');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        print('connected');
-      }
-    } on SocketException catch (_) {
-      Toast toast = Toast();
-      toast.overLay = false;
-      toast.showOverLay("inter not connected", Colors.white, Colors.black54, context);
-    }
   }
 
   @override
@@ -348,13 +252,13 @@ class _HomeState extends State<Home> implements OnHomeView{
   onSuccessRes(response) {
     setState(() {
       List<dynamic> data = response;
-        _list.addAll(data.map((i) => Item.fromJson(i)).toList());
+      _list.addAll(data.map((i) => Item.fromJson(i)).toList());
 
-        for(int i=0;i<data.length;i++){
-          if(data[i]['accessRole']=="owner"){
-            itemList.add(Item.fromJson(data[i]));
-          }
+      for(int i=0;i<data.length;i++){
+        if(data[i]['accessRole']=="owner"){
+          itemList.add(Item.fromJson(data[i]));
         }
+      }
     });
   }
 

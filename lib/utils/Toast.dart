@@ -7,26 +7,29 @@ class Toast {
     overlayEntry = OverlayEntry(
         builder: (context) => Positioned(
           left: left,right: right,top: top,bottom: bottom,
-          child: Flexible(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    FlatButton(
-                      onPressed: () {},
-                      child: Container( padding: const EdgeInsets.symmetric(horizontal: 25,vertical: 15),
-                        decoration:BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: bgClr,
-                        ) ,
-                        child: Text(msg,style: TextStyle(color:txtClr,)),
-                      ),
-                    )
-                  ],
-                )
-              ],
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Flexible(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      FlatButton(
+                        onPressed: () {},
+                        child: Container( padding: const EdgeInsets.symmetric(horizontal: 25,vertical: 10),
+                          decoration:BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            color: bgClr,
+                          ) ,
+                          child: Text(msg,style: TextStyle(color:txtClr,fontSize: 13)),
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
         )
