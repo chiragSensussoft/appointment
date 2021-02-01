@@ -1,3 +1,4 @@
+import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
@@ -9,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'OnHomeView.dart';
-import 'detail_screen/DetailScreen.dart';
 import 'model/CalendarList.dart';
 
 void main() => runApp(MyApp());
@@ -32,10 +32,11 @@ class Home extends StatefulWidget {
   Home({this.name,this.accessToken});
 
   @override
-  _HomeState createState() => _HomeState();
+  HomeState createState() => HomeState();
 }
 
-class _HomeState extends State<Home> implements OnHomeView{
+class HomeState extends State<Home> implements OnHomeView{
+  HomeViewModel model;
   final dbHelper = DatabaseHelper.instance;
   var data;
   String url;
@@ -46,6 +47,7 @@ class _HomeState extends State<Home> implements OnHomeView{
   List<Item> _list = List.empty(growable: true);
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> eventItem = List.empty(growable: true);
+  List<CalendarEvent> calendarEventList = List.empty(growable: true);
 
   HomePresenter _presenter;
   bool isVisible;
@@ -84,6 +86,7 @@ class _HomeState extends State<Home> implements OnHomeView{
 
   @override
   Widget build(BuildContext context) {
+    model = HomeViewModel(this);
     return Scaffold(
         appBar: AppBar(
             backgroundColor: Palette.colorPrimary,
@@ -173,7 +176,7 @@ class _HomeState extends State<Home> implements OnHomeView{
                                   child:  GestureDetector(
                                     child:Icon(Icons.edit_outlined,color: Colors.green,size: 22,),
                                     onTap: (){
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => DetailScreen()));
+                                      model.detailSheet(index);
                                     },
                                   ),
                                 ),
@@ -263,8 +266,8 @@ class _HomeState extends State<Home> implements OnHomeView{
   }
 
   @override
-  onEventSuccess(response) {
-    print("success $response");
+  onEventSuccess(response,calendarResponse) {
+    print("success ${calendarResponse.runtimeType}");
     setState(() {
       eventItem.clear();
       List<dynamic> data = response;
