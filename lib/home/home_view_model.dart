@@ -32,15 +32,20 @@ class HomeViewModel {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Container(
+                    alignment: Alignment.center,
+                    margin: EdgeInsets.only(bottom: 10),
+                    child: Text('Event Detail'),
+                  ),
                  Row(
                    children: [
                      Container(
                        child: Text('Event Title :',style: TextStyle(fontSize: 15,fontFamily: "poppins_medium"),),
                      ),
-                     Container(
+                     Expanded(child: Container(
                        margin: EdgeInsets.only(left: 10),
                        child: Text(state.eventItem[index].summary,style: TextStyle(fontSize: 15,fontFamily: "poppins_regular")),
-                     )
+                     ))
                    ],
                  ),
                   Row(

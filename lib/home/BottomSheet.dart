@@ -102,9 +102,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                Resources.from(context, Constant.languageCode)
-                                    .strings
-                                    .event,
+                                Resources.from(context, Constant.languageCode).strings.event,
                                 style: TextStyle(
                                     fontSize: 15, fontFamily: 'poppins_medium'),
                                 textAlign: TextAlign.end,
@@ -240,11 +238,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                       _presenter.attachView(this);
                       _presenter.setAppointment(endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: title.text,description: desc.text);
                     }
-
-                    // Constant.email = "chirag.1sensussoft@gmail.com";
-
-
-                    // Navigator.pop(context);
                   },
                   color: Palette.colorPrimary,
                 )
@@ -380,6 +373,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     setState(() {
       loader = false;
     });
+    Navigator.pop(context);
+    toast.overLay = false;
+    toast.showOverLay("Appointment created successfully", Colors.white, Colors.black54, context,);
   }
 
   @override
@@ -387,7 +383,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     setState(() {
       loader = true;
     });
-    Toast toast = Toast();
     toast.overLay = false;
     toast.showOverLay(message, Colors.white, Colors.black54, context);
   }
@@ -400,7 +395,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
 
   @override
   onEventSuccess(response,calendarResponse) {
-
+    print("success");
   }
 
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
@@ -5,6 +7,7 @@ import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/home/BottomSheet.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
@@ -47,7 +50,7 @@ class HomeState extends State<Home> implements OnHomeView{
   List<Item> _list = List.empty(growable: true);
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> eventItem = List.empty(growable: true);
-  List<CalendarEvent> calendarEventList = List.empty(growable: true);
+  // List<CalendarEvent> calendarEventList = List.empty(growable: true);
 
   HomePresenter _presenter;
   bool isVisible;
@@ -154,15 +157,15 @@ class HomeState extends State<Home> implements OnHomeView{
                                 margin: EdgeInsets.only(top: 5),
                                 child: Text("Title",style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
                               ),
-                              Container(
-                                child: Text(eventItem[index].summary.toString(),style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
-                              ),
+                             Flexible(child:  Container(
+                               child: Text(eventItem[index].summary.toString(),style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
+                             ),),
                               Container(
                                 margin: EdgeInsets.only(top: 5),
                                 child: Text('Creator',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium")),
                               ),
                               Container(
-                                child: Text(eventItem[index].creator.email,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
+                                child: Text(map['summary'],style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
                               ),
                             ],
                           ),
@@ -248,7 +251,6 @@ class HomeState extends State<Home> implements OnHomeView{
     setState(() {
       isVisible = false;
     });
-
   }
 
   @override
@@ -265,15 +267,17 @@ class HomeState extends State<Home> implements OnHomeView{
     });
   }
 
+  Map<String, dynamic> map;
   @override
   onEventSuccess(response,calendarResponse) {
-    print("success ${calendarResponse.runtimeType}");
+
+    print("success ${response.runtimeType}");
     setState(() {
       eventItem.clear();
+      map = calendarResponse;
       List<dynamic> data = response;
-      eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+      eventItem.addAll(data.map((e)=> EventItem.fromJson(e)).toList());
     });
   }
 
 }
-

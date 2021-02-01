@@ -43,6 +43,8 @@ dependencies:
   # Outlook sign in
   flutter_microsoft_authentication: ^0.1.0
 
+  # Calendar
+  syncfusion_flutter_calendar: ^18.4.39
 
 dev_dependencies:
   flutter_test:
