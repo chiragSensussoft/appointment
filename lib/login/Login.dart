@@ -26,10 +26,11 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
 
   @override
   void initState() {
+    checkIfLogin();
     super.initState();
+
     setState(() {
       setValue();
-      checkIfLogin();
     });
   }
   var _value;
@@ -84,81 +85,80 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
               }),
         ),
       ),
-        body: Container(
-          height: MediaQuery.of(context).size.height,
-          alignment: Alignment.center,
-          child: SingleChildScrollView(
-            child: Container(
-              margin: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      child:Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Center(
-                              child: Container(
-                                child: Image.asset('images/appointment.png',height: 100,width: 100,),
-                              ),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(top: 40),
-                              child: Text(Resources.from(context,Constant.languageCode).strings.title,
-                                textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
-                              ),
-                            ),
-                          ],
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        alignment: Alignment.center,
+        child: SingleChildScrollView(
+          child: Container(
+            margin: EdgeInsets.only(left: Dimen().dp_20,right: Dimen().dp_20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  child:Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Center(
+                        child: Container(
+                          child: Image.asset('images/appointment.png',height: 100,width: 100,),
                         ),
-                    ),
-                    SizedBox(height: 50,),
-                    Container(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            margin: EdgeInsets.only(bottom: 10),
-                            child: Text( Resources.from(context,Constant.languageCode).strings.signInText,style: TextStyle(
-                              fontSize: 16,fontFamily: 'poppins_medium'
-                            ),),
-                          ),
-                          Center(
-                            child: Container(
-                              width: 200,
-                              height: 40,
-                              child:RoundShapeButton(onPressed: signInWithGoogle,
-                                width: 1,
-                                color: Colors.white,
-                                text: Resources.from(context,Constant.languageCode).strings.googleBtnText,radius: 25,
-                              icon: Image.asset('images/search.png',width: 20,height: 20,),)
-                            ),
-                          ),
-                          SizedBox(height: 10,),
-                         Container(
-                           width: 200,
-                           height: 40,
-                           child:RoundShapeButton(text: Resources.from(context,Constant.languageCode).strings.outLookBtnText,
-                             width: 1,
-                             color: Colors.white,
-                             onPressed: (){
-                             Navigator.push(context, MaterialPageRoute(
-                               // builder: (_) => Home(name: 'Chirag Kalathiya')
-                                 builder: (_) => Home(),
-                             ));
-                             },radius: 25,
-                             icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
-                         ),
-                        ],
                       ),
-                    ),
-                    SizedBox(height: 30,),
-                  ],
+                      Container(
+                        margin: const EdgeInsets.only(top: 40),
+                        child: Text(Resources.from(context,Constant.languageCode).strings.title,
+                          textAlign: TextAlign.justify,style: TextStyle(fontFamily: 'poppins_regular',fontSize: 15),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                SizedBox(height: 50,),
+                Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: Text( Resources.from(context,Constant.languageCode).strings.signInText,style: TextStyle(
+                            fontSize: 16,fontFamily: 'poppins_medium'
+                        ),),
+                      ),
+                      Center(
+                        child: Container(
+                            width: 200,
+                            height: 40,
+                            child:RoundShapeButton(onPressed: signInWithGoogle,
+                              width: 1,
+                              color: Colors.white,
+                              text: Resources.from(context,Constant.languageCode).strings.googleBtnText,radius: 25,
+                              icon: Image.asset('images/search.png',width: 20,height: 20,),)
+                        ),
+                      ),
+                      SizedBox(height: 10,),
+                      Container(
+                        width: 200,
+                        height: 40,
+                        child:RoundShapeButton(text: Resources.from(context,Constant.languageCode).strings.outLookBtnText,
+                          width: 1,
+                          color: Colors.white,
+                          onPressed: (){
+                            Navigator.pushReplacement(context, MaterialPageRoute(
+                              builder: (_) => Home(),
+                            ));
+                          },radius: 25,
+                          icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 30,),
+              ],
+            ),
           ),
         ),
-      );
+      ),
+    );
   }
 
   Future<void> languageCode({String code})async{
@@ -183,7 +183,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   checkIfLogin()async{
     _sharedPreferences = await SharedPreferences.getInstance();
     if(_sharedPreferences.getBool('isLogin')==true){
-      Navigator.push(context, MaterialPageRoute(
+      Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (_) => Home()
       ));
     }
@@ -191,8 +191,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn(
-      scopes: ["email","https://www.googleapis.com/auth/userinfo.profile",
-        "https://www.googleapis.com/auth/calendar"],clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
+    scopes: ["email","https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/calendar"],clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
   );
 
   static Map<String, dynamic> parseJwt(String token) {
@@ -270,14 +270,14 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     if (data.length != 0) {
       dbHelper.update(row, data[0]['_id']);
 
-      Navigator.push(context, MaterialPageRoute(
-          builder: (_) => Home(name: name,accessToken: accessToken)
+      Navigator.pushReplacement(context, MaterialPageRoute(
+          builder: (_) => Home()
       ));
     }
     else {
       insertWithSocial(fName, lName, email, loginType,idToken,accessToken,photoUrl);
-      Navigator.push(context, MaterialPageRoute(
-          builder: (_) => Home(accessToken:accessToken)
+      Navigator.pushReplacement(context, MaterialPageRoute(
+          builder: (_) => Home()
       ));
     }
   }

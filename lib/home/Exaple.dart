@@ -7,6 +7,7 @@ import 'package:appointment/utils/values/Constant.dart';
 ///Package imports
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 ///calendar import
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -52,12 +53,18 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
 
   HomePresenter _presenter;
   bool isVisible;
+  SharedPreferences _sharedPreferences;
+  
+  
   @override
   void initState() {
+    init();
+
     _presenter = new HomePresenter(this,token: Constant.token);
     _presenter.attachView(this);
-    _presenter.getCalendar();
-    _presenter.getCalendarEvent();
+
+    _presenter.getCalendar(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
+    _presenter.getCalendarEvent(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
     _showLeadingAndTrailingDates = true;
     _showDatePickerButton = true;
     _allowViewNavigation = true;
@@ -68,6 +75,10 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
     _blackoutDates = <DateTime>[];
     _events = _MeetingDataSource(<_Meeting>[]);
     super.initState();
+  }
+
+  init() async{
+    _sharedPreferences = await SharedPreferences.getInstance();
   }
 
   @override

@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:appointment/home/Exaple.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
@@ -10,11 +7,44 @@ import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-
+import 'package:appointment/utils/values/Constant.dart';
 import 'OnHomeView.dart';
 import 'model/CalendarList.dart';
+
+
+class LifecycleEventHandler extends WidgetsBindingObserver {
+  final AsyncCallback resumeCallBack;
+  final AsyncCallback suspendingCallBack;
+
+  LifecycleEventHandler({
+    this.resumeCallBack,
+    this.suspendingCallBack,
+  });
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (resumeCallBack != null) {
+          await resumeCallBack();
+        }
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        if (suspendingCallBack != null) {
+          await suspendingCallBack();
+        }
+        break;
+    }
+  }
+}
+
 
 void main() => runApp(MyApp());
 
@@ -29,17 +59,12 @@ class MyApp extends StatelessWidget {
 }
 
 class Home extends StatefulWidget {
-  final String name;
-  String accessToken;
-
-
-  Home({this.name,this.accessToken});
 
   @override
   HomeState createState() => HomeState();
 }
 
-class HomeState extends State<Home> implements OnHomeView{
+class HomeState extends State<Home> with WidgetsBindingObserver implements OnHomeView {
   HomeViewModel model;
   final dbHelper = DatabaseHelper.instance;
   var data;
@@ -55,16 +80,48 @@ class HomeState extends State<Home> implements OnHomeView{
 
   HomePresenter _presenter;
   bool isVisible;
+  SharedPreferences _sharedPreferences;
+  String access_token = '';
+  FirebaseUser user;
+
+  GoogleSignIn googleSignIn = GoogleSignIn(
+    scopes: ['email',
+    'https://www.googleapis.com/auth/contacts.readonly',
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/calendar"],
+    clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
+  );
+
+
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
-    _query();
-    _presenter = new HomePresenter(this,token: widget.accessToken,);
-    _presenter.attachView(this);
-    _presenter.getCalendar();
-    _presenter.getCalendarEvent();
 
+    init();
+    refreshToken();
+    _query();
+
+    WidgetsBinding.instance.addObserver(
+        LifecycleEventHandler(resumeCallBack: () async => setState(() {
+          print('onresume::::;');
+          _presenter.getCalendarEvent(access_token);
+        }))
+    );
   }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+
+  init() async{
+    _sharedPreferences = await SharedPreferences.getInstance();
+  }
+
 
   _query() async {
     Database db = await DatabaseHelper.instance.database;
@@ -146,30 +203,31 @@ class HomeState extends State<Home> implements OnHomeView{
                       height: 110,
                       padding: EdgeInsets.all(8),
                       child: Row(
-                        mainAxisSize: MainAxisSize.max,
+                        // mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                margin: EdgeInsets.only(top: 5),
-                                child: Text("Title",style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
-                              ),
-                             Flexible(child:  Container(
-                               child: Text(eventItem[index].summary.toString(),style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
-                             ),),
-                              Container(
-                                margin: EdgeInsets.only(top: 5),
-                                child: Text('Creator',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium")),
-                              ),
-                              Container(
-                                child: Text(map['summary'],style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
-                              ),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(top: 5),
+                                  child: Text("Title",style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
+                                ),
+                               Expanded(child: Text(eventItem[index].summary.toString(),style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
+                                Container(
+                                  margin: EdgeInsets.only(top: 5),
+                                  child: Text('Creator',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium")),
+                                ),
+                                Container(
+                                  child: Text(map['summary'],style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
+                                ),
+                              ],
+                            ),
                           ),
+
                           Container(
                             margin: EdgeInsets.only(right: 10),
                             alignment: Alignment.bottomCenter,
@@ -203,7 +261,10 @@ class HomeState extends State<Home> implements OnHomeView{
           ):Center(
             child: CircularProgressIndicator(),
           ),
-        ), onRefresh: _presenter.getCalendarEvent),
+        ), onRefresh:(){
+          print('onrefresh::::$access_token');
+          return _presenter.getCalendarEvent(access_token);
+        } ),
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
             backgroundColor: Palette.colorPrimary,
@@ -220,7 +281,7 @@ class HomeState extends State<Home> implements OnHomeView{
                         initialChildSize: 0.80,
                         expand: true,
                         builder: (context, scrollController) {
-                          return MyBottomSheet(token: widget.accessToken,list: _list,itemList: itemList);
+                          return MyBottomSheet(token: _sharedPreferences.getString(Constant.ACCESS_TOKEN),list: _list,itemList: itemList);
                         }
                     );
                   }
@@ -269,16 +330,49 @@ class HomeState extends State<Home> implements OnHomeView{
   }
 
   Map<String, dynamic> map;
+
   @override
   onEventSuccess(response,calendarResponse) {
-
     print("success ${response.runtimeType}");
+
     setState(() {
       eventItem.clear();
       map = calendarResponse;
       List<dynamic> data = response;
       eventItem.addAll(data.map((e)=> EventItem.fromJson(e)).toList());
     });
+  }
+
+
+  Future<String> refreshToken() async {
+    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signInSilently();
+    final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+      serverauth: googleSignInAuthentication.serverAuthCode,
+    );
+
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    await _auth.signInWithCredential(credential);
+    print("Access token 1 ==> ${googleSignInAuthentication.accessToken}");
+
+    _sharedPreferences.setString(Constant.ACCESS_TOKEN, googleSignInAuthentication.accessToken);
+    access_token = googleSignInAuthentication.accessToken;
+    print("Id token 1 ==> $access_token");
+
+    AuthResult authResult = await _auth.signInWithCredential(credential);
+    user = authResult.user;
+    Constant.email = user.email;
+    Constant.token = googleSignInAuthentication.accessToken;
+
+    _presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
+    _presenter.attachView(this);
+    _presenter.getCalendar(googleSignInAuthentication.accessToken);
+    _presenter.getCalendarEvent(googleSignInAuthentication.accessToken);
+
+    return googleSignInAuthentication.accessToken; //new token
   }
 
 }

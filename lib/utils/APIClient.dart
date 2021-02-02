@@ -25,6 +25,7 @@ class APIClient extends BasePresenter<OnHomeView>{
     try {
       //it Check internet connectivity
       final result = await InternetAddress.lookup('google.com');
+
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         switch(method){
           case Method.POST:
@@ -53,13 +54,18 @@ class APIClient extends BasePresenter<OnHomeView>{
                 }
                 break;
               case "events":
-                /// calendar Event List
+                print('events:::::$apiName');
+                print('events:::::$calendarEventList');
+                print('events:::::${Constant.email}');
+                /* calendar Event List*/
                 try {
                   response = await dio.get(calendarEventList+ Constant.email+"/"+ apiName);
                   responseJson = _returnResponse(response);
+                  print('response:::$response');
 
                 } on DioError catch (e) {
                   responseJson = _returnResponse(e.response);
+                  print('catch::::${e.message}');
                 }
                 break;
             }
@@ -87,6 +93,7 @@ class APIClient extends BasePresenter<OnHomeView>{
       case 200:
         // print('STATUS::::$response');
         return response;
+
       case 400:
         view.onErrorHandler('Unauthorized Error');
         break;
