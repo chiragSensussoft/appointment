@@ -241,8 +241,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  onPressed: (){
 
+                  onPressed: (){
                     if(title.text.isEmpty||desc.text.isEmpty||startDate == ""){
                       print(startDate);
                       toast.overLay = false;

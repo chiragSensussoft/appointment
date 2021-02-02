@@ -60,11 +60,7 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
   void initState() {
     init();
 
-    _presenter = new HomePresenter(this,token: Constant.token);
-    _presenter.attachView(this);
 
-    _presenter.getCalendar(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
-    _presenter.getCalendarEvent(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
     _showLeadingAndTrailingDates = true;
     _showDatePickerButton = true;
     _allowViewNavigation = true;
@@ -79,6 +75,14 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
 
   init() async{
     _sharedPreferences = await SharedPreferences.getInstance();
+
+    _presenter = new HomePresenter(this,token: Constant.token);
+
+    _presenter.attachView(this);
+
+    print('ACCESS_TOKEN:::::${_sharedPreferences.getString(Constant.ACCESS_TOKEN)}');
+    _presenter.getCalendar(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
+    _presenter.getCalendarEvent(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
   }
 
   @override
