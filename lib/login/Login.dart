@@ -144,7 +144,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                              onPressed: (){
                              Navigator.push(context, MaterialPageRoute(
                                // builder: (_) => Home(name: 'Chirag Kalathiya')
-                                 builder: (_) => OutlookLogin(),
+                                 builder: (_) => Home(),
                              ));
                              },radius: 25,
                              icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
@@ -242,6 +242,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
 
     if(user!=null){
       Constant.email = user.email;
+      Constant.token = googleSignInAuthentication.accessToken;
       _sharedPreferences.setBool('isLogin',true);
       update(firstName, lastName, user.email, 'Google', googleSignInAuthentication.idToken, googleSignInAuthentication.accessToken,user.displayName,user.photoUrl);
     }

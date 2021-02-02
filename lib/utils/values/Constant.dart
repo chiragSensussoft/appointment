@@ -6,4 +6,5 @@ class Constant{
   final event = 'events';
   final calendar = "calendarList";
   static String email;
+  static String token;
 }

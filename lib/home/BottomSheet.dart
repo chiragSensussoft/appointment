@@ -30,10 +30,19 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   HomePresenter _presenter;
   TextEditingController title =  TextEditingController();
   TextEditingController desc = TextEditingController();
+  FocusNode _titleFocus = FocusNode();
+  FocusNode _discFocus = FocusNode();
   bool loader = false;
   int temp;
   String setEmail;
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _discFocus.unfocus();
+
+  }
 
   @override
   void initState() {
@@ -65,6 +74,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
             Container(
                 child: TextFormField(
                   controller: title,
+                  focusNode: _titleFocus,
                   decoration: InputDecoration(
                       contentPadding: EdgeInsets.only(top: Dimen().dp_10,bottom: Dimen().dp_10,left: 12),
                       border: OutlineInputBorder(
@@ -84,6 +94,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                   ),
                   style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),
                   cursorColor: Colors.black,
+                  onSaved: (val){
+                    _titleFocus.unfocus();
+                  },
                 )
             ),
             GestureDetector(
@@ -133,6 +146,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                 margin: EdgeInsets.only(top: Dimen().dp_10),
                 child: TextFormField(
                   controller: desc,
+                  focusNode: _discFocus,
                   decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
@@ -151,6 +165,10 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                   style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),
                   cursorColor: Colors.black,
                   maxLines: 4,
+
+                  onSaved: (val){
+                    _discFocus.unfocus();
+                  },
                 )
             ),
             Container(
@@ -161,6 +179,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
             Container(
               child: FlatButton(
                 onPressed: (){
+                  _discFocus.unfocus();
                   _selectDate(context);
                 },
                 color: Colors.grey[200],
@@ -356,10 +375,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
         }
     );
   }
-
-  static const _MAX_VALUE = 0xFF00B8D4;
-  final _random = Random();
-  Color nextColor() => Color(_random.nextInt(_MAX_VALUE));
 
   @override
   onShowLoader() {

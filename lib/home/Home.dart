@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:appointment/home/Exaple.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
@@ -207,7 +208,7 @@ class HomeState extends State<Home> implements OnHomeView{
             child: Icon(Icons.add),
             backgroundColor: Palette.colorPrimary,
             onPressed: (){
-
+              // Navigator.push(context, MaterialPageRoute(builder: (_) => GettingStartedCalendar()));
               showModalBottomSheet(
                   backgroundColor: Colors.transparent,
                   context: context,
