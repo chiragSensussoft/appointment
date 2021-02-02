@@ -99,49 +99,49 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                   },
                 )
             ),
-            GestureDetector(
-              child:Container(
-                margin: EdgeInsets.only(top: Dimen().dp_10),
-                child:  Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(12),
-                    alignment: Alignment.centerLeft,
-                    color: Colors.grey[200],
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                Resources.from(context, Constant.languageCode).strings.event,
-                                style: TextStyle(
-                                    fontSize: 15, fontFamily: 'poppins_medium'),
-                                textAlign: TextAlign.end,
-                              ),
-                              Text(
-                                setEmail??"",
-                                style: TextStyle(
-                                    fontSize: 12, fontFamily: 'poppins_regular'),
-                                overflow: TextOverflow.ellipsis,
-                              )
-                            ],
-                          ),
-                        ),
-                        Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 25,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              onTap: (){
-                calendarListDialog();
-              },
-            ),
+            // GestureDetector(
+            //   child:Container(
+            //     margin: EdgeInsets.only(top: Dimen().dp_10),
+            //     child:  Expanded(
+            //       child: Container(
+            //         padding: EdgeInsets.all(12),
+            //         alignment: Alignment.centerLeft,
+            //         color: Colors.grey[200],
+            //         child: Row(
+            //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //           children: [
+            //             Expanded(
+            //               child: Column(
+            //                 crossAxisAlignment: CrossAxisAlignment.start,
+            //                 children: [
+            //                   Text(
+            //                     Resources.from(context, Constant.languageCode).strings.event,
+            //                     style: TextStyle(
+            //                         fontSize: 15, fontFamily: 'poppins_medium'),
+            //                     textAlign: TextAlign.end,
+            //                   ),
+            //                   Text(
+            //                     setEmail??"",
+            //                     style: TextStyle(
+            //                         fontSize: 12, fontFamily: 'poppins_regular'),
+            //                     overflow: TextOverflow.ellipsis,
+            //                   )
+            //                 ],
+            //               ),
+            //             ),
+            //             Icon(
+            //               Icons.keyboard_arrow_down,
+            //               size: 25,
+            //             )
+            //           ],
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            //   onTap: (){
+            //     calendarListDialog();
+            //   },
+            // ),
             Container(
                 margin: EdgeInsets.only(top: Dimen().dp_10),
                 child: TextFormField(
@@ -253,9 +253,11 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                       toast.showOverLay("Select Date", Colors.white, Colors.black54, context);
                     }
                     else{
-                      _presenter = new HomePresenter(this,token: widget.token);
-                      _presenter.attachView(this);
-                      _presenter.setAppointment(endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: title.text,description: desc.text);
+                      print("End Time ${startDate+"T"+_endTime}");
+                      print("Start Time ${startDate+"T"+startTime}");
+                      // _presenter = new HomePresenter(this,token: widget.token);
+                      // _presenter.attachView(this);
+                      // _presenter.setAppointment(endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: title.text,description: desc.text);
                     }
                   },
                   color: Palette.colorPrimary,
@@ -299,7 +301,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
         selectedTime = picked;
         _hour = selectedTime.hour.toString();
         _minute = selectedTime.minute.toString();
-        startTime = _hour +":"+ _minute.toString();
+        startTime = _hour +":"+ _minute.toString()+":" +"00";
       });
   }
 
@@ -317,7 +319,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
         selectedTime = picked;
         _endHour = selectedTime.hour.toString();
         _endMinute = selectedTime.minute.toString();
-        _endTime = _endHour +":"+ _endMinute.toString();
+        _endTime = _endHour +":"+ _endMinute.toString()+":"+"00";
       });
   }
 

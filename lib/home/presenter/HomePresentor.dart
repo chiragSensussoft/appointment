@@ -26,11 +26,11 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
              apiName:Constant().event,method:  Method.POST,
             body:jsonEncode({
               "end": {
-                "dateTime": endDate+":"+"00",
+                "dateTime": endDate,
                 "timeZone": timeZone
               },
               "start": {
-                "dateTime": startDate+":"+"00",
+                "dateTime": startDate,
                 "timeZone": timeZone
               },
               "summary": summary,

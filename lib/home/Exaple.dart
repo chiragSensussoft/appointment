@@ -1,5 +1,4 @@
 ///Dart imports
-import 'dart:math';
 
 import 'package:appointment/home/OnHomeView.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
@@ -85,24 +84,25 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
     final double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: isVisible == false ?Row(children: <Widget>[
-        Expanded(
-          child: _calendarController.view == CalendarView.month && model.isWeb && screenHeight < 800
-              ? Scrollbar(
-              isAlwaysShown: true,
-              controller: _controller,
-              child: ListView(
+          Expanded(
+            flex: 1,
+            child: _calendarController.view == CalendarView.month && model.isWeb && screenHeight < 800
+                ? Scrollbar(
+                isAlwaysShown: true,
                 controller: _controller,
-                children: <Widget>[
-                  Container(
-                    color: Colors.grey,
-                    height: 600,
-                    child: calendar,
-                  )
-                ],
-              ))
-              : Container(color: Colors.amber, child: calendar),
-        )
-      ]):Center(child: CircularProgressIndicator(),),
+                child: ListView(
+                  controller: _controller,
+                  children: <Widget>[
+                    Container(
+                      color: Colors.grey,
+                      height: 600,
+                      child: calendar,
+                    )
+                  ],
+                ))
+                : Container(color: Colors.amber, child: calendar),
+          )
+        ]):Center(child: CircularProgressIndicator(),),
     );
   }
 
@@ -112,17 +112,14 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
   void _onViewChanged(ViewChangedDetails visibleDatesChangedDetails) {
     final List<_Meeting> appointment = <_Meeting>[];
     _events.appointments.clear();
-
-
     /// Creates new appointment collection based on
     /// the visible dates in calendar.
     if (_calendarController.view != CalendarView.schedule) {
-
         for (int j = 0; j < eventItem.length; j++) {
           appointment.add(_Meeting(
             eventName:eventItem[j].summary,
-            from: eventItem[j].start.dateTime,
-            to:eventItem[j].end.dateTime,
+            from: eventItem[j].start.dateTime.toLocal(),
+            to:eventItem[j].end.dateTime.toLocal(),
             background:Colors.blue,
             isAllDay:false,
           ));
@@ -140,13 +137,13 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
         }
     }
 
-    for (int i = 0; i < appointment.length; i++) {
+    for (int i = 0; i < eventItem.length; i++) {
       _events.appointments.add(appointment[i]);
     }
 
     /// Resets the newly created appointment collection to render
     /// the appointments on the visible dates.
-    _events.notifyListeners(CalendarDataSourceAction.reset, appointment);
+    // _events.notifyListeners(CalendarDataSourceAction.reset, appointment);
   }
 
   // @override
@@ -343,6 +340,7 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
       map = calendarResponse;
       List<dynamic> data = response;
       eventItem.addAll(data.map((e)=> EventItem.fromJson(e)).toList());
+
     });
   }
 }
