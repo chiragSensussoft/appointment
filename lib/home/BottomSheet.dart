@@ -263,11 +263,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                       toast.showOverLay("Select Date", Colors.white, Colors.black54, context);
                     }
                     else{
-                      print("End Time ${startDate+"T"+_endTime}");
-                      print("Start Time ${startDate+"T"+startTime}");
-                      // _presenter = new HomePresenter(this,token: widget.token);
-                      // _presenter.attachView(this);
-                      // _presenter.setAppointment(endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: title.text,description: desc.text);
+                      _presenter = new HomePresenter(this,token: widget.token);
+                      _presenter.attachView(this);
+                      _presenter.setAppointment(endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: title.text,description: desc.text);
                     }
                   },
                   color: Palette.colorPrimary,

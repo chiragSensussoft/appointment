@@ -76,6 +76,7 @@ class EventItem {
     this.created,
     this.updated,
     this.summary,
+    this.description,
     this.creator,
     this.organizer,
     this.start,
@@ -93,6 +94,7 @@ class EventItem {
   DateTime created;
   DateTime updated;
   String summary;
+  String description;
   Creator creator;
   Creator organizer;
   End start;
@@ -110,6 +112,7 @@ class EventItem {
     created: DateTime.parse(json["created"]),
     updated: DateTime.parse(json["updated"]),
     summary: json["summary"],
+    description: json['description'],
     creator: Creator.fromJson(json["creator"]),
     organizer: Creator.fromJson(json["organizer"]),
     start: End.fromJson(json["start"]),

@@ -143,7 +143,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                           width: 1,
                           color: Colors.white,
                           onPressed: (){
-                            Navigator.pushReplacement(context, MaterialPageRoute(
+                            Navigator.push(context, MaterialPageRoute(
                               builder: (_) => Home(),
                             ));
                           },radius: 25,
@@ -230,6 +230,14 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
 
     print("Access Token ==> ${googleSignInAuthentication.accessToken}");
     print("Id Token ==> ${googleSignInAuthentication.idToken}");
+
+
+    // if(googleSignInAuthentication.accessToken != null){
+    //
+    //   Navigator.push(context, MaterialPageRoute(
+    //     builder: (_) => Home(),
+    //   ));
+    // }
 
     final AuthResult authResult = await _auth.signInWithCredential(credential);
     final FirebaseUser user = authResult.user;

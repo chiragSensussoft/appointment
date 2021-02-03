@@ -80,7 +80,7 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
 
     _presenter.attachView(this);
 
-    print('ACCESS_TOKEN:::::${_sharedPreferences.getString(Constant.ACCESS_TOKEN)}');
+    // print('ACCESS_TOKEN:::::${_sharedPreferences.getString(Constant.ACCESS_TOKEN)}');
     _presenter.getCalendar(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
     _presenter.getCalendarEvent(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
   }
