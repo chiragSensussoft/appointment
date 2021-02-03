@@ -181,17 +181,16 @@ class HomeState extends State<Home> with WidgetsBindingObserver implements OnHom
                     )
                   ],
                 ),
-
                 Container(
                   child: Icon(Icons.settings,size: 30,),
                 )
               ],
             )
-
         ),
         body: RefreshIndicator(child: Container(
           color: Colors.grey[200],
-          child: isVisible == false ?ListView.builder(
+          child: isVisible == false ?eventItem.length != 0?
+          ListView.builder(
             itemCount: eventItem.length,
             itemBuilder: (_,index){
               return Padding(
@@ -208,10 +207,10 @@ class HomeState extends State<Home> with WidgetsBindingObserver implements OnHom
                     confirmDismiss: (DismissDirection dismissDirection) async {
                       switch(dismissDirection) {
                         case DismissDirection.endToStart:
-                          // whatHappened = 'ARCHIVED';
+                        // whatHappened = 'ARCHIVED';
                           return await _showConfirmationDialog(context, 'Archive',index) == true;
                         case DismissDirection.startToEnd:
-                          // whatHappened = 'DELETED';
+                        // whatHappened = 'DELETED';
                           return await _showConfirmationDialog(context, 'Delete',index) == true;
                         case DismissDirection.horizontal:
                         case DismissDirection.vertical:
@@ -239,48 +238,48 @@ class HomeState extends State<Home> with WidgetsBindingObserver implements OnHom
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children:[
-                                        Column(
-                                          children: [
-                                            Container(
-                                              margin: EdgeInsets.only(top: 5),
-                                              child: Text("Summary",style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
-                                            ),
-                                            Container(child: Text(eventItem[index].summary.toString(),style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
-                                            Container(
-                                              margin: EdgeInsets.only(top: 5),
-                                              child: Text('Description',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium")),
-                                            ),
-                                            Container(
-                                              child: Text(eventItem[index].description,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
-                                            ),
-                                          ],
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                        ),
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children:[
+                                          Column(
+                                            children: [
+                                              Container(
+                                                margin: EdgeInsets.only(top: 5),
+                                                child: Text("Summary",style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
+                                              ),
+                                              Container(child: Text(eventItem[index].summary.toString(),style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
+                                              Container(
+                                                margin: EdgeInsets.only(top: 5),
+                                                child: Text('Description',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium")),
+                                              ),
+                                              Container(
+                                                child: Text(eventItem[index].description,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
+                                              ),
+                                            ],
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                          ),
 
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              margin: EdgeInsets.only(top: 5),
-                                              child:Text('From',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
-                                            ),
-                                            Container(
-                                              child: Text(DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal())
-                                                +"  "+eventItem[index].start.dateTime.toLocal().hour.toString()+":"+eventItem[index].start.dateTime.toLocal().minute.toString()
-                                                ,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
-                                            Container(
-                                              margin: EdgeInsets.only(top: 5),
-                                              child:Text('To',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
-                                            ),
-                                            Container(
-                                              child: Text(DateFormat('EE, d MMM, yyyy').format(eventItem[index].end.dateTime.toLocal())
-                                                  +"  "+eventItem[index].end.dateTime.toLocal().hour.toString()+":"+eventItem[index].end.dateTime.toLocal().minute.toString()
-                                                  ,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
-                                          ],
-                                        )
-                                      ]
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                margin: EdgeInsets.only(top: 5),
+                                                child:Text('From',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
+                                              ),
+                                              Container(
+                                                child: Text(DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal())
+                                                    +"  "+eventItem[index].start.dateTime.toLocal().hour.toString()+":"+eventItem[index].start.dateTime.toLocal().minute.toString()
+                                                    ,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
+                                              Container(
+                                                margin: EdgeInsets.only(top: 5),
+                                                child:Text('To',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
+                                              ),
+                                              Container(
+                                                child: Text(DateFormat('EE, d MMM, yyyy').format(eventItem[index].end.dateTime.toLocal())
+                                                    +"  "+eventItem[index].end.dateTime.toLocal().hour.toString()+":"+eventItem[index].end.dateTime.toLocal().minute.toString()
+                                                    ,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
+                                            ],
+                                          )
+                                        ]
                                     ),
 
                                   ],
@@ -295,10 +294,10 @@ class HomeState extends State<Home> with WidgetsBindingObserver implements OnHom
                 ),
               );
             },
-          ):Center(
-            child: CircularProgressIndicator(),
-          ),
-        ), onRefresh:(){
+          ):Center(child: Text("No Event Created"),):
+          Center(
+            child: CircularProgressIndicator(),),
+          ), onRefresh:(){
           print('onrefresh::::$access_token');
           return _presenter.getCalendarEvent(access_token);
         } ),
