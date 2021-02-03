@@ -202,14 +202,14 @@ class HomeState extends State<Home> with WidgetsBindingObserver implements OnHom
                   child: Dismissible(
                     key: Key(eventItem[index].description),
                     direction: DismissDirection.endToStart,
-                    // onDismissed: (direction){
-                    // },
+                    onDismissed: (direction){
+                    },
                     confirmDismiss: (DismissDirection dismissDirection) async {
                       switch(dismissDirection) {
-                        case DismissDirection.endToStart:
+                        case DismissDirection.startToEnd:
                         // whatHappened = 'ARCHIVED';
                           return await _showConfirmationDialog(context, 'Archive',index) == true;
-                        case DismissDirection.startToEnd:
+                        case DismissDirection.endToStart:
                         // whatHappened = 'DELETED';
                           return await _showConfirmationDialog(context, 'Delete',index) == true;
                         case DismissDirection.horizontal:
@@ -339,14 +339,14 @@ class HomeState extends State<Home> with WidgetsBindingObserver implements OnHom
             FlatButton(
               child: const Text('No'),
               onPressed: () {
-                Navigator.pop(context, true); // showDialog() returns true
+                Navigator.pop(context, false); // showDialog() returns true
               },
             ),
             FlatButton(
               child: const Text('Yes'),
               onPressed: () {
                 _presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
-                Navigator.pop(context, false);
+                Navigator.pop(context, true);
               },
             ),
           ],
