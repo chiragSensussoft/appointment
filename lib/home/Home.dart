@@ -106,6 +106,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver implements OnHom
     WidgetsBinding.instance.addObserver(
         LifecycleEventHandler(resumeCallBack: () async => setState(() {
           print('onresume::::;');
+          print('getEmail::::;${Constant.email}');
           _presenter.getCalendarEvent(access_token);
         }))
     );
@@ -281,7 +282,8 @@ class HomeState extends State<Home> with WidgetsBindingObserver implements OnHom
                         initialChildSize: 0.80,
                         expand: true,
                         builder: (context, scrollController) {
-                          return MyBottomSheet(token: _sharedPreferences.getString(Constant.ACCESS_TOKEN),list: _list,itemList: itemList);
+                          // return MyBottomSheet(token: _sharedPreferences.getString(Constant.ACCESS_TOKEN),list: _list,itemList: itemList);
+                          return MyBottomSheet(token: access_token,list: _list,itemList: itemList);
                         }
                     );
                   }

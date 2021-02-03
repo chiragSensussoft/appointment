@@ -10,6 +10,7 @@ import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'OnHomeView.dart';
 
 class MyBottomSheet extends StatefulWidget {
@@ -35,14 +36,16 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   bool loader = false;
   int temp;
   String setEmail;
+  SharedPreferences _sharedPreferences;
+
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
     _discFocus.unfocus();
-
   }
+
 
   @override
   void initState() {
@@ -55,7 +58,14 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     print(startTime);
     // widget.itemList.length!=0?setEmail = widget.itemList[0].id:'abc';
 
+    init();
   }
+
+
+  init() async{
+    _sharedPreferences = await SharedPreferences.getInstance();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +76,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
             borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(20.0),
                 topRight: const Radius.circular(20.0))),
+
         child: ListView(
           children: [
             Container(
@@ -99,49 +110,48 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                   },
                 )
             ),
-            // GestureDetector(
-            //   child:Container(
-            //     margin: EdgeInsets.only(top: Dimen().dp_10),
-            //     child:  Expanded(
-            //       child: Container(
-            //         padding: EdgeInsets.all(12),
-            //         alignment: Alignment.centerLeft,
-            //         color: Colors.grey[200],
-            //         child: Row(
-            //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //           children: [
-            //             Expanded(
-            //               child: Column(
-            //                 crossAxisAlignment: CrossAxisAlignment.start,
-            //                 children: [
-            //                   Text(
-            //                     Resources.from(context, Constant.languageCode).strings.event,
-            //                     style: TextStyle(
-            //                         fontSize: 15, fontFamily: 'poppins_medium'),
-            //                     textAlign: TextAlign.end,
-            //                   ),
-            //                   Text(
-            //                     setEmail??"",
-            //                     style: TextStyle(
-            //                         fontSize: 12, fontFamily: 'poppins_regular'),
-            //                     overflow: TextOverflow.ellipsis,
-            //                   )
-            //                 ],
-            //               ),
-            //             ),
-            //             Icon(
-            //               Icons.keyboard_arrow_down,
-            //               size: 25,
-            //             )
-            //           ],
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            //   onTap: (){
-            //     calendarListDialog();
-            //   },
-            // ),
+            GestureDetector(
+              child:Container(
+                margin: EdgeInsets.only(top: 10),
+                padding: EdgeInsets.all(12),
+                alignment: Alignment.centerLeft,
+                color: Colors.grey[200],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      flex: 9,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            Resources.from(context, Constant.languageCode).strings.event,
+                            style: TextStyle(
+                                fontSize: 15, fontFamily: 'poppins_medium'),
+                            textAlign: TextAlign.end,
+                          ),
+                          Text(
+                            setEmail??"",
+                            style: TextStyle(
+                                fontSize: 12, fontFamily: 'poppins_regular'),
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        ],
+                      ),
+                    ),
+
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 25,
+                    )
+                  ],
+                ),
+              ),
+              onTap: (){
+                calendarListDialog();
+              },
+            ),
             Container(
                 margin: EdgeInsets.only(top: Dimen().dp_10),
                 child: TextFormField(
@@ -363,7 +373,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                                   style: TextStyle(
                                       fontSize: 15,
                                       fontFamily: 'poppins_regular',
-                                      color: Colors.black),
+                                      color: Colors.black
+                                  ),
                                 ),
                               ),
                             ],
@@ -392,7 +403,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     });
     Navigator.pop(context);
     toast.overLay = false;
-    toast.showOverLay("Appointment created successfully", Colors.white, Colors.black54, context,);
+    toast.showOverLay("Appointment created successfully", Colors.white, Colors.black54, context);
   }
 
   @override
