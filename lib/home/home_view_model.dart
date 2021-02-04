@@ -1,12 +1,13 @@
-import 'package:appointment/home/Home.dart';
-import 'package:appointment/utils/values/Dimen.dart';
+import 'package:appointment/home/MyAppointment.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'Exaple.dart';
 
+
 class HomeViewModel {
-  HomeState state;
+  // HomeState state;
+
+  MyAppointmentState state;
 
   HomeViewModel(this.state);
 

@@ -192,7 +192,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: ["email","https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/calendar"],clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
+      "https://www.googleapis.com/auth/calendar"],
+    clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
   );
 
   static Map<String, dynamic> parseJwt(String token) {
