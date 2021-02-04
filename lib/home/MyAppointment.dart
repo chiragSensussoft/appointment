@@ -211,7 +211,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                     );
                   }
               ).whenComplete(() => {
-                // _presenter.getCalendarEvent(access_token)
+                _presenter.getCalendarEvent(access_token)
               });
             }
         )
@@ -230,14 +230,14 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
             FlatButton(
               child: const Text('No'),
               onPressed: () {
-                Navigator.pop(context, true); // showDialog() returns true
+                Navigator.pop(context, false);
               },
             ),
             FlatButton(
               child: const Text('Yes'),
               onPressed: () {
                 _presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
-                Navigator.pop(context, false);
+                Navigator.pop(context, true);
               },
             ),
           ],
