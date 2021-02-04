@@ -1,7 +1,7 @@
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'Exaple.dart';
+import 'event_calendar.dart';
 
 
 class HomeViewModel {
@@ -23,7 +23,7 @@ class HomeViewModel {
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
             margin: EdgeInsets.only(top: 20),
-            child:  GettingStartedCalendar(),
+            child:  EventCalendar(eventItem: state.eventItem,dateTime: index,),
       );
     }
     );

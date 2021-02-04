@@ -71,7 +71,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                 padding: EdgeInsets.all(5),
                 child: GestureDetector(
                   onTap: (){
-                    model.detailSheet(index);
+                    model.detailSheet(eventItem[index].start.dateTime);
                   },
 
                   child: Dismissible(
@@ -80,10 +80,10 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
 
                     confirmDismiss: (DismissDirection dismissDirection) async {
                       switch(dismissDirection) {
-                        case DismissDirection.endToStart:
+                        case DismissDirection.startToEnd:
                           return await _showConfirmationDialog(context, 'Archive',index) == true;
 
-                        case DismissDirection.startToEnd:
+                        case DismissDirection.endToStart:
                           return await _showConfirmationDialog(context, 'Delete',index) == true;
 
                         case DismissDirection.horizontal:
@@ -140,7 +140,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                                           ),
 
                                           Expanded(
-                                            flex: 3,
+                                            flex: 6,
                                             child: Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [

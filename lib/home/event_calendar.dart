@@ -1,31 +1,25 @@
 ///Dart imports
-
-import 'package:appointment/home/OnHomeView.dart';
-import 'package:appointment/home/presenter/HomePresentor.dart';
-import 'package:appointment/utils/Toast.dart';
-import 'package:appointment/utils/values/Constant.dart';
-///Package imports
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 ///calendar import
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-import '../sample.dart';
+import '../sampleModel.dart';
 import 'model/CalendarEvent.dart';
-import 'model/CalendarList.dart';
 
 
 /// Widget of getting started calendar
-class GettingStartedCalendar extends SampleView {
-  GettingStartedCalendar();
+class EventCalendar extends StatefulWidget {
+  final List<EventItem> eventItem;
+  final DateTime dateTime;
+  EventCalendar({this.eventItem,this.dateTime});
 
   @override
-  _GettingStartedCalendarState createState() => _GettingStartedCalendarState();
+  _EventCalendarState createState() => _EventCalendarState();
 }
 
-class _GettingStartedCalendarState extends SampleViewState implements OnHomeView{
+class _EventCalendarState extends State<EventCalendar>{
 
   List<DateTime> _blackoutDates;
   _MeetingDataSource _events;
@@ -46,21 +40,23 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
   ScrollController _controller;
 
   GlobalKey _globalKey;
-  List<Item> _list = List.empty(growable: true);
-  List<Item> itemList = List.empty(growable: true);
-  List<EventItem> eventItem = List.empty(growable: true);
-  // List<CalendarEvent> calendarEventList = List.empty(growable: true);
 
-  HomePresenter _presenter;
-  bool isVisible;
-  SharedPreferences _sharedPreferences;
-  
+  SampleModel model;
+
+  bool isCardView;
+
+
+  @override
+  void dispose() {
+    model.isCardView = true;
+    super.dispose();
+  }
   
   @override
   void initState() {
-    init();
 
-
+    model = SampleModel.instance;
+    isCardView = model.isCardView && !model.isWeb;
     _showLeadingAndTrailingDates = true;
     _showDatePickerButton = true;
     _allowViewNavigation = true;
@@ -73,32 +69,18 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
     super.initState();
   }
 
-  init() async{
-    _sharedPreferences = await SharedPreferences.getInstance();
-
-    _presenter = new HomePresenter(this,token: Constant.token);
-
-    _presenter.attachView(this);
-
-    // print('ACCESS_TOKEN:::::${_sharedPreferences.getString(Constant.ACCESS_TOKEN)}');
-    _presenter.getCalendar(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
-    _presenter.getCalendarEvent(_sharedPreferences.getString(Constant.ACCESS_TOKEN));
-  }
-
   @override
   Widget build([BuildContext context]) {
     final Widget calendar = Theme(
 
-      /// The key set here to maintain the state,
-      ///  when we change the parent of the widget
         key: _globalKey,
         data: ThemeData(backgroundColor: Colors.grey),
         child: _getGettingStartedCalendar(_calendarController, _events,
-            _onViewChanged, scheduleViewBuilder));
+            _onViewChanged, scheduleViewBuilder,));
 
     final double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      body: isVisible == false ?Row(children: <Widget>[
+      body: Row(children: <Widget>[
           Expanded(
             flex: 1,
             child: _calendarController.view == CalendarView.month && model.isWeb && screenHeight < 800
@@ -117,48 +99,42 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
                 ))
                 : Container(color: Colors.amber, child: calendar),
           )
-        ]):Center(child: CircularProgressIndicator(),),
+        ]),
     );
   }
 
-  /// The method called whenever the calendar view navigated to previous/next
-  /// view or switched to different calendar view, based on the view changed
-  /// details new appointment collection added to the calendar
   void _onViewChanged(ViewChangedDetails visibleDatesChangedDetails) {
     final List<_Meeting> appointment = <_Meeting>[];
     _events.appointments.clear();
-    /// Creates new appointment collection based on
-    /// the visible dates in calendar.
+
     if (_calendarController.view != CalendarView.schedule) {
-        for (int j = 0; j < eventItem.length; j++) {
+        for (int j = 0; j < widget.eventItem.length; j++) {
           appointment.add(_Meeting(
-            eventName:eventItem[j].summary,
-            from: eventItem[j].start.dateTime.toLocal(),
-            to:eventItem[j].end.dateTime.toLocal(),
+            eventName:widget.eventItem[j].summary,
+            from: widget.eventItem[j].start.dateTime.toLocal(),
+            to:widget.eventItem[j].end.dateTime.toLocal(),
             background:Colors.blue,
             isAllDay:false,
           ));
         }
     }
     else {
-        for (int j = 0; j < eventItem.length; j++) {
+        for (int j = 0; j < widget.eventItem.length; j++) {
               appointment.add(_Meeting(
-              eventName:eventItem[j].summary,
-              from: eventItem[j].start.dateTime,
-              to:eventItem[j].end.dateTime,
+              eventName:widget.eventItem[j].summary,
+              from: widget.eventItem[j].start.dateTime,
+              to:widget.eventItem[j].end.dateTime,
               background:Colors.blue,
               isAllDay:false,
           ));
         }
     }
 
-    for (int i = 0; i < eventItem.length; i++) {
+    for (int i = 0; i < widget.eventItem.length; i++) {
       _events.appointments.add(appointment[i]);
     }
 
-    /// Resets the newly created appointment collection to render
-    /// the appointments on the visible dates.
-    // _events.notifyListeners(CalendarDataSourceAction.reset, appointment);
+    _events.notifyListeners(CalendarDataSourceAction.reset, appointment);
   }
 
   // @override
@@ -284,7 +260,9 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
     return SfCalendar(
         controller: _calendarController,
         dataSource: _calendarDataSource,
+        initialDisplayDate: widget.dateTime.toLocal(),
         allowedViews: _allowedViews,
+
         scheduleViewMonthHeaderBuilder: scheduleViewBuilder,
         showNavigationArrow: false,
         showDatePickerButton: _showDatePickerButton,
@@ -305,58 +283,6 @@ class _GettingStartedCalendarState extends SampleViewState implements OnHomeView
           print("clicked");
       },
     );
-  }
-
-  @override
-  onShowLoader() {
-    setState(() {
-      isVisible = true;
-    });
-  }
-
-  @override
-  onHideLoader() {
-    setState(() {
-      isVisible = false;
-    });
-  }
-
-  @override
-  onErrorHandler(String message){
-    Toast toast = Toast();
-    toast.overLay = false;
-    toast.showOverLay(message, Colors.white, Colors.black54, context);
-    setState(() {
-      isVisible = false;
-    });
-  }
-
-  @override
-  onSuccessRes(response) {
-    setState(() {
-      List<dynamic> data = response;
-      _list.addAll(data.map((i) => Item.fromJson(i)).toList());
-
-      for(int i=0;i<data.length;i++){
-        if(data[i]['accessRole']=="owner"){
-          itemList.add(Item.fromJson(data[i]));
-        }
-      }
-    });
-  }
-
-  Map<String, dynamic> map;
-  @override
-  onEventSuccess(response,calendarResponse) {
-
-    print("success ${response.runtimeType}");
-    setState(() {
-      eventItem.clear();
-      map = calendarResponse;
-      List<dynamic> data = response;
-      eventItem.addAll(data.map((e)=> EventItem.fromJson(e)).toList());
-
-    });
   }
 }
 
