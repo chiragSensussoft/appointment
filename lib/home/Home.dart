@@ -9,33 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
 
-class LifecycleEventHandler extends WidgetsBindingObserver {
-  final AsyncCallback resumeCallBack;
-  final AsyncCallback suspendingCallBack;
 
-  LifecycleEventHandler({
-    this.resumeCallBack,
-    this.suspendingCallBack,
-  });
-
-  @override
-  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
-    switch (state) {
-      case AppLifecycleState.resumed:
-        if (resumeCallBack != null) {
-          await resumeCallBack();
-        }
-        break;
-      case AppLifecycleState.inactive:
-      case AppLifecycleState.paused:
-      case AppLifecycleState.detached:
-        if (suspendingCallBack != null) {
-          await suspendingCallBack();
-        }
-        break;
-    }
-  }
-}
 
 void main() => runApp(MyApp());
 
@@ -55,34 +29,24 @@ class Home extends StatefulWidget {
   HomeState createState() => HomeState();
 }
 
+
 class HomeState extends State<Home>{
   HomeViewModel model;
   final dbHelper = DatabaseHelper.instance;
   var data;
   String url;
-  String userName;
-  String email;
+  String userName = '';
+  String email = '';
   bool visibility = true;
 
+
   void initState() {
+    _query();
     super.initState();
-
-    WidgetsBinding.instance.addObserver(
-        LifecycleEventHandler(resumeCallBack: () async => setState(() {
-          print('CALLED::::');
-        }))
-    );
-  }
-
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if(state == AppLifecycleState.resumed){
-      _query();
-    }
   }
 
   _query() async {
+    print('isCalled:::');
     Database db = await DatabaseHelper.instance.database;
     List<String> columnsToSelect = [
       DatabaseHelper.columnfName,
@@ -99,12 +63,15 @@ class HomeState extends State<Home>{
         where: whereString,
         whereArgs: whereArguments);
 
-    url = result[0]['photoUrl'];
-    userName = result[0]['fName'];
-    email = result[0]['email'];
-
-    print('get_name:::::$userName   email::$email');
+    setState(() {
+      url = result[0]['photoUrl'];
+      userName = result[0]['fName'];
+      email = result[0]['email'];
+    });
   }
+
+  // google-site-verification=MOk_ae6Hu96QUj8TYw_iQhU_8ww7WGudmAbTLfO8lWk
+
 
 
   @override
@@ -128,10 +95,10 @@ class HomeState extends State<Home>{
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                            child: Text(userName??"Default User",style: TextStyle(fontSize: 17))
+                            child: Text(userName!=''?userName : "Default User", style: TextStyle(fontSize: 17))
                         ),
                         Container(
-                            child: Text(email??"",style: TextStyle(fontSize: 12))
+                            child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12))
                         ),
                       ],
                     ),
@@ -139,7 +106,7 @@ class HomeState extends State<Home>{
                 ],
               ),
               Container(
-                child: Icon(Icons.settings,size: 30,),
+                child: Icon(Icons.settings, size: 30),
               )
             ],
           )
@@ -161,12 +128,12 @@ class HomeState extends State<Home>{
                   tabs: [
                     Padding(
                         padding: EdgeInsets.all(12),
-                        child: Text("My Appointment", style: TextStyle(fontSize: 14, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
+                        child: Text("My Appointment", style: TextStyle(fontSize: 12, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
                     ),
 
                     Padding(
                         padding: EdgeInsets.all(12),
-                        child: Text("Other Appointment", style: TextStyle(fontSize: 14, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
+                        child: Text("Other Appointment", style: TextStyle(fontSize: 12, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
                     ),
                   ],
                 ),
@@ -176,7 +143,8 @@ class HomeState extends State<Home>{
                   child: Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(30), topRight: Radius.circular(30)), color: Colors.white
+                            topLeft: Radius.circular(30), topRight: Radius.circular(30)
+                        ), color: Colors.white
                     ),
 
                     child: TabBarView(
