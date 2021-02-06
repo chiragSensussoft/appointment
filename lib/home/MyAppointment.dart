@@ -2,14 +2,21 @@ import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
+import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/values/Constant.dart';
+import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
+import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sliding_sheet/sliding_sheet.dart';
+import 'package:sqflite/sqflite.dart';
 import 'BottomSheet.dart';
 import 'OnHomeView.dart';
 
@@ -40,24 +47,58 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
 
   String access_token = '';
   FirebaseUser user;
+  String url;
+  String userName = '';
+  String email = '';
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
 
   @override
   void initState() {
     super.initState();
+    fetchLinkData();
     init();
     refreshToken();
+    _query();
   }
 
   init() async{
     _sharedPreferences = await SharedPreferences.getInstance();
   }
 
+
+  _query() async {
+    print('isCalled:::');
+    Database db = await DatabaseHelper.instance.database;
+    List<String> columnsToSelect = [
+      DatabaseHelper.columnfName,
+      DatabaseHelper.columnEmail,
+      DatabaseHelper.columnPhotoUrl,
+      DatabaseHelper.columnAccessToken,
+    ];
+    String whereString = '${DatabaseHelper.columnId} = ?';
+    int rowId = 1;
+    List<dynamic> whereArguments = [rowId];
+    List<Map> result = await db.query(
+        DatabaseHelper.table,
+        columns: columnsToSelect,
+        where: whereString,
+        whereArgs: whereArguments);
+
+    setState(() {
+      url = result[0]['photoUrl'];
+      userName = result[0]['fName'];
+      email = result[0]['email'];
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     model = HomeViewModel(this);
 
     return Scaffold(
+      key: _scaffoldKey,
       body: Container(
         child: RefreshIndicator(
             child: Container(
@@ -70,18 +111,29 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
               return Padding(
                 padding: EdgeInsets.all(5),
                 child: GestureDetector(
-                  onTap: (){
-                    model.detailSheet(eventItem[index].start.dateTime);
+                  onTap: () async{
+                      model.detailSheet(eventItem[index].start.dateTime);
+
+                      String startDate = eventItem[index].start.dateTime.toLocal().year.toString() +"-"+ eventItem[index].start.dateTime.toLocal().month.toString()+"-"+eventItem[index].start.dateTime.toLocal().day.toString();
+                      String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() +":"+ eventItem[index].start.dateTime.toLocal().minute.toString()+":"+"00";
+                      print("Date ${startDate+"T"+startTime}");
+                      String endDate = eventItem[index].end.dateTime.toLocal().year.toString() +"-"+ eventItem[index].end.dateTime.toLocal().month.toString()+"-"+eventItem[index].end.dateTime.toLocal().day.toString();
+                      String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() +":"+ eventItem[index].end.dateTime.toLocal().minute.toString()+":"+"00";
+
+
+                      dynamicLink = await createDynamicLink(title: eventItem[index].summary,desc: eventItem[index].description,startDate: startDate+"T"+startTime,endDate: endDate+"T"+endTime
+                      ,email: email,photoUrl: url,senderName: userName,timeZone: eventItem[index].start.timeZone);
+                      print("Dynamic Link: $dynamicLink");
                   },
 
                   child: Dismissible(
                     key: Key(eventItem[index].description),
-                    direction: DismissDirection.endToStart,
+                    // direction: DismissDirection.endToStart,
 
                     confirmDismiss: (DismissDirection dismissDirection) async {
                       switch(dismissDirection) {
                         case DismissDirection.startToEnd:
-                          return await _showConfirmationDialog(context, 'Archive',index) == true;
+                          return await _showShareDialog(context, "Share", index);
 
                         case DismissDirection.endToStart:
                           return await _showConfirmationDialog(context, 'Delete',index) == true;
@@ -115,6 +167,15 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
+                                    // FlatButton(
+                                    //   color:
+                                    //   Colors.blue,
+                                    //   height: 100,
+                                    //   onPressed: () async {
+                                    //     Share.share(dynamicLink.toString());
+                                    //   },
+                                    //   child: Text(dynamicLink.toString()??""),
+                                    // ),
                                     Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children:[
@@ -186,7 +247,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
           ),
             onRefresh:(){
           print('onrefresh::::${access_token}');
-          return _presenter.getCalendarEvent(access_token);
+          return _presenter.getCalendarEvent();
         }
         ),
       ),
@@ -194,7 +255,9 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
             backgroundColor: Palette.colorPrimary,
-            onPressed: (){
+            onPressed: ()async{
+              print(dynamicLink);
+
               showModalBottomSheet(
                   backgroundColor: Colors.transparent,
                   context: context,
@@ -211,13 +274,37 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                     );
                   }
               ).whenComplete(() => {
-                _presenter.getCalendarEvent(access_token)
+                _presenter.getCalendarEvent()
               });
+              // showAsBottomSheet("Chirag", url, "2021-06-02", "2021-06-02", "Online Classes", "Online classes in zoom meeting");
             }
         )
     );
   }
 
+  var dynamicLink;
+
+  Future<Uri> createDynamicLink({@required title,@required desc,@required startDate,@required endDate,@required email,@required photoUrl,@required senderName,@required timeZone}) async {
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      uriPrefix: 'https://appointmrnt.page.link',
+      link: Uri.parse('https://appointmrnt.page.link/appointment?summary=$title&description=$desc&startDate=$startDate&endDate=$endDate&senderEmail=$email&senderPhoto=$photoUrl&senderName=$senderName&timeZone=$timeZone'),
+      androidParameters: AndroidParameters(
+        packageName: 'com.ck.appointment',
+        minimumVersion: 1,
+      ),
+      iosParameters: IosParameters(
+        bundleId: 'com.ck.appointment',
+        minimumVersion: '1',
+        appStoreId: '',
+      ),
+    );
+    final link = await parameters.buildUrl();
+    final ShortDynamicLink shortenedLink = await DynamicLinkParameters.shortenUrl(
+      link,
+      DynamicLinkParametersOptions(shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
+    );
+    return shortenedLink.shortUrl;
+  }
 
   Future<bool> _showConfirmationDialog(BuildContext context, String action,int index) {
     return showDialog<bool>(
@@ -225,7 +312,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Do you want to $action this item?'),
+          title: Text('Do you want to $action this Event?'),
           actions: <Widget>[
             FlatButton(
               child: const Text('No'),
@@ -246,8 +333,218 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     );
   }
 
+  Future<bool> _showShareDialog(BuildContext context, String action,int index) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Do you want to $action this Event?'),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+            ),
+            FlatButton(
+              child: const Text('Yes'),
+              onPressed: () async{
+                String startDate = eventItem[index].start.dateTime.toLocal().year.toString() +"-"+ eventItem[index].start.dateTime.toLocal().month.toString()+"-"+eventItem[index].start.dateTime.toLocal().day.toString();
+                String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() +":"+ eventItem[index].start.dateTime.toLocal().minute.toString()+":"+"00";
+                print("Date ${startDate+"T"+startTime}");
+                String endDate = eventItem[index].end.dateTime.toLocal().year.toString() +"-"+ eventItem[index].end.dateTime.toLocal().month.toString()+"-"+eventItem[index].end.dateTime.toLocal().day.toString();
+                String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() +":"+ eventItem[index].end.dateTime.toLocal().minute.toString()+":"+"00";
+
+                dynamicLink = await createDynamicLink(title: eventItem[index].summary,desc: eventItem[index].description,startDate: startDate+"T"+startTime,endDate: endDate+"T"+endTime
+                    ,email: email,photoUrl: url,senderName: userName,timeZone: eventItem[index].start.timeZone);
+                print("Dynamic Link: $dynamicLink");
+                if(dynamicLink!=""){
+                  Share.share(dynamicLink.toString());
+                  Navigator.pop(context, false);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void fetchLinkData() async {
+    var link = await FirebaseDynamicLinks.instance.getInitialLink();
+
+    handleLinkData(link);
+
+    FirebaseDynamicLinks.instance.onLink(onSuccess: (PendingDynamicLinkData dynamicLink) async {
+      handleLinkData(dynamicLink);
+    });
+  }
+  Toast toast = Toast();
+  void handleLinkData(PendingDynamicLinkData data) {
+    final Uri uri = data?.link;
+    if(uri != null) {
+      final queryParams = uri.queryParameters;
+      if(queryParams.length > 0) {
+        String summary = queryParams["summary"];
+        String description = queryParams['description'];
+        String startDate = queryParams['startDate'];
+        String endDate = queryParams['endDate'];
+        String senderEmail = queryParams['senderEmail'];
+        String senderPhoto = queryParams['senderPhoto'];
+        String senderName = queryParams['senderName'];
+        String timeZone = queryParams['timeZone'];
+        print("My summary is: $summary");
+        print("My description is: $description");
+        print("My startDate is: $startDate");
+        print("My endDate is: $endDate");
+        print("Sender Email is: $senderEmail");
+        print("Sender Photo is: $senderPhoto");
+        print("sender Name is: $senderName");
+        print("timeZone Name is: $timeZone");
+
+        if(summary.isEmpty||description.isEmpty||startDate.isEmpty||endDate.isEmpty||senderName.isEmpty||senderPhoto.isEmpty||senderEmail.isEmpty){
+          toast.overLay = false;
+          toast.showOverLay("Data is not valid", Colors.white, Colors.black54, context,seconds: 3);
+        }
+        else{
+          print("Enter in Else");
+          refreshToken();
+          Future.delayed(Duration(seconds: 2)).whenComplete(() => {
+          showAsBottomSheet(senderName,senderPhoto,senderEmail,startDate,endDate,summary,description,timeZone)
+          });
+        }
+
+      }
+    }
+  }
+
+  void showAsBottomSheet(String senderName,senderEmail,senderPhoto,startDate,endDate,summary,description,timeZone) async {
+     return await showSlidingBottomSheet(
+        context,
+        builder: (context) {
+          return SlidingSheetDialog(
+            elevation: 8,
+            cornerRadius: 16,
+            snapSpec: const SnapSpec(
+              snap: false,
+              positioning: SnapPositioning.relativeToAvailableSpace,
+            ),
+            duration: Duration(milliseconds: 300),
+            builder: (context, state) {
+              return Material(
+                child: Container(
+                  padding: EdgeInsets.only(left: 20,right: 20,top: 10,bottom: 10),
+                  child: Column(
+                    children: [
+                      Container(
+                        alignment: Alignment.center,
+                        child: Text("Share Event",style: TextStyle(fontSize: 17,fontFamily: "poppins_medium"),),
+                      ),
+                      Row(
+                        children: [
+                          Container(
+                            child: CircleAvatar(
+                              backgroundImage: NetworkImage(senderPhoto),
+                            ),
+                          ),
+                          SizedBox(width: 20,),
+                          Container(
+                            child: Text(senderName),
+                          )
+                        ],
+                      ),
+                      SizedBox(height: 10,),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Text(summary),
+                      ),
+                      SizedBox(height: 10,),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Text(description),
+                      ),
+                      SizedBox(height: 10,),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                child:Text('From',style: TextStyle(fontSize: 17,fontFamily: "poppins_medium"),),
+                              ),
+                              Container(
+                                child:Text(startDate),
+                              )
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                child:Text('To',style: TextStyle(fontSize: 17,fontFamily: "poppins_medium"),),
+                                alignment: Alignment.centerLeft,
+                              ),
+                              Container(
+                                child:Text(endDate),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                      SizedBox(height: 20,),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.red
+                            ),
+                            child: IconButton(
+                              onPressed: (){
+                                Navigator.pop(context);
+                              },
+                              color: Colors.white,
+                              icon: Icon(Icons.close_rounded),
+                            ),
+                          ),
+                          Container(
+                            width: 100,
+                            height: 45,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.green
+                            ),
+                            child: IconButton(
+                              onPressed: (){
+                                    // _presenter.attachView(this);
+                                    _presenter.setAppointment(summary: summary,endDate: endDate,startDate: startDate,description: description,timeZone: timeZone);
+                                    _presenter.getCalendarEvent();
+                                    Navigator.pop(context);
+                              },
+                              color: Colors.white,
+                              icon: Icon(Icons.done),
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        }
+    );
+  }
+  ScrollController controller = ScrollController(keepScrollOffset: false);
   @override
   onShowLoader() {
+    print("Show Loader");
     setState(() {
       isVisible = true;
     });
@@ -255,6 +552,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
 
   @override
   onHideLoader() {
+    print("Hide Loader");
     setState(() {
       isVisible = false;
     });
@@ -264,7 +562,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   onErrorHandler(String message){
     Toast toast = Toast();
     toast.overLay = false;
-    toast.showOverLay(message, Colors.white, Colors.black54, context);
+    toast.showOverLay(message, Colors.white, Colors.black54, context,seconds: 3);
     setState(() {
       isVisible = false;
     });
@@ -323,9 +621,14 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     _presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     _presenter.attachView(this);
     _presenter.getCalendar(googleSignInAuthentication.accessToken);
-    _presenter.getCalendarEvent(googleSignInAuthentication.accessToken);
+    _presenter.getCalendarEvent();
 
     return googleSignInAuthentication.accessToken; //new token
+  }
+
+  @override
+  onCreateEvent(response) {
+    print('onSucess:::$response');
   }
 
 

@@ -37,10 +37,9 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
             }),token: token);
 
         if (postResponse.statusCode == 200) {
-          isViewAttached ? getView().onSuccessRes(postResponse.data) : null;
+          isViewAttached ? getView().onCreateEvent(postResponse.data) : null;
           view.onHideLoader();
-
-          getCalendarEvent(token);
+          // getCalendarEvent(token);
 
         } else {
           view.onHideLoader();
@@ -62,12 +61,11 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     }
   }
   
-  Future getCalendarEvent(String authToken) async{
+  Future getCalendarEvent() async{
     view.onShowLoader();
-    print('get_list:::$authToken');
     print('get_list:1::${Constant().event}');
     print('get_list:2::${Constant().event}');
-    Response getCalendarEventList = await apiHelper.api(token: authToken, method: Method.GET,
+    Response getCalendarEventList = await apiHelper.api(token: token, method: Method.GET,
         apiName: Constant().event, endPoint: Constant().event);
 
     print('statusCode::::${getCalendarEventList.statusCode}');

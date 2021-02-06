@@ -4,7 +4,6 @@ import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -71,8 +70,6 @@ class HomeState extends State<Home>{
   }
 
   // google-site-verification=MOk_ae6Hu96QUj8TYw_iQhU_8ww7WGudmAbTLfO8lWk
-
-
 
   @override
   Widget build(BuildContext context) {

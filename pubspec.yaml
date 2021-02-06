@@ -36,7 +36,7 @@ dependencies:
   shared_preferences: ^0.5.12+4
   sliding_sheet: ^0.4.1
   cupertino_icons: ^1.0.1
-
+  uni_links: ^0.4.0
   http: ^0.12.2
   dio: any
 
@@ -45,6 +45,10 @@ dependencies:
 
   # Calendar
   syncfusion_flutter_calendar: ^18.4.39
+
+  url_launcher: ^5.1.6
+  firebase_dynamic_links:
+  share: ^0.6.5+4
 
 dev_dependencies:
   flutter_test:
