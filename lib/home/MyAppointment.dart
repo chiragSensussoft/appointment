@@ -3,6 +3,7 @@ import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/DescriptionTextWidget.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/slide_menu.dart';
@@ -53,6 +54,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   String email = '';
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool loader = false;
+  bool descTextShowFlag = false;
 
 
   @override
@@ -104,15 +106,15 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
               child: Container(
                 color: Colors.grey[200],
                 child: isVisible == false
-                    ? eventItem.length != 0
-                        ?
+                    ? eventItem.length != 0 ?
                           ListView.builder(
+                            padding: EdgeInsets.only(top: 5),
                             itemCount: eventItem.length,
                             itemBuilder: (_, index) {
 
                               return SlideMenu(
                                 child: Padding(
-                                  padding: EdgeInsets.all(5),
+                                  padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom:5),
                                   child: GestureDetector(
                                     onTap: () async {
                                       model.detailSheet(eventItem[index].start.dateTime);
@@ -139,105 +141,151 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                                         elevation: 1,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                         child: Container(
-                                            // height: 120,
+                                            width: MediaQuery.of(context).size.width,
                                             padding: EdgeInsets.only(top: 8, bottom: 8, left: 18, right: 18),
-                                            child: Row(
+                                            child: Column(
                                               mainAxisSize: MainAxisSize.min,
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+
                                               children: [
-                                                Expanded(
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
+                                                SizedBox(height: 5),
 
-                                                      Row(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                          children: [
-                                                            Expanded(
-                                                              child: Column(
-                                                                children: [
-                                                                  // Container(
-                                                                  //   margin: EdgeInsets.only(top: 5),
-                                                                  //   child: Text("Summary", style: TextStyle(fontSize: 14, fontFamily: "poppins_medium")),
-                                                                  // ),
-                                                                  Container(
-                                                                    child: Text(eventItem[index].summary.toString(), style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
-                                                                  ),
-                                                                  Container(
+                                                Container(
+                                                child: Text(eventItem[index].summary.toString(), style: TextStyle(color: Colors.black.withOpacity(0.6),fontSize: 13, fontFamily: "poppins_medium")),
+                                              ),
 
-                                                                    margin: EdgeInsets.only(top: 5),
-                                                                    child: Text('Description', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium")),
-                                                                  ),
-                                                                  Container(
-                                                                    child: Text(
-                                                                        eventItem[index].description != null? eventItem[index].description : "",
-                                                                        style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
-                                                                  ),
-                                                                ],
-                                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                              ),
-                                                              flex: 8,
+                                                SizedBox(height: 5),
+
+                                                Container(
+                                                  margin: EdgeInsets.only(bottom: 5),
+                                                   child: eventItem[index].description != null ?  DescriptionTextWidget(text: eventItem[index].description) :Text("", style: TextStyle(fontSize: 13, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
+                                                 ),
+
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Container(
+                                                            child: Text('From', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5)),
                                                             ),
-                                                            Expanded(
-                                                              flex: 6,
-                                                              child: Column(
-                                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                                children: [
-                                                                  Container(
-                                                                    margin: EdgeInsets.only(top: 5),
-                                                                    child: Text('From', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
-                                                                    ),
-                                                                  ),
-                                                                  Container(
-                                                                    child: Text(
-                                                                        DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
-                                                                            eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
-                                                                            eventItem[index].start.dateTime.toLocal().minute.toString(),
-                                                                        style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
-                                                                  ),
-                                                                  Container(
-                                                                    margin: EdgeInsets.only(top: 5),
-                                                                    child: Text('To', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
-                                                                    ),
-                                                                  ),
-                                                                  Container(
-                                                                    child: Text(
-                                                                        DateFormat('EE, d MMM, yyyy').format(eventItem[index]
-                                                                                .end
-                                                                                .dateTime
-                                                                                .toLocal()) +
-                                                                            "  " +
-                                                                            eventItem[index]
-                                                                                .end
-                                                                                .dateTime
-                                                                                .toLocal()
-                                                                                .hour
-                                                                                .toString() +
-                                                                            ":" +
-                                                                            eventItem[index]
-                                                                                .end
-                                                                                .dateTime
-                                                                                .toLocal()
-                                                                                .minute
-                                                                                .toString(),
-                                                                        style: TextStyle(
-                                                                            fontSize:
-                                                                                14,
-                                                                            fontFamily:
-                                                                                "poppins_regular")),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            )
-                                                          ]),
-                                                    ],
-                                                  ),
-                                                ),
+                                                          ),
+
+                                                          Container(
+                                                            child: Text(
+                                                                DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
+                                                                    eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
+                                                                    eventItem[index].start.dateTime.toLocal().minute.toString(),
+                                                                style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+
+
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Container(
+                                                            margin: EdgeInsets.only(top: 5),
+                                                            child: Text('To', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5))),
+                                                          ),
+
+                                                          Container(
+                                                              child: Text(
+                                                                DateFormat('EE, d MMM, yyyy').format(eventItem[index].end.dateTime.toLocal()) + "  " +
+                                                                    eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString(),
+                                                                style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5)),
+                                                              )
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )
+
+                                                // Row(
+                                                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                //     children: [
+                                                //       Expanded(
+                                                //         child: Column(
+                                                //           mainAxisAlignment: MainAxisAlignment.start,
+                                                //           crossAxisAlignment: CrossAxisAlignment.start,
+                                                //
+                                                //           children: [
+                                                //
+                                                //             Container(
+                                                //               child: Text(eventItem[index].summary.toString(), style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
+                                                //             ),
+                                                //
+                                                //             SizedBox(height: 5),
+                                                //
+                                                //             Container(
+                                                //               child: Text(eventItem[index].description != null? eventItem[index].description : "",
+                                                //                   style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
+                                                //             ),
+                                                //           ],
+                                                //         ),
+                                                //         flex: 8,
+                                                //       ),
+                                                //       Expanded(
+                                                //         flex: 6,
+                                                //         child: Column(
+                                                //           crossAxisAlignment: CrossAxisAlignment.start,
+                                                //           children: [
+                                                //             Container(
+                                                //               margin: EdgeInsets.only(top: 5),
+                                                //               child: Text('From', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
+                                                //               ),
+                                                //             ),
+                                                //             Container(
+                                                //               child: Text(
+                                                //                   DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
+                                                //                       eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
+                                                //                       eventItem[index].start.dateTime.toLocal().minute.toString(),
+                                                //                   style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
+                                                //             ),
+                                                //             Container(
+                                                //               margin: EdgeInsets.only(top: 5),
+                                                //               child: Text('To', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
+                                                //               ),
+                                                //             ),
+                                                //             Container(
+                                                //               child: Text(
+                                                //                   DateFormat('EE, d MMM, yyyy').format(eventItem[index]
+                                                //                           .end
+                                                //                           .dateTime
+                                                //                           .toLocal()) +
+                                                //                       "  " +
+                                                //                       eventItem[index]
+                                                //                           .end
+                                                //                           .dateTime
+                                                //                           .toLocal()
+                                                //                           .hour
+                                                //                           .toString() +
+                                                //                       ":" +
+                                                //                       eventItem[index]
+                                                //                           .end
+                                                //                           .dateTime
+                                                //                           .toLocal()
+                                                //                           .minute
+                                                //                           .toString(),
+                                                //                   style: TextStyle(
+                                                //                       fontSize:
+                                                //                           14,
+                                                //                       fontFamily:
+                                                //                           "poppins_regular")),
+                                                //             ),
+                                                //           ],
+                                                //         ),
+                                                //       )
+                                                //     ]),
                                               ],
-                                            )),
+                                            )
+                                        ),
                                       ),
                                     // ),
                                   ),
