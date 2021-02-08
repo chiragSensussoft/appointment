@@ -5,6 +5,7 @@ import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/Toast.dart';
+import 'package:appointment/utils/slide_menu.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
@@ -20,9 +21,7 @@ import 'package:sqflite/sqflite.dart';
 import 'BottomSheet.dart';
 import 'OnHomeView.dart';
 
-
 class MyAppointment extends StatefulWidget {
-
   @override
   MyAppointmentState createState() => MyAppointmentState();
 }
@@ -37,11 +36,13 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   SharedPreferences _sharedPreferences;
 
   GoogleSignIn googleSignIn = GoogleSignIn(
-    scopes: ['email',
+    scopes: [
+      'email',
       'https://www.googleapis.com/auth/contacts.readonly',
       "https://www.googleapis.com/auth/userinfo.profile",
       "https://www.googleapis.com/auth/calendar.events",
-      "https://www.googleapis.com/auth/calendar"],
+      "https://www.googleapis.com/auth/calendar"
+    ],
     clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
   );
 
@@ -51,6 +52,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   String userName = '';
   String email = '';
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  bool loader = false;
 
 
   @override
@@ -62,14 +64,14 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     _query();
   }
 
-  init() async{
+  init() async {
     _sharedPreferences = await SharedPreferences.getInstance();
   }
-
 
   _query() async {
     print('isCalled:::');
     Database db = await DatabaseHelper.instance.database;
+
     List<String> columnsToSelect = [
       DatabaseHelper.columnfName,
       DatabaseHelper.columnEmail,
@@ -79,8 +81,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     String whereString = '${DatabaseHelper.columnId} = ?';
     int rowId = 1;
     List<dynamic> whereArguments = [rowId];
-    List<Map> result = await db.query(
-        DatabaseHelper.table,
+    List<Map> result = await db.query(DatabaseHelper.table,
         columns: columnsToSelect,
         where: whereString,
         whereArgs: whereArguments);
@@ -92,170 +93,215 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     model = HomeViewModel(this);
 
     return Scaffold(
-      key: _scaffoldKey,
-      body: Container(
-        child: RefreshIndicator(
-            child: Container(
-          color: Colors.grey[200],
-          child: isVisible == false ?eventItem.length != 0?
+        key: _scaffoldKey,
+        body: Container(
+          child: RefreshIndicator(
+              child: Container(
+                color: Colors.grey[200],
+                child: isVisible == false
+                    ? eventItem.length != 0
+                        ?
+                          ListView.builder(
+                            itemCount: eventItem.length,
+                            itemBuilder: (_, index) {
 
-          ListView.builder(
-            itemCount: eventItem.length,
-            itemBuilder: (_,index){
-              return Padding(
-                padding: EdgeInsets.all(5),
-                child: GestureDetector(
-                  onTap: () async{
-                      model.detailSheet(eventItem[index].start.dateTime);
+                              return SlideMenu(
+                                child: Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      model.detailSheet(eventItem[index].start.dateTime);
 
-                      String startDate = eventItem[index].start.dateTime.toLocal().year.toString() +"-"+ eventItem[index].start.dateTime.toLocal().month.toString()+"-"+eventItem[index].start.dateTime.toLocal().day.toString();
-                      String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() +":"+ eventItem[index].start.dateTime.toLocal().minute.toString()+":"+"00";
-                      print("Date ${startDate+"T"+startTime}");
-                      String endDate = eventItem[index].end.dateTime.toLocal().year.toString() +"-"+ eventItem[index].end.dateTime.toLocal().month.toString()+"-"+eventItem[index].end.dateTime.toLocal().day.toString();
-                      String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() +":"+ eventItem[index].end.dateTime.toLocal().minute.toString()+":"+"00";
+                                      String startDate = eventItem[index].start.dateTime.toLocal().year.toString() + "-" + eventItem[index].start.dateTime.toLocal().month.toString() + "-" + eventItem[index].start.dateTime.toLocal().day.toString();
+                                      String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() + ":" + eventItem[index].start.dateTime.toLocal().minute.toString() + ":" + "00";
+                                      print("Date ${startDate + "T" + startTime}");
+                                      String endDate = eventItem[index].end.dateTime.toLocal().year.toString() + "-" + eventItem[index].end.dateTime.toLocal().month.toString() + "-" + eventItem[index].end.dateTime.toLocal().day.toString();
+                                      String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString() + ":" + "00";
 
+                                      dynamicLink = await createDynamicLink(
+                                          title: eventItem[index].summary,
+                                          desc: eventItem[index].description,
+                                          startDate: startDate + "T" + startTime,
+                                          endDate: endDate + "T" + endTime,
+                                          email: email,
+                                          photoUrl: url,
+                                          senderName: userName,
+                                          timeZone: eventItem[index].start.timeZone);
+                                      print("Dynamic Link: $dynamicLink");
+                                    },
 
-                      dynamicLink = await createDynamicLink(title: eventItem[index].summary,desc: eventItem[index].description,startDate: startDate+"T"+startTime,endDate: endDate+"T"+endTime
-                      ,email: email,photoUrl: url,senderName: userName,timeZone: eventItem[index].start.timeZone);
-                      print("Dynamic Link: $dynamicLink");
-                  },
+                                      child: Material(
+                                        elevation: 1,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        child: Container(
+                                            // height: 120,
+                                            padding: EdgeInsets.only(top: 8, bottom: 8, left: 18, right: 18),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
 
-                  child: Dismissible(
-                    key: Key(eventItem[index].description),
-                    // direction: DismissDirection.endToStart,
+                                                      Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                            Expanded(
+                                                              child: Column(
+                                                                children: [
+                                                                  // Container(
+                                                                  //   margin: EdgeInsets.only(top: 5),
+                                                                  //   child: Text("Summary", style: TextStyle(fontSize: 14, fontFamily: "poppins_medium")),
+                                                                  // ),
+                                                                  Container(
+                                                                    child: Text(eventItem[index].summary.toString(), style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
+                                                                  ),
+                                                                  Container(
 
-                    confirmDismiss: (DismissDirection dismissDirection) async {
-                      switch(dismissDirection) {
-                        case DismissDirection.startToEnd:
-                          return await _showShareDialog(context, "Share", index);
-
-                        case DismissDirection.endToStart:
-                          return await _showConfirmationDialog(context, 'Delete',index) == true;
-
-                        case DismissDirection.horizontal:
-                        case DismissDirection.vertical:
-                        case DismissDirection.up:
-                        case DismissDirection.down:
-                          assert(false);
-                      }
-                      return false;
-                    },
-
-                    child: Material(
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-
-                      child: Container(
-                          // height: 120,
-                          padding: EdgeInsets.only(top: 8,bottom: 8,left: 18,right: 18),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // FlatButton(
-                                    //   color:
-                                    //   Colors.blue,
-                                    //   height: 100,
-                                    //   onPressed: () async {
-                                    //     Share.share(dynamicLink.toString());
-                                    //   },
-                                    //   child: Text(dynamicLink.toString()??""),
+                                                                    margin: EdgeInsets.only(top: 5),
+                                                                    child: Text('Description', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium")),
+                                                                  ),
+                                                                  Container(
+                                                                    child: Text(
+                                                                        eventItem[index].description != null? eventItem[index].description : "",
+                                                                        style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
+                                                                  ),
+                                                                ],
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                              ),
+                                                              flex: 8,
+                                                            ),
+                                                            Expanded(
+                                                              flex: 6,
+                                                              child: Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+                                                                  Container(
+                                                                    margin: EdgeInsets.only(top: 5),
+                                                                    child: Text('From', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
+                                                                    ),
+                                                                  ),
+                                                                  Container(
+                                                                    child: Text(
+                                                                        DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
+                                                                            eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
+                                                                            eventItem[index].start.dateTime.toLocal().minute.toString(),
+                                                                        style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
+                                                                  ),
+                                                                  Container(
+                                                                    margin: EdgeInsets.only(top: 5),
+                                                                    child: Text('To', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
+                                                                    ),
+                                                                  ),
+                                                                  Container(
+                                                                    child: Text(
+                                                                        DateFormat('EE, d MMM, yyyy').format(eventItem[index]
+                                                                                .end
+                                                                                .dateTime
+                                                                                .toLocal()) +
+                                                                            "  " +
+                                                                            eventItem[index]
+                                                                                .end
+                                                                                .dateTime
+                                                                                .toLocal()
+                                                                                .hour
+                                                                                .toString() +
+                                                                            ":" +
+                                                                            eventItem[index]
+                                                                                .end
+                                                                                .dateTime
+                                                                                .toLocal()
+                                                                                .minute
+                                                                                .toString(),
+                                                                        style: TextStyle(
+                                                                            fontSize:
+                                                                                14,
+                                                                            fontFamily:
+                                                                                "poppins_regular")),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            )
+                                                          ]),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            )),
+                                      ),
                                     // ),
-                                    Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children:[
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Container(
-                                                  margin: EdgeInsets.only(top: 5),
-                                                  child: Text("Summary",style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
-                                                ),
-                                                Container(child: Text(eventItem[index].summary.toString(),style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
-                                                Container(
-                                                  margin: EdgeInsets.only(top: 5),
-                                                  child: Text('Description',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium")),
-                                                ),
-                                                Container(
-                                                  child: Text(eventItem[index].description!=null?eventItem[index].description:"",style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),
-                                                ),
-                                              ],
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                            ),
-                                            flex: 8,
-                                          ),
-
-                                          Expanded(
-                                            flex: 6,
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Container(
-                                                  margin: EdgeInsets.only(top: 5),
-                                                  child:Text('From',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
-                                                ),
-                                                Container(
-                                                  child: Text(DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal())
-                                                      +"  "+eventItem[index].start.dateTime.toLocal().hour.toString()+":"+eventItem[index].start.dateTime.toLocal().minute.toString()
-                                                      ,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
-                                                Container(
-                                                  margin: EdgeInsets.only(top: 5),
-                                                  child:Text('To',style: TextStyle(fontSize: 14,fontFamily: "poppins_medium"),),
-                                                ),
-                                                Container(
-                                                  child: Text(DateFormat('EE, d MMM, yyyy').format(eventItem[index].end.dateTime.toLocal())
-                                                      +"  "+eventItem[index].end.dateTime.toLocal().hour.toString()+":"+eventItem[index].end.dateTime.toLocal().minute.toString()
-                                                      ,style: TextStyle(fontSize: 14,fontFamily: "poppins_regular")),),
-                                              ],
-                                            ),
-                                          )
-                                        ]
-                                    ),
-
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          )
-                      ),
 
-                    ),
-                  ),
-                ),
-              );
-            },
-          ):
-          Center(child: Text("No Event Created")):
-          Center(
-            child: CircularProgressIndicator()
-          ),
-          ),
-            onRefresh:(){
-          print('onrefresh::::${access_token}');
-          return _presenter.getCalendarEvent();
-        }
+                                menuItems: <Widget>[
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 5, bottom: 5),
+                                    child: Container(
+                                      height: MediaQuery.of(context).size.height,
+                                      width: 10,
+                                      color: Colors.red,
+                                      child: Column(
+                                       mainAxisAlignment: MainAxisAlignment.center,
+                                       children: [
+                                         IconButton(
+                                           icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
+                                           onPressed: () {
+                                             _showConfirmationDialog(context, 'Delete', index);
+                                           },
+                                         ),
+                                         Text("Delete", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
+                                       ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 5, bottom: 5),
+                                    child: Container(
+                                      height: MediaQuery.of(context).size.height,
+                                      width: 10,
+                                      color: Colors.blueAccent,
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.share_sharp,color: Colors.white),
+                                            onPressed: () {
+                                              _showShareDialog(context, "Share", index);
+                                            },
+                                          ),
+                                          Text("Share", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          )
+                        : Center(child: Text("No Event Created"))
+                    : Center(child: CircularProgressIndicator()),
+              ),
+              onRefresh: () {
+                print('onrefresh::::${access_token}');
+                return _presenter.getCalendarEvent();
+              }),
         ),
-      ),
 
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
             backgroundColor: Palette.colorPrimary,
-            onPressed: ()async{
+            onPressed: () async {
               print(dynamicLink);
 
               showModalBottomSheet(
@@ -269,25 +315,31 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                         initialChildSize: 0.80,
                         expand: true,
                         builder: (context, scrollController) {
-                          return MyBottomSheet(token: access_token, list: _list, itemList: itemList);
-                        }
-                    );
-                  }
-              ).whenComplete(() => {
-                _presenter.getCalendarEvent()
-              });
+                          return MyBottomSheet(
+                              token: access_token,
+                              list: _list,
+                              itemList: itemList);
+                        });
+                  }).whenComplete(() => {_presenter.getCalendarEvent()});
               // showAsBottomSheet("Chirag", url, "2021-06-02", "2021-06-02", "Online Classes", "Online classes in zoom meeting");
-            }
-        )
-    );
+            }));
   }
 
   var dynamicLink;
 
-  Future<Uri> createDynamicLink({@required title,@required desc,@required startDate,@required endDate,@required email,@required photoUrl,@required senderName,@required timeZone}) async {
+  Future<Uri> createDynamicLink(
+      {@required title,
+      @required desc,
+      @required startDate,
+      @required endDate,
+      @required email,
+      @required photoUrl,
+      @required senderName,
+      @required timeZone}) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://appointmrnt.page.link',
-      link: Uri.parse('https://appointmrnt.page.link/appointment?summary=$title&description=$desc&startDate=$startDate&endDate=$endDate&senderEmail=$email&senderPhoto=$photoUrl&senderName=$senderName&timeZone=$timeZone'),
+      link: Uri.parse(
+          'https://appointmrnt.page.link/appointment?summary=$title&description=$desc&startDate=$startDate&endDate=$endDate&senderEmail=$email&senderPhoto=$photoUrl&senderName=$senderName&timeZone=$timeZone'),
       androidParameters: AndroidParameters(
         packageName: 'com.ck.appointment',
         minimumVersion: 1,
@@ -299,14 +351,15 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
       ),
     );
     final link = await parameters.buildUrl();
-    final ShortDynamicLink shortenedLink = await DynamicLinkParameters.shortenUrl(
-      link,
-      DynamicLinkParametersOptions(shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
+    final ShortDynamicLink shortenedLink =
+        await DynamicLinkParameters.shortenUrl(link,
+      DynamicLinkParametersOptions(
+          shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
     );
     return shortenedLink.shortUrl;
   }
 
-  Future<bool> _showConfirmationDialog(BuildContext context, String action,int index) {
+  Future<bool> _showConfirmationDialog(BuildContext context, String action, int index) {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true,
@@ -333,13 +386,14 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     );
   }
 
-  Future<bool> _showShareDialog(BuildContext context, String action,int index) {
+  Future<bool> _showShareDialog(
+      BuildContext context, String action, int index) {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Do you want to $action this Event?'),
+          title: Text('Are you sure you want to $action this Event?', style: TextStyle(fontSize: 16, fontFamily: 'poppins_regular')),
           actions: <Widget>[
             FlatButton(
               child: const Text('No'),
@@ -349,17 +403,26 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
             ),
             FlatButton(
               child: const Text('Yes'),
-              onPressed: () async{
-                String startDate = eventItem[index].start.dateTime.toLocal().year.toString() +"-"+ eventItem[index].start.dateTime.toLocal().month.toString()+"-"+eventItem[index].start.dateTime.toLocal().day.toString();
-                String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() +":"+ eventItem[index].start.dateTime.toLocal().minute.toString()+":"+"00";
-                print("Date ${startDate+"T"+startTime}");
-                String endDate = eventItem[index].end.dateTime.toLocal().year.toString() +"-"+ eventItem[index].end.dateTime.toLocal().month.toString()+"-"+eventItem[index].end.dateTime.toLocal().day.toString();
-                String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() +":"+ eventItem[index].end.dateTime.toLocal().minute.toString()+":"+"00";
+              onPressed: () async {
+                String startDate = eventItem[index].start.dateTime.toLocal().year.toString() + "-" + eventItem[index].start.dateTime.toLocal().month.toString() + "-" +eventItem[index].start.dateTime.toLocal().day.toString();
+                String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() + ":" + eventItem[index].start.dateTime.toLocal().minute.toString() + ":" +"00";
+                print("Date ${startDate + "T" + startTime}");
+                String endDate = eventItem[index].end.dateTime.toLocal().year.toString() + "-" + eventItem[index].end.dateTime.toLocal().month.toString() + "-" + eventItem[index].end.dateTime.toLocal().day.toString();
+                String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString() + ":" + "00";
 
-                dynamicLink = await createDynamicLink(title: eventItem[index].summary,desc: eventItem[index].description,startDate: startDate+"T"+startTime,endDate: endDate+"T"+endTime
-                    ,email: email,photoUrl: url,senderName: userName,timeZone: eventItem[index].start.timeZone);
+                dynamicLink = await createDynamicLink(
+                    title: eventItem[index].summary,
+                    desc: eventItem[index].description,
+                    startDate: startDate + "T" + startTime,
+                    endDate: endDate + "T" + endTime,
+                    email: email,
+                    photoUrl: url,
+                    senderName: userName,
+                    timeZone: eventItem[index].start.timeZone);
+
                 print("Dynamic Link: $dynamicLink");
-                if(dynamicLink!=""){
+
+                if (dynamicLink != "") {
                   Share.share(dynamicLink.toString());
                   Navigator.pop(context, false);
                 }
@@ -373,19 +436,20 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
 
   void fetchLinkData() async {
     var link = await FirebaseDynamicLinks.instance.getInitialLink();
-
     handleLinkData(link);
-
-    FirebaseDynamicLinks.instance.onLink(onSuccess: (PendingDynamicLinkData dynamicLink) async {
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData dynamicLink) async {
       handleLinkData(dynamicLink);
     });
   }
+
   Toast toast = Toast();
+
   void handleLinkData(PendingDynamicLinkData data) {
     final Uri uri = data?.link;
-    if(uri != null) {
+    if (uri != null) {
       final queryParams = uri.queryParameters;
-      if(queryParams.length > 0) {
+      if (queryParams.length > 0) {
         String summary = queryParams["summary"];
         String description = queryParams['description'];
         String startDate = queryParams['startDate'];
@@ -403,150 +467,228 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
         print("sender Name is: $senderName");
         print("timeZone Name is: $timeZone");
 
-        if(summary.isEmpty||description.isEmpty||startDate.isEmpty||endDate.isEmpty||senderName.isEmpty||senderPhoto.isEmpty||senderEmail.isEmpty){
+        if (summary.isEmpty ||
+            description.isEmpty ||
+            startDate.isEmpty ||
+            endDate.isEmpty ||
+            senderName.isEmpty ||
+            senderPhoto.isEmpty ||
+            senderEmail.isEmpty) {
           toast.overLay = false;
-          toast.showOverLay("Data is not valid", Colors.white, Colors.black54, context,seconds: 3);
-        }
-        else{
+          toast.showOverLay(
+              "Data is not valid", Colors.white, Colors.black54, context,
+              seconds: 3);
+        } else {
           print("Enter in Else");
           refreshToken();
-          Future.delayed(Duration(seconds: 2)).whenComplete(() => {
-          showAsBottomSheet(senderName,senderPhoto,senderEmail,startDate,endDate,summary,description,timeZone)
-          });
+          Future.delayed(Duration(seconds: 1)).whenComplete(() => {
+                showAsBottomSheet(senderName, senderPhoto, senderEmail,
+                    startDate, endDate, summary, description, timeZone)
+              });
         }
-
       }
     }
   }
 
-  void showAsBottomSheet(String senderName,senderEmail,senderPhoto,startDate,endDate,summary,description,timeZone) async {
-     return await showSlidingBottomSheet(
-        context,
-        builder: (context) {
-          return SlidingSheetDialog(
-            elevation: 8,
-            cornerRadius: 16,
-            snapSpec: const SnapSpec(
-              snap: false,
-              positioning: SnapPositioning.relativeToAvailableSpace,
-            ),
-            duration: Duration(milliseconds: 300),
-            builder: (context, state) {
-              return Material(
-                child: Container(
-                  padding: EdgeInsets.only(left: 20,right: 20,top: 10,bottom: 10),
-                  child: Column(
+  void showAsBottomSheet(String senderName, senderPhoto, senderEmail, startDate,
+      endDate, summary, description, timeZone) async {
+    print('image:::$senderPhoto');
+
+    return await showSlidingBottomSheet(context, builder: (context) {
+      return SlidingSheetDialog(
+        elevation: 8,
+        cornerRadius: 20,
+        snapSpec: const SnapSpec(
+          snap: false,
+          positioning: SnapPositioning.relativeToAvailableSpace,
+        ),
+        duration: Duration(milliseconds: 200),
+        builder: (context, state) {
+          return Material(
+            child: Container(
+              padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 15),
+              child: Column(
+                children: [
+                  Container(
+                    alignment: Alignment.center,
+                    child: Text("Create New Event",
+                        style: TextStyle(
+                            fontSize: 16, fontFamily: "poppins_medium")),
+                  ),
+                  Row(
                     children: [
+                      SizedBox(height: 20),
                       Container(
-                        alignment: Alignment.center,
-                        child: Text("Share Event",style: TextStyle(fontSize: 17,fontFamily: "poppins_medium"),),
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(senderPhoto),
+                        ),
                       ),
-                      Row(
+                      SizedBox(width: 15),
+                      Container(
+                        child: Text(senderName,
+                            style: TextStyle(
+                                fontSize: 16, fontFamily: "poppins_medium")),
+                      )
+                    ],
+                  ),
+                  SizedBox(height: 15),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: Text(summary,
+                        style: TextStyle(
+                            fontSize: 14, fontFamily: "poppins_regular")),
+                  ),
+                  SizedBox(height: 15),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: Text(description,
+                        style: TextStyle(
+                            fontSize: 14, fontFamily: "poppins_regular")),
+                  ),
+                  SizedBox(height: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            child: CircleAvatar(
-                              backgroundImage: NetworkImage(senderPhoto),
+                            child: Text(
+                              'From',
+                              style: TextStyle(
+                                  fontSize: 16, fontFamily: "poppins_medium"),
                             ),
                           ),
-                          SizedBox(width: 20,),
                           Container(
-                            child: Text(senderName),
+                            child: Text(startDate,
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: "poppins_regular")),
                           )
                         ],
                       ),
-                      SizedBox(height: 10,),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Text(summary),
-                      ),
-                      SizedBox(height: 10,),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Text(description),
-                      ),
-                      SizedBox(height: 10,),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                child:Text('From',style: TextStyle(fontSize: 17,fontFamily: "poppins_medium"),),
-                              ),
-                              Container(
-                                child:Text(startDate),
-                              )
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                child:Text('To',style: TextStyle(fontSize: 17,fontFamily: "poppins_medium"),),
-                                alignment: Alignment.centerLeft,
-                              ),
-                              Container(
-                                child:Text(endDate),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                      SizedBox(height: 20,),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            width: 100,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.red
+                            child: Text(
+                              'To',
+                              style: TextStyle(
+                                  fontSize: 16, fontFamily: "poppins_medium"),
                             ),
-                            child: IconButton(
-                              onPressed: (){
-                                Navigator.pop(context);
-                              },
-                              color: Colors.white,
-                              icon: Icon(Icons.close_rounded),
-                            ),
+                            alignment: Alignment.centerLeft,
                           ),
                           Container(
-                            width: 100,
-                            height: 45,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: Colors.green
-                            ),
-                            child: IconButton(
-                              onPressed: (){
-                                    // _presenter.attachView(this);
-                                    _presenter.setAppointment(summary: summary,endDate: endDate,startDate: startDate,description: description,timeZone: timeZone);
-                                    _presenter.getCalendarEvent();
-                                    Navigator.pop(context);
-                              },
-                              color: Colors.white,
-                              icon: Icon(Icons.done),
-                            ),
+                            child: Text(endDate,
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: "poppins_regular")),
                           )
                         ],
                       )
                     ],
                   ),
-                ),
-              );
-            },
+
+                  SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        onTap: (){
+                          _presenter.setAppointment(
+                              summary: summary,
+                              endDate: endDate,
+                              startDate: startDate,
+                              description: description,
+                              timeZone: timeZone);
+                        },
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: 15),
+                            height: 40,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                color: Colors.green),
+
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                    child: Text("Accept",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontFamily: "poppins_regular")),
+                                    padding: EdgeInsets.only(left: 10)),
+                                IconButton(
+                                  iconSize: 20,
+                                  onPressed: () {},
+                                  color: Colors.white,
+                                  icon: Icon(Icons.done),
+                                )
+                              ],
+                            )),
+                      ),
+
+                      GestureDetector(
+                        onTap: (){
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                            margin: EdgeInsets.only(bottom: 15),
+                            height: 40,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                color: Colors.red),
+
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
+
+                              children: [
+                                Padding(
+                                  child: Text("Cancel",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontFamily: "poppins_regular"),),
+                                  padding: EdgeInsets.only(left: 10),
+                                ),
+
+                                IconButton(
+                                  iconSize: 20,
+                                  padding: EdgeInsets.zero,
+                                  onPressed: () {},
+                                  color: Colors.white,
+                                  icon: Icon(Icons.close_rounded),
+                                )
+                              ],
+                            )),
+                      )
+                    ],
+                  ),
+
+                  SizedBox(height: 10),
+                ],
+              ),
+            ),
           );
-        }
-    );
+        },
+      );
+    });
   }
+
   ScrollController controller = ScrollController(keepScrollOffset: false);
+
   @override
   onShowLoader() {
     print("Show Loader");
     setState(() {
       isVisible = true;
+      loader = true;
     });
   }
 
@@ -555,14 +697,17 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     print("Hide Loader");
     setState(() {
       isVisible = false;
+      loader = false;
     });
   }
 
   @override
-  onErrorHandler(String message){
+  onErrorHandler(String message) {
     Toast toast = Toast();
     toast.overLay = false;
-    toast.showOverLay(message, Colors.white, Colors.black54, context,seconds: 3);
+    loader = true;
+    toast.showOverLay(message, Colors.white, Colors.black54, context,
+        seconds: 3);
     setState(() {
       isVisible = false;
     });
@@ -574,8 +719,8 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
       List<dynamic> data = response;
       _list.addAll(data.map((i) => Item.fromJson(i)).toList());
 
-      for(int i=0;i<data.length;i++){
-        if(data[i]['accessRole']=="owner"){
+      for (int i = 0; i < data.length; i++) {
+        if (data[i]['accessRole'] == "owner") {
           itemList.add(Item.fromJson(data[i]));
         }
       }
@@ -585,20 +730,22 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   Map<String, dynamic> map;
 
   @override
-  onEventSuccess(response,calendarResponse) {
+  onEventSuccess(response, calendarResponse) {
     print("success ${response.runtimeType}");
 
     setState(() {
       eventItem.clear();
       map = calendarResponse;
       List<dynamic> data = response;
-      eventItem.addAll(data.map((e)=> EventItem.fromJson(e)).toList());
+      eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
     });
   }
 
   Future<String> refreshToken() async {
-    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signInSilently();
-    final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+    final GoogleSignInAccount googleSignInAccount =
+        await googleSignIn.signInSilently();
+    final GoogleSignInAuthentication googleSignInAuthentication =
+        await googleSignInAccount.authentication;
 
     final AuthCredential credential = GoogleAuthProvider.getCredential(
       accessToken: googleSignInAuthentication.accessToken,
@@ -609,7 +756,8 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     await _auth.signInWithCredential(credential);
     print("Access token 1 ==> ${googleSignInAuthentication.accessToken}");
 
-    _sharedPreferences.setString(Constant.ACCESS_TOKEN, googleSignInAuthentication.accessToken);
+    _sharedPreferences.setString(
+        Constant.ACCESS_TOKEN, googleSignInAuthentication.accessToken);
     access_token = googleSignInAuthentication.accessToken;
     print("Id token 1 ==> $access_token");
 
@@ -629,7 +777,9 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   @override
   onCreateEvent(response) {
     print('onSucess:::$response');
+    Navigator.pop(context);
+    toast.overLay = false;
+    toast.showOverLay("Appointment created successfully", Colors.white, Colors.black54, context);
+    _presenter.getCalendarEvent();
   }
-
-
 }

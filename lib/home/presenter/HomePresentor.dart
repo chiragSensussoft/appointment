@@ -21,7 +21,9 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
         print("Token $token");
         print("End Date $endDate:00");
         print("Start Date $startDate:00");
+
         view.onShowLoader();
+
         Response postResponse = await apiHelper.api(apiName:Constant().event,method:  Method.POST,
             body:jsonEncode({
               "end": {
@@ -39,7 +41,6 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
         if (postResponse.statusCode == 200) {
           isViewAttached ? getView().onCreateEvent(postResponse.data) : null;
           view.onHideLoader();
-          // getCalendarEvent(token);
 
         } else {
           view.onHideLoader();
@@ -60,11 +61,10 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
       view.onHideLoader();
     }
   }
-  
+
   Future getCalendarEvent() async{
     view.onShowLoader();
     print('get_list:1::${Constant().event}');
-    print('get_list:2::${Constant().event}');
     Response getCalendarEventList = await apiHelper.api(token: token, method: Method.GET,
         apiName: Constant().event, endPoint: Constant().event);
 
