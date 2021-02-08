@@ -1,14 +1,14 @@
+import 'dart:async';
+
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/DescriptionTextWidget.dart';
-import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/slide_menu.dart';
 import 'package:appointment/utils/values/Constant.dart';
-import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -17,6 +17,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:sliding_sheet/sliding_sheet.dart';
 import 'package:sqflite/sqflite.dart';
 import 'BottomSheet.dart';
@@ -35,6 +36,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   HomeViewModel model;
   HomePresenter _presenter;
   SharedPreferences _sharedPreferences;
+  bool _enabled = true;
 
   GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: [
@@ -55,7 +57,8 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool loader = false;
   bool descTextShowFlag = false;
-
+  bool isLoading = false;
+  ScrollController controller = ScrollController(keepScrollOffset: false);
 
   @override
   void initState() {
@@ -96,6 +99,55 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    controller.dispose();
+  }
+
+  void _scrollListener() {
+    if (controller.position.pixels == controller.position.maxScrollExtent) {
+      startLoader();
+    }
+  }
+
+  void startLoader() {
+    setState(() {
+      isLoading = !isLoading;
+      fetchData();
+    });
+  }
+
+  fetchData() async {
+    var _duration = new Duration(seconds: 2);
+    return new Timer(_duration, onResponse);
+  }
+
+  void onResponse() {
+    setState(() {
+      isLoading = !isLoading;
+      // _All.addAll(generateWordPairs().take(20));
+    });
+  }
+
+  Widget _loader() {
+    return isLoading
+        ? new Align(
+          child: new Container(
+            width: 70.0,
+            height: 70.0,
+            child: new Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: new Center(child: new CircularProgressIndicator())),
+          ),
+          alignment: FractionalOffset.bottomCenter,
+        )
+            : new SizedBox(
+          width: 0.0,
+          height: 0.0,
+        );
+  }
+
+  @override
   Widget build(BuildContext context) {
     model = HomeViewModel(this);
 
@@ -103,242 +155,309 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
         key: _scaffoldKey,
         body: Container(
           child: RefreshIndicator(
-              child: Container(
-                color: Colors.grey[200],
-                child: isVisible == false
-                    ? eventItem.length != 0 ?
-                          ListView.builder(
-                            padding: EdgeInsets.only(top: 5),
-                            itemCount: eventItem.length,
-                            itemBuilder: (_, index) {
+              child: Stack(
+                children: [
+                  Container(
+                    color: Colors.grey[200],
+                    child: isVisible == false
+                        ? eventItem.length != 0
+                        ?
+                    ListView.builder(
+                      itemCount: eventItem.length,
+                      itemBuilder: (_, index) {
 
-                              return SlideMenu(
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom:5),
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      model.detailSheet(eventItem[index].start.dateTime);
+                        return SlideMenu(
+                          child: Padding(
+                            padding: EdgeInsets.all(5),
+                            child: GestureDetector(
+                              onTap: () async {
+                                model.detailSheet(eventItem[index].start.dateTime);
 
-                                      String startDate = eventItem[index].start.dateTime.toLocal().year.toString() + "-" + eventItem[index].start.dateTime.toLocal().month.toString() + "-" + eventItem[index].start.dateTime.toLocal().day.toString();
-                                      String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() + ":" + eventItem[index].start.dateTime.toLocal().minute.toString() + ":" + "00";
-                                      print("Date ${startDate + "T" + startTime}");
-                                      String endDate = eventItem[index].end.dateTime.toLocal().year.toString() + "-" + eventItem[index].end.dateTime.toLocal().month.toString() + "-" + eventItem[index].end.dateTime.toLocal().day.toString();
-                                      String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString() + ":" + "00";
+                                String startDate = eventItem[index].start.dateTime.toLocal().year.toString() + "-" + eventItem[index].start.dateTime.toLocal().month.toString() + "-" + eventItem[index].start.dateTime.toLocal().day.toString();
+                                String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() + ":" + eventItem[index].start.dateTime.toLocal().minute.toString() + ":" + "00";
+                                print("Date ${startDate + "T" + startTime}");
+                                String endDate = eventItem[index].end.dateTime.toLocal().year.toString() + "-" + eventItem[index].end.dateTime.toLocal().month.toString() + "-" + eventItem[index].end.dateTime.toLocal().day.toString();
+                                String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString() + ":" + "00";
 
-                                      dynamicLink = await createDynamicLink(
-                                          title: eventItem[index].summary,
-                                          desc: eventItem[index].description,
-                                          startDate: startDate + "T" + startTime,
-                                          endDate: endDate + "T" + endTime,
-                                          email: email,
-                                          photoUrl: url,
-                                          senderName: userName,
-                                          timeZone: eventItem[index].start.timeZone);
-                                      print("Dynamic Link: $dynamicLink");
-                                    },
+                                dynamicLink = await createDynamicLink(
+                                    title: eventItem[index].summary,
+                                    desc: eventItem[index].description,
+                                    startDate: startDate + "T" + startTime,
+                                    endDate: endDate + "T" + endTime,
+                                    email: email,
+                                    photoUrl: url,
+                                    senderName: userName,
+                                    timeZone: eventItem[index].start.timeZone);
+                                print("Dynamic Link: $dynamicLink");
+                              },
 
-                                      child: Material(
-                                        elevation: 1,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                        child: Container(
-                                            width: MediaQuery.of(context).size.width,
-                                            padding: EdgeInsets.only(top: 8, bottom: 8, left: 18, right: 18),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.center,
+                              child: Material(
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                child: Container(
+                                    width: MediaQuery.of(context).size.width,
+                                    padding: EdgeInsets.only(top: 8, bottom: 8, left: 18, right: 18),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
 
-                                              children: [
-                                                SizedBox(height: 5),
+                                      children: [
+                                        SizedBox(height: 5),
 
-                                                Container(
-                                                child: Text(eventItem[index].summary.toString(), style: TextStyle(color: Colors.black.withOpacity(0.6),fontSize: 13, fontFamily: "poppins_medium")),
-                                              ),
-
-                                                SizedBox(height: 5),
-
-                                                Container(
-                                                  margin: EdgeInsets.only(bottom: 5),
-                                                   child: eventItem[index].description != null ?  DescriptionTextWidget(text: eventItem[index].description) :Text("", style: TextStyle(fontSize: 13, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
-                                                 ),
-
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Container(
-                                                            child: Text('From', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5)),
-                                                            ),
-                                                          ),
-
-                                                          Container(
-                                                            child: Text(
-                                                                DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
-                                                                    eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
-                                                                    eventItem[index].start.dateTime.toLocal().minute.toString(),
-                                                                style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-
-
-                                                    Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Container(
-                                                            margin: EdgeInsets.only(top: 5),
-                                                            child: Text('To', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5))),
-                                                          ),
-
-                                                          Container(
-                                                              child: Text(
-                                                                DateFormat('EE, d MMM, yyyy').format(eventItem[index].end.dateTime.toLocal()) + "  " +
-                                                                    eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString(),
-                                                                style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5)),
-                                                              )
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                )
-
-                                                // Row(
-                                                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                //     children: [
-                                                //       Expanded(
-                                                //         child: Column(
-                                                //           mainAxisAlignment: MainAxisAlignment.start,
-                                                //           crossAxisAlignment: CrossAxisAlignment.start,
-                                                //
-                                                //           children: [
-                                                //
-                                                //             Container(
-                                                //               child: Text(eventItem[index].summary.toString(), style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
-                                                //             ),
-                                                //
-                                                //             SizedBox(height: 5),
-                                                //
-                                                //             Container(
-                                                //               child: Text(eventItem[index].description != null? eventItem[index].description : "",
-                                                //                   style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
-                                                //             ),
-                                                //           ],
-                                                //         ),
-                                                //         flex: 8,
-                                                //       ),
-                                                //       Expanded(
-                                                //         flex: 6,
-                                                //         child: Column(
-                                                //           crossAxisAlignment: CrossAxisAlignment.start,
-                                                //           children: [
-                                                //             Container(
-                                                //               margin: EdgeInsets.only(top: 5),
-                                                //               child: Text('From', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
-                                                //               ),
-                                                //             ),
-                                                //             Container(
-                                                //               child: Text(
-                                                //                   DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
-                                                //                       eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
-                                                //                       eventItem[index].start.dateTime.toLocal().minute.toString(),
-                                                //                   style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
-                                                //             ),
-                                                //             Container(
-                                                //               margin: EdgeInsets.only(top: 5),
-                                                //               child: Text('To', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
-                                                //               ),
-                                                //             ),
-                                                //             Container(
-                                                //               child: Text(
-                                                //                   DateFormat('EE, d MMM, yyyy').format(eventItem[index]
-                                                //                           .end
-                                                //                           .dateTime
-                                                //                           .toLocal()) +
-                                                //                       "  " +
-                                                //                       eventItem[index]
-                                                //                           .end
-                                                //                           .dateTime
-                                                //                           .toLocal()
-                                                //                           .hour
-                                                //                           .toString() +
-                                                //                       ":" +
-                                                //                       eventItem[index]
-                                                //                           .end
-                                                //                           .dateTime
-                                                //                           .toLocal()
-                                                //                           .minute
-                                                //                           .toString(),
-                                                //                   style: TextStyle(
-                                                //                       fontSize:
-                                                //                           14,
-                                                //                       fontFamily:
-                                                //                           "poppins_regular")),
-                                                //             ),
-                                                //           ],
-                                                //         ),
-                                                //       )
-                                                //     ]),
-                                              ],
-                                            )
+                                        Container(
+                                          child: Text(eventItem[index].summary.toString(), style: TextStyle(color: Colors.black.withOpacity(0.6),fontSize: 13, fontFamily: "poppins_medium")),
                                         ),
+
+                                        SizedBox(height: 5),
+
+                                        Container(
+                                          margin: EdgeInsets.only(bottom: 5),
+                                          child: eventItem[index].description != null ?  DescriptionTextWidget(text: eventItem[index].description) :Text("", style: TextStyle(fontSize: 13, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
+                                        ),
+
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    child: Text('From', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5)),
+                                                    ),
+                                                  ),
+
+                                                  Container(
+                                                    child: Text(
+                                                        DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
+                                                            eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
+                                                            eventItem[index].start.dateTime.toLocal().minute.toString(),
+                                                        style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    margin: EdgeInsets.only(top: 5),
+                                                    child: Text('To', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5))),
+                                                  ),
+
+                                                  Container(
+                                                      child: Text(
+                                                        DateFormat('EE, d MMM, yyyy').format(eventItem[index].end.dateTime.toLocal()) + "  " +
+                                                            eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString(),
+                                                        style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5)),
+                                                      )
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        )
+
+                                        // Row(
+                                        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        //     children: [
+                                        //       Expanded(
+                                        //         child: Column(
+                                        //           mainAxisAlignment: MainAxisAlignment.start,
+                                        //           crossAxisAlignment: CrossAxisAlignment.start,
+                                        //
+                                        //           children: [
+                                        //
+                                        //             Container(
+                                        //               child: Text(eventItem[index].summary.toString(), style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
+                                        //             ),
+                                        //
+                                        //             SizedBox(height: 5),
+                                        //
+                                        //             Container(
+                                        //               child: Text(eventItem[index].description != null? eventItem[index].description : "",
+                                        //                   style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
+                                        //             ),
+                                        //           ],
+                                        //         ),
+                                        //         flex: 8,
+                                        //       ),
+                                        //       Expanded(
+                                        //         flex: 6,
+                                        //         child: Column(
+                                        //           crossAxisAlignment: CrossAxisAlignment.start,
+                                        //           children: [
+                                        //             Container(
+                                        //               margin: EdgeInsets.only(top: 5),
+                                        //               child: Text('From', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
+                                        //               ),
+                                        //             ),
+                                        //             Container(
+                                        //               child: Text(
+                                        //                   DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
+                                        //                       eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
+                                        //                       eventItem[index].start.dateTime.toLocal().minute.toString(),
+                                        //                   style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
+                                        //             ),
+                                        //             Container(
+                                        //               margin: EdgeInsets.only(top: 5),
+                                        //               child: Text('To', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
+                                        //               ),
+                                        //             ),
+                                        //             Container(
+                                        //               child: Text(
+                                        //                   DateFormat('EE, d MMM, yyyy').format(eventItem[index]
+                                        //                           .end
+                                        //                           .dateTime
+                                        //                           .toLocal()) +
+                                        //                       "  " +
+                                        //                       eventItem[index]
+                                        //                           .end
+                                        //                           .dateTime
+                                        //                           .toLocal()
+                                        //                           .hour
+                                        //                           .toString() +
+                                        //                       ":" +
+                                        //                       eventItem[index]
+                                        //                           .end
+                                        //                           .dateTime
+                                        //                           .toLocal()
+                                        //                           .minute
+                                        //                           .toString(),
+                                        //                   style: TextStyle(
+                                        //                       fontSize:
+                                        //                           14,
+                                        //                       fontFamily:
+                                        //                           "poppins_regular")),
+                                        //             ),
+                                        //           ],
+                                        //         ),
+                                        //       )
+                                        //     ]),
+                                      ],
+                                    )
+                                ),
+                              ),
+                              // ),
+                            ),
+                          ),
+
+                          menuItems: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(top: 5, bottom: 5),
+                              child: Container(
+                                height: MediaQuery.of(context).size.height,
+                                width: 10,
+                                color: Colors.red,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
+                                      onPressed: () {
+                                        _showConfirmationDialog(context, 'Delete', index);
+                                      },
+                                    ),
+                                    Text("Delete", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            Padding(
+                              padding: EdgeInsets.only(top: 5, bottom: 5),
+                              child: Container(
+                                height: MediaQuery.of(context).size.height,
+                                width: 10,
+                                color: Colors.blueAccent,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.share_sharp,color: Colors.white),
+                                      onPressed: () {
+                                        _showShareDialog(context, "Share", index);
+                                      },
+                                    ),
+                                    Text("Share", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    )
+                        : Center(child: Text("No Event Created"))
+                        :  Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Expanded(
+                            child: Shimmer.fromColors(
+                              baseColor: Colors.grey[300],
+                              highlightColor: Colors.grey[100],
+                              enabled: _enabled,
+                              child: ListView.builder(
+                                itemBuilder: (_, __) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 48.0,
+                                        height: 48.0,
+                                        color: Colors.white,
                                       ),
-                                    // ),
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Container(
+                                              width: double.infinity,
+                                              height: 8.0,
+                                              color: Colors.white,
+                                            ),
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 2.0),
+                                            ),
+                                            Container(
+                                              width: double.infinity,
+                                              height: 8.0,
+                                              color: Colors.white,
+                                            ),
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 2.0),
+                                            ),
+                                            Container(
+                                              width: 40.0,
+                                              height: 8.0,
+                                              color: Colors.white,
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    ],
                                   ),
                                 ),
-
-                                menuItems: <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 5, bottom: 5),
-                                    child: Container(
-                                      height: MediaQuery.of(context).size.height,
-                                      width: 10,
-                                      color: Colors.red,
-                                      child: Column(
-                                       mainAxisAlignment: MainAxisAlignment.center,
-                                       children: [
-                                         IconButton(
-                                           icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
-                                           onPressed: () {
-                                             _showConfirmationDialog(context, 'Delete', index);
-                                           },
-                                         ),
-                                         Text("Delete", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-                                       ],
-                                      ),
-                                    ),
-                                  ),
-
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 5, bottom: 5),
-                                    child: Container(
-                                      height: MediaQuery.of(context).size.height,
-                                      width: 10,
-                                      color: Colors.blueAccent,
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          IconButton(
-                                            icon: Icon(Icons.share_sharp,color: Colors.white),
-                                            onPressed: () {
-                                              _showShareDialog(context, "Share", index);
-                                            },
-                                          ),
-                                          Text("Share", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          )
-                        : Center(child: Text("No Event Created"))
-                    : Center(child: CircularProgressIndicator()),
+                                itemCount: 6,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _loader(),
+                ],
               ),
               onRefresh: () {
                 print('onrefresh::::${access_token}');
@@ -369,7 +488,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                               itemList: itemList);
                         });
                   }).whenComplete(() => {_presenter.getCalendarEvent()});
-              // showAsBottomSheet("Chirag", url, "2021-06-02", "2021-06-02", "Online Classes", "Online classes in zoom meeting");
             }));
   }
 
@@ -729,7 +847,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     });
   }
 
-  ScrollController controller = ScrollController(keepScrollOffset: false);
 
   @override
   onShowLoader() {

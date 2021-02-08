@@ -56,8 +56,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     _endTime = temp.toString() + ":" + "00" ;
     print(_endTime);
     print(startTime);
-    // widget.itemList.length!=0?setEmail = widget.itemList[0].id:'abc';
-
     init();
   }
 

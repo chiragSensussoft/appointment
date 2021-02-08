@@ -98,4 +98,34 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     }
   }
 
+  Future update({id,email,String description, String summary,String startDate, String endDate,String timeZone})async{
+    print("Token $token");
+    print("End Date $endDate:00");
+    print("Start Date $startDate:00");
+
+    view.onShowLoader();
+
+    Response postResponse = await apiHelper.api(apiName:Constant().event,method:  Method.PUT,endPoint: id,user: email,
+        body:jsonEncode({
+          "end": {
+            "dateTime": endDate,
+            "timeZone": timeZone
+          },
+          "start": {
+            "dateTime": startDate,
+            "timeZone": timeZone
+          },
+          "summary": summary,
+          "description": description
+        }),token: token);
+
+    if (postResponse.statusCode == 200) {
+      isViewAttached ? getView().onCreateEvent(postResponse.data) : null;
+      view.onHideLoader();
+
+    } else {
+      view.onHideLoader();
+    }
+  }
+
 }

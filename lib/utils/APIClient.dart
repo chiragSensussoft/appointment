@@ -10,9 +10,8 @@ import 'BasePresenter.dart';
 class APIClient extends BasePresenter<OnHomeView>{
 
   static final BASEURL = 'https://www.googleapis.com/calendar/v3/calendars/';
+  //https://www.googleapis.com/calendar/v3/calendars/jay.sensussoft@gmail.com/events/tekmrqi30pif8ej3li0hv7c398
   final calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/";
-  final calendarEventList= "https://www.googleapis.com/calendar/v3/calendars/";
-  final deleteApi = "https://www.googleapis.com/calendar/v3/calendars/";
 
   Dio dio = new Dio();
   OnHomeView view;
@@ -55,11 +54,11 @@ class APIClient extends BasePresenter<OnHomeView>{
                 break;
               case "events":
                 print('events:::::$apiName');
-                print('events:::::$calendarEventList');
+                print('events:::::$BASEURL');
                 print('events:::::${Constant.email}');
                 /* calendar Event List*/
                 try {
-                  response = await dio.get(calendarEventList+ Constant.email+"/"+ apiName);
+                  response = await dio.get(BASEURL+ Constant.email+"/"+ apiName);
                   responseJson = _returnResponse(response);
                   print('response:::$response');
 
@@ -72,12 +71,23 @@ class APIClient extends BasePresenter<OnHomeView>{
             break;
 
           case Method.PUT:
-            response = await dio.put(BASEURL + endPoint, data: body);
+
+            print("Email ${Constant.email}");
+
+            dio.options.headers["Authorization"] = "Bearer " + token;
+            try {
+              response = await dio.put(BASEURL+user+"/"+apiName+"/"+endPoint);
+              responseJson = _returnResponse(response);
+
+            } on DioError catch (e) {
+              responseJson = _returnResponse(e.response);
+            }
+
             break;
 
           case Method.DELETE:
             dio.options.headers["Authorization"] = "Bearer " + token;
-            response = await dio.delete(deleteApi+user+"/"+apiName+"/"+endPoint);
+            response = await dio.delete(BASEURL+user+"/"+apiName+"/"+endPoint);
             break;
         }
       }
