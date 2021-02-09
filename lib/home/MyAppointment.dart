@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
@@ -17,6 +19,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:sliding_sheet/sliding_sheet.dart';
 import 'package:sqflite/sqflite.dart';
 import 'BottomSheet.dart';
@@ -55,8 +58,10 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool loader = false;
   bool descTextShowFlag = false;
+  bool isLoading = false;
   bool isEventEdit = false;
-
+  bool _enabled =  false;
+  ScrollController controller = ScrollController(keepScrollOffset: false);
 
   @override
   void initState() {
@@ -97,6 +102,55 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    controller.dispose();
+  }
+
+  void _scrollListener() {
+    if (controller.position.pixels == controller.position.maxScrollExtent) {
+      startLoader();
+    }
+  }
+
+  void startLoader() {
+    setState(() {
+      isLoading = !isLoading;
+      fetchData();
+    });
+  }
+
+  fetchData() async {
+    var _duration = new Duration(seconds: 2);
+    return new Timer(_duration, onResponse);
+  }
+
+  void onResponse() {
+    setState(() {
+      isLoading = !isLoading;
+      // _All.addAll(generateWordPairs().take(20));
+    });
+  }
+
+  Widget _loader() {
+    return isLoading
+        ? new Align(
+          child: new Container(
+            width: 70.0,
+            height: 70.0,
+            child: new Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: new Center(child: new CircularProgressIndicator())),
+          ),
+          alignment: FractionalOffset.bottomCenter,
+        )
+            : new SizedBox(
+          width: 0.0,
+          height: 0.0,
+        );
+  }
+
+  @override
   Widget build(BuildContext context) {
     model = HomeViewModel(this);
 
@@ -104,14 +158,16 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
         key: _scaffoldKey,
         body: Container(
           child: RefreshIndicator(
-              child: Container(
-                color: Colors.grey[200],
-                child: isVisible == false
-                    ? eventItem.length != 0 ?
-                ListView.builder(
-                  padding: EdgeInsets.only(top: 5),
-                  itemCount: eventItem.length,
-                  itemBuilder: (_, index) {
+              child: Stack(
+                children: [
+                  Container(
+                    color: Colors.grey[200],
+                    child: isVisible == false
+                        ? eventItem.length != 0
+                        ?
+                    ListView.builder(
+                      itemCount: eventItem.length,
+                      itemBuilder: (_, index) {
 
                     return SlideMenu(
                       child: Padding(
@@ -326,57 +382,123 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                         ),
                       ),
 
-                      menuItems: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.only(top: 5, bottom: 5),
-                          child: Container(
-                            height: MediaQuery.of(context).size.height,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
-                                  onPressed: () {
-                                    _showConfirmationDialog(context, 'Delete', index);
-                                  },
+                          menuItems: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(top: 5, bottom: 5),
+                              child: Container(
+                                height: MediaQuery.of(context).size.height,
+                                width: 10,
+                                color: Colors.red,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
+                                      onPressed: () {
+                                        _showConfirmationDialog(context, 'Delete', index);
+                                      },
+                                    ),
+                                    Text("Delete", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
+                                  ],
                                 ),
-                                Text("Delete", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-                              ],
+                              ),
+                            ),
+
+                            // Padding(
+                            //   padding: EdgeInsets.only(top: 5, bottom: 5),
+                            //   child: Container(
+                            //     height: MediaQuery.of(context).size.height,
+                            //     width: 10,
+                            //     color: Colors.blueAccent,
+                            //     child: Column(
+                            //       mainAxisAlignment: MainAxisAlignment.center,
+                            //       children: [
+                            //         IconButton(
+                            //           icon: Icon(Icons.share_sharp,color: Colors.white),
+                            //           onPressed: () {
+                            //             _showShareDialog(context, "Share", index);
+                            //           },
+                            //         ),
+                            //         Text("Share", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
+                            //       ],
+                            //     ),
+                            //   ),
+                            // ),
+                          ],
+                        );
+                      },
+                    )
+                        : Center(child: Text("No Event Created"))
+                        :  Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Expanded(
+                            child: Shimmer.fromColors(
+                              baseColor: Colors.grey[300],
+                              highlightColor: Colors.grey[100],
+                              enabled: _enabled,
+                              child: ListView.builder(
+                                itemBuilder: (_, __) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 48.0,
+                                        height: 48.0,
+                                        color: Colors.white,
+                                      ),
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Container(
+                                              width: double.infinity,
+                                              height: 8.0,
+                                              color: Colors.white,
+                                            ),
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 2.0),
+                                            ),
+                                            Container(
+                                              width: double.infinity,
+                                              height: 8.0,
+                                              color: Colors.white,
+                                            ),
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 2.0),
+                                            ),
+                                            Container(
+                                              width: 40.0,
+                                              height: 8.0,
+                                              color: Colors.white,
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                itemCount: 6,
+                              ),
                             ),
                           ),
-                        ),
-
-                        // Padding(
-                        //   padding: EdgeInsets.only(top: 5, bottom: 5),
-                        //   child: Container(
-                        //     height: MediaQuery.of(context).size.height,
-                        //     width: 10,
-                        //     color: Colors.blueAccent,
-                        //     child: Column(
-                        //       mainAxisAlignment: MainAxisAlignment.center,
-                        //       children: [
-                        //         IconButton(
-                        //           icon: Icon(Icons.share_sharp,color: Colors.white),
-                        //           onPressed: () {
-                        //             _showShareDialog(context, "Share", index);
-                        //           },
-                        //         ),
-                        //         Text("Share", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-                        //       ],
-                        //     ),
-                        //   ),
-                        // ),
-                      ],
-                    );
-                  },
-                )
-                    : Center(child: Text("No Event Created"))
-                    : Center(child: CircularProgressIndicator()),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _loader(),
+                ],
               ),
-
               onRefresh: () {
                 print('onrefresh::::${access_token}');
-                return presenter.getCalendarEvent();
+                return presenter.getCalendarEvent(pageToken: map['']);
               }),
         ),
 
@@ -398,15 +520,14 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
               //           expand: true,
               //           builder: (context, scrollController) {
               //             return MyBottomSheet(
+              //                 isEdit: false,
               //                 token: access_token,
               //                 list: list,
               //                 itemList: itemList);
               //           });
               //     }).whenComplete(() => {presenter.getCalendarEvent()});
-              
               isEventEdit = false;
               model.openBottomSheetView();
-              // showAsBottomSheet("Chirag", url, "2021-06-02", "2021-06-02", "Online Classes", "Online classes in zoom meeting");
             }));
   }
 
@@ -414,13 +535,13 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
 
   Future<Uri> createDynamicLink(
       {@required title,
-        @required desc,
-        @required startDate,
-        @required endDate,
-        @required email,
-        @required photoUrl,
-        @required senderName,
-        @required timeZone}) async {
+      @required desc,
+      @required startDate,
+      @required endDate,
+      @required email,
+      @required photoUrl,
+      @required senderName,
+      @required timeZone}) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://appointmrnt.page.link',
       link: Uri.parse(
@@ -437,7 +558,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     );
     final link = await parameters.buildUrl();
     final ShortDynamicLink shortenedLink =
-    await DynamicLinkParameters.shortenUrl(link,
+        await DynamicLinkParameters.shortenUrl(link,
       DynamicLinkParametersOptions(
           shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
     );
@@ -524,8 +645,8 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     handleLinkData(link);
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData dynamicLink) async {
-          handleLinkData(dynamicLink);
-        });
+      handleLinkData(dynamicLink);
+    });
   }
 
   Toast toast = Toast();
@@ -689,7 +810,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                               timeZone: timeZone);
                         },
                         child: Container(
-                            margin: EdgeInsets.only(bottom: 15),
+                          margin: EdgeInsets.only(bottom: 15),
                             height: 40,
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(30),
@@ -736,10 +857,10 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                               children: [
                                 Padding(
                                   child: Text("Cancel",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontFamily: "poppins_regular"),),
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontFamily: "poppins_regular"),),
                                   padding: EdgeInsets.only(left: 10),
                                 ),
 
@@ -766,7 +887,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     });
   }
 
-  ScrollController controller = ScrollController(keepScrollOffset: false);
 
   @override
   onShowLoader() {

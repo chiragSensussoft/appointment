@@ -8,6 +8,7 @@ class CalendarEvent {
     this.accessRole,
     this.defaultReminders,
     this.nextSyncToken,
+    this.nextPageToken,
     this.items,
   });
 
@@ -16,9 +17,10 @@ class CalendarEvent {
   String summary;
   DateTime updated;
   String timeZone;
+  String nextSyncToken;
   String accessRole;
   List<DefaultReminder> defaultReminders;
-  String nextSyncToken;
+  String nextPageToken;
   List<EventItem> items;
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent(
@@ -31,6 +33,7 @@ class CalendarEvent {
     defaultReminders: List<DefaultReminder>.from(json["defaultReminders"].map((x) => DefaultReminder.fromJson(x))),
     nextSyncToken: json["nextSyncToken"],
     items: List<EventItem>.from(json["items"].map((x) => EventItem.fromJson(x))),
+    nextPageToken:  json['nextPageToken']
   );
 
   Map<String, dynamic> toJson() => {
@@ -43,6 +46,7 @@ class CalendarEvent {
     "defaultReminders": List<dynamic>.from(defaultReminders.map((x) => x.toJson())),
     "nextSyncToken": nextSyncToken,
     "items": List<dynamic>.from(items.map((x) => x.toJson())),
+    "nextPageToken" : nextPageToken
   };
 }
 

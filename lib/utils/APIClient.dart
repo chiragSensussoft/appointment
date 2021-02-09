@@ -17,7 +17,7 @@ class APIClient extends BasePresenter<OnHomeView>{
   OnHomeView view;
   APIClient(this.view);
 
-  Future<dynamic> api({String apiName, method,dynamic body, String token,String endPoint,String user}) async{
+  Future<dynamic> api({String apiName, method,dynamic body, String token,String endPoint,String user,String pageToken,String maxResult,String currentTime}) async{
     Response response;
     var responseJson;
 
@@ -58,7 +58,7 @@ class APIClient extends BasePresenter<OnHomeView>{
                 print('events:::::${Constant.email}');
                 /* calendar Event List*/
                 try {
-                  response = await dio.get(BASEURL+ Constant.email+"/"+ apiName);
+                  response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="+maxResult+"&"+"singleEvents="+"true"+"pageToken="+pageToken+"&"+"timeMin="+currentTime);
                   responseJson = _returnResponse(response);
                   print('response:::$response');
 

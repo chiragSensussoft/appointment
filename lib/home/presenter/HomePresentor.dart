@@ -62,11 +62,11 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     }
   }
 
-  Future getCalendarEvent() async{
+  Future getCalendarEvent({pageToken,maxResult,currentTime}) async{
     view.onShowLoader();
     print('get_list:1::${Constant().event}');
     Response getCalendarEventList = await apiHelper.api(token: token, method: Method.GET,
-        apiName: Constant().event, endPoint: Constant().event);
+        apiName: Constant().event, endPoint: Constant().event,pageToken: pageToken,maxResult: maxResult,currentTime: currentTime);
 
     print('statusCode::::${getCalendarEventList.statusCode}');
 
@@ -81,7 +81,8 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
 
   Future deleteEvent(id,email)async{
     view.onShowLoader();
-    Response deleteCalendarEvent = await apiHelper.api(method: Method.DELETE,token: token,endPoint: id,apiName: Constant().event,user: email);
+    Response deleteCalendarEvent = await apiHelper.api(method: Method.DELETE,token: token,endPoint: id,apiName: Constant().event,
+        user: email);
     if(deleteCalendarEvent.runtimeType == null){
       print("RunTimeType${deleteCalendarEvent.runtimeType}");
     }
