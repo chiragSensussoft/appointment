@@ -17,8 +17,11 @@ class MyBottomSheet extends StatefulWidget {
   final String token;
   final List<Item> list;
   final List<Item> itemList;
+  String title, calender_id, description, date, startTime, endTime;
+  bool isEdit;
 
-  MyBottomSheet({this.token,this.list,this.itemList});
+  MyBottomSheet({this.token,this.list,this.itemList, this.title, this.calender_id,
+    this.description, this.date, this.startTime, this.endTime, this.isEdit});
 
   @override
   _MyBottomSheetState createState() => _MyBottomSheetState();
@@ -46,7 +49,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     _discFocus.unfocus();
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -58,7 +60,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     print(startTime);
     init();
   }
-
 
   init() async{
     _sharedPreferences = await SharedPreferences.getInstance();
@@ -244,7 +245,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
             Container(
                 margin: EdgeInsets.only(top: Dimen().dp_20,left: 80,right: 80),
                 child:FlatButton(
-                  child: Text(Resources.from(context,Constant.languageCode).strings.saveBtn,style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium',color: Colors.white)),
+                  // child: TextStylext(Resources.from(context,Constant.languageCode).strings.saveBtn,style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium',color: Colors.white)),
+                  child: Text(widget.isEdit? 'Update': 'save', style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium',color: Colors.white)),
                   minWidth: MediaQuery.of(context).size.width * 0.30,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),

@@ -29,7 +29,7 @@ class _SlideMenuState extends State<SlideMenu> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     final animation = new Tween(
         begin: const Offset(0.0, 0.0),
-        end: const Offset(-0.4, 0.0)
+        end: const Offset(-0.2, 0.0)
     ).animate(new CurveTween(curve: Curves.decelerate).animate(_controller));
 
     return new GestureDetector(
@@ -41,10 +41,10 @@ class _SlideMenuState extends State<SlideMenu> with SingleTickerProviderStateMix
       },
       onHorizontalDragEnd: (data) {
         if (data.primaryVelocity > 2500)
-          _controller.animateTo(.0); //close menu on fast swipe in the right direction
-        else if (_controller.value >= .5 || data.primaryVelocity < -2500) // fully open if dragged a lot to left or on fast swipe to left
+          _controller.animateTo(.0);
+        else if (_controller.value >= .5 || data.primaryVelocity < -2500)
           _controller.animateTo(1.0);
-        else // close if none of above
+        else
           _controller.animateTo(.0);
       },
 
@@ -65,14 +65,21 @@ class _SlideMenuState extends State<SlideMenu> with SingleTickerProviderStateMix
                           top: .0,
                           bottom: .0,
                           width: constraint.maxWidth * animation.value.dx * -1,
-                          child: new Container(
-                            margin: EdgeInsets.only(),
-                            child: new Row(
-                              children: widget.menuItems.map((child) {
-                                return Expanded(
-                                  child: Container(child: child),
-                                );
-                              }).toList(),
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 5, bottom: 5),
+                            child: new Container(
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              margin: EdgeInsets.only(right: 8),
+                              child: new Row(
+                                children: widget.menuItems.map((child) {
+                                  return Expanded(
+                                    child: Container(child: child),
+                                  );
+                                }).toList(),
+                              ),
                             ),
                           ),
                         ),

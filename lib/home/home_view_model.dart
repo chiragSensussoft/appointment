@@ -1,3 +1,4 @@
+import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,25 @@ class HomeViewModel {
       );
     }
     );
+  }
+
+  openBottomSheetView(){
+    return showModalBottomSheet(
+        backgroundColor: Colors.transparent,
+        context: state.context,
+        isScrollControlled: true,
+        isDismissible: true,
+        enableDrag: true,
+        builder: (context) {
+          return DraggableScrollableSheet(
+              initialChildSize: 0.80,
+              expand: true,
+              builder: (context, scrollController) {
+                return state.isEventEdit?
+                MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: true):
+                 MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: false);
+              });
+        }).whenComplete(() => {state.presenter.getCalendarEvent()});
   }
 
 }
