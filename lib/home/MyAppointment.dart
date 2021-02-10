@@ -371,27 +371,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                                           ),
                                         ),
                                       ),
-
-                                      // Padding(
-                                      //   padding: EdgeInsets.only(top: 5, bottom: 5),
-                                      //   child: Container(
-                                      //     height: MediaQuery.of(context).size.height,
-                                      //     width: 10,
-                                      //     color: Colors.blueAccent,
-                                      //     child: Column(
-                                      //       mainAxisAlignment: MainAxisAlignment.center,
-                                      //       children: [
-                                      //         IconButton(
-                                      //           icon: Icon(Icons.share_sharp,color: Colors.white),
-                                      //           onPressed: () {
-                                      //             _showShareDialog(context, "Share", index);
-                                      //           },
-                                      //         ),
-                                      //         Text("Share", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-                                      //       ],
-                                      //     ),
-                                      //   ),
-                                      // ),
                                     ],
                                   ),
                                 ),

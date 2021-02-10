@@ -17,16 +17,16 @@ class APIClient extends BasePresenter<OnHomeView>{
   OnHomeView view;
   APIClient(this.view);
 
-  Future<dynamic> api({String apiName, method,dynamic body, String token,String endPoint,
+  Future<dynamic> api({String apiName, method, dynamic body, String token,String endPoint,
     String user,String pageToken,String maxResult,String currentTime,bool isPageToken}) async{
     var response;
     var responseJson;
 
     try {
-      //it Check internet connectivity
       final result = await InternetAddress.lookup('google.com');
 
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+
         switch(method){
           case Method.POST:
             print("Email ${Constant.email}");
@@ -62,8 +62,10 @@ class APIClient extends BasePresenter<OnHomeView>{
                 try {
                   String time = currentTime.replaceAll(" ", "T");
                   print("Formatted Time --->$time ----> 2011-06-03T10:00:00-07:00");
-                  isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"pageToken="+pageToken)
-                      :response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time);
+                  isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"
+                      +"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"pageToken="+pageToken)
+                      :response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="
+                      +maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time);
                   responseJson = _returnResponse(response);
                   print('response:::$response');
 
@@ -78,8 +80,7 @@ class APIClient extends BasePresenter<OnHomeView>{
           case Method.PUT:
             dio.options.headers["Authorization"] = "Bearer " + token;
             try {
-              response = await dio.put(BASEURL+user+'/'+apiName+'/'+endPoint);
-              // response = await dio.put("https://reqbin.com/sample/put/json");
+              response = await dio.put(BASEURL+user+'/'+apiName+'/'+endPoint, data: body);
               responseJson = _returnResponse(response);
               print('try:::');
 
@@ -103,6 +104,8 @@ class APIClient extends BasePresenter<OnHomeView>{
   }
 
   dynamic _returnResponse(Response response) {
+    print('RETUEN::::${response.statusCode}');
+
     switch (response.statusCode) {
       case 200:
         print('STATUS::::$response');

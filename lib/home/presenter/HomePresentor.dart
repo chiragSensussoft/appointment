@@ -110,10 +110,14 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     print("ID::: $id");
     print("email::: $email");
 
+    if(timeZone==null){
+      timeZone = "IST";
+    }
+
     view.onShowLoader();
 
     Response postResponse = await apiHelper.api(apiName:Constant().event, method: Method.PUT,
-        endPoint: id, user: email,
+        endPoint: id, user: email,token: token,
         body:jsonEncode(
             {
           "end": {
@@ -127,11 +131,10 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
           "summary": summary,
           "description": description
         }
-        ),
-        token: token);
+        )
+    );
 
     if (postResponse.statusCode == 200) {
-
       isViewAttached ? getView().onUpdateEvent(postResponse.data) : null;
       view.onHideLoader();
 
