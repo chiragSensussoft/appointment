@@ -1,5 +1,4 @@
 import 'package:appointment/home/MyAppointment.dart';
-import 'package:appointment/home/OtherAppointment.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/values/Palette.dart';

@@ -387,7 +387,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
               onRefresh: () {
                 print('onrefresh::::${access_token}');
                 eventItem.clear();
-                hasMoreItems = true;
                 return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
               }),
         ),
@@ -846,8 +845,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     presenter.getCalendar(googleSignInAuthentication.accessToken);
     initialLoad = presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
     hasMoreItems = true;
-
-
 
     return googleSignInAuthentication.accessToken;
   }
