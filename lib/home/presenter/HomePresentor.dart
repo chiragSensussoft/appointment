@@ -17,10 +17,8 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     apiHelper = APIClient(view);
   }
 
-      Future setAppointment({String description, String summary,String startDate, String endDate,String timeZone}) async {
-        print("Token $token");
-        print("End Date $endDate:00");
-        print("Start Date $startDate:00");
+      Future setAppointment({String description, String summary,String startDate,
+        String endDate,String timeZone}) async {
 
         view.onShowLoader();
 
@@ -62,11 +60,13 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     }
   }
 
-  Future getCalendarEvent({pageToken,maxResult,currentTime}) async{
+  // Future getCalendarEvent({pageToken,maxResult,currentTime}) async{
+  Future getCalendarEvent() async{
     view.onShowLoader();
     print('get_list:1::${Constant().event}');
     Response getCalendarEventList = await apiHelper.api(token: token, method: Method.GET,
-        apiName: Constant().event, endPoint: Constant().event,pageToken: pageToken,maxResult: maxResult,currentTime: currentTime);
+        // apiName: Constant().event, endPoint: Constant().event,pageToken: pageToken,maxResult: maxResult,currentTime: currentTime);
+        apiName: Constant().event, endPoint: Constant().event);
 
     print('statusCode::::${getCalendarEventList.statusCode}');
 
@@ -99,15 +99,24 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     }
   }
 
-  Future update({id,email,String description, String summary,String startDate, String endDate,String timeZone})async{
+  Future updatevent({String id, String email, String description, String summary, String startDate,
+    String endDate,String timeZone})async{
+
     print("Token $token");
-    print("End Date $endDate:00");
-    print("Start Date $startDate:00");
+    print("description $description");
+    print("summary $summary");
+    print("timeZone $timeZone");
+    print("End Date $endDate");
+    print("Start Date $startDate");
+    print("ID::: $id");
+    print("email::: $email");
 
     view.onShowLoader();
 
-    Response postResponse = await apiHelper.api(apiName:Constant().event,method:  Method.PUT,endPoint: id,user: email,
-        body:jsonEncode({
+    Response postResponse = await apiHelper.api(apiName:Constant().event, method: Method.PUT,
+        endPoint: id, user: email,
+        body:jsonEncode(
+            {
           "end": {
             "dateTime": endDate,
             "timeZone": timeZone
@@ -118,10 +127,13 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
           },
           "summary": summary,
           "description": description
-        }),token: token);
+        }
+        ),
+        token: token);
 
     if (postResponse.statusCode == 200) {
-      isViewAttached ? getView().onCreateEvent(postResponse.data) : null;
+
+      isViewAttached ? getView().onUpdateEvent(postResponse.data) : null;
       view.onHideLoader();
 
     } else {

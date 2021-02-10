@@ -17,8 +17,9 @@ class APIClient extends BasePresenter<OnHomeView>{
   OnHomeView view;
   APIClient(this.view);
 
-  Future<dynamic> api({String apiName, method,dynamic body, String token,String endPoint,String user,String pageToken,String maxResult,String currentTime}) async{
-    Response response;
+  Future<dynamic> api({String apiName, method,dynamic body, String token,String endPoint,
+    String user,String pageToken,String maxResult,String currentTime}) async{
+    var response;
     var responseJson;
 
     try {
@@ -52,13 +53,12 @@ class APIClient extends BasePresenter<OnHomeView>{
                   responseJson = _returnResponse(e.response);
                 }
                 break;
+
               case "events":
-                print('events:::::$apiName');
-                print('events:::::$BASEURL');
-                print('events:::::${Constant.email}');
                 /* calendar Event List*/
                 try {
-                  response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="+maxResult+"&"+"singleEvents="+"true"+"pageToken="+pageToken+"&"+"timeMin="+currentTime);
+                  // response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="+maxResult+"&"+"singleEvents="+"true"+"pageToken="+pageToken+"&"+"timeMin="+currentTime);
+                  response = await dio.get(BASEURL+ Constant.email+"/"+ apiName);
                   responseJson = _returnResponse(response);
                   print('response:::$response');
 
@@ -71,18 +71,17 @@ class APIClient extends BasePresenter<OnHomeView>{
             break;
 
           case Method.PUT:
-
-            print("Email ${Constant.email}");
-
             dio.options.headers["Authorization"] = "Bearer " + token;
             try {
-              response = await dio.put(BASEURL+user+"/"+apiName+"/"+endPoint);
+              response = await dio.put(BASEURL+user+'/'+apiName+'/'+endPoint);
+              // response = await dio.put("https://reqbin.com/sample/put/json");
               responseJson = _returnResponse(response);
+              print('try:::');
 
             } on DioError catch (e) {
               responseJson = _returnResponse(e.response);
+              print('catch::::;${e.message}');
             }
-
             break;
 
           case Method.DELETE:
@@ -101,7 +100,7 @@ class APIClient extends BasePresenter<OnHomeView>{
   dynamic _returnResponse(Response response) {
     switch (response.statusCode) {
       case 200:
-        // print('STATUS::::$response');
+        print('STATUS::::$response');
         return response;
 
       case 400:

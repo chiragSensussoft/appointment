@@ -1,5 +1,6 @@
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/MyAppointment.dart';
+import 'package:appointment/utils/values/Constant.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'event_calendar.dart';
@@ -30,20 +31,28 @@ class HomeViewModel {
     );
   }
 
-  openBottomSheetView(){
+
+  openBottomSheetView({String summary, String description, DateTime startDate,
+    DateTime endDate, String timeZone, bool isEdit, String eventID}){
+
     return showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: state.context,
         isScrollControlled: true,
         isDismissible: true,
         enableDrag: true,
+
         builder: (context) {
           return DraggableScrollableSheet(
               initialChildSize: 0.80,
               expand: true,
+
               builder: (context, scrollController) {
-                return state.isEventEdit?
-                MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: true):
+                return isEdit?
+                MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: true,
+                title: summary, description: description, getStartDate: startDate, getendDate: endDate,
+                  timeZone: timeZone, eventID: eventID):
+
                  MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: false);
               });
         }).whenComplete(() => {state.presenter.getCalendarEvent()});

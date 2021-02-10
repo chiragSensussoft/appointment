@@ -59,7 +59,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   bool loader = false;
   bool descTextShowFlag = false;
   bool isLoading = false;
-  bool isEventEdit = false;
+  // bool isEventEdit = false;
   bool _enabled =  false;
   ScrollController controller = ScrollController(keepScrollOffset: false);
 
@@ -176,17 +176,13 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                           onTap: () async {
                             model.detailSheet(eventItem[index].start.dateTime);
 
-                            String startDate = eventItem[index].start.dateTime.toLocal().year.toString() + "-" + eventItem[index].start.dateTime.toLocal().month.toString() + "-" + eventItem[index].start.dateTime.toLocal().day.toString();
-                            String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() + ":" + eventItem[index].start.dateTime.toLocal().minute.toString() + ":" + "00";
-                            print("Date ${startDate + "T" + startTime}");
-                            String endDate = eventItem[index].end.dateTime.toLocal().year.toString() + "-" + eventItem[index].end.dateTime.toLocal().month.toString() + "-" + eventItem[index].end.dateTime.toLocal().day.toString();
-                            String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString() + ":" + "00";
+                            print('getStart:::::${Constant.getFullDateFormat(eventItem[index].start.dateTime)}');
 
                             dynamicLink = await createDynamicLink(
                                 title: eventItem[index].summary,
                                 desc: eventItem[index].description,
-                                startDate: startDate + "T" + startTime,
-                                endDate: endDate + "T" + endTime,
+                                startDate: Constant.getFullDateFormat(eventItem[index].start.dateTime),
+                                endDate: Constant.getFullDateFormat(eventItem[index].end.dateTime),
                                 email: email,
                                 photoUrl: url,
                                 senderName: userName,
@@ -197,10 +193,10 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                           child: Material(
                             elevation: 1,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+
                             child: Container(
                                 width: MediaQuery.of(context).size.width,
                                 padding: EdgeInsets.only(top: 8, bottom: 8, left: 18, right: 18),
-
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +204,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
 
                                   children: [
                                     SizedBox(height: 5),
-
                                     Container(child: Text(eventItem[index].summary.toString(), style: TextStyle(color: Colors.black.withOpacity(0.6),fontSize: 13, fontFamily: "poppins_medium")),),
 
                                     SizedBox(height: 5),
@@ -236,9 +231,8 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                                                     Container(
                                                       child: Text(
                                                           DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
-                                                              eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
-                                                              eventItem[index].start.dateTime.toLocal().minute.toString(),
-                                                          style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
+                                                              Constant.getTimeFormat(eventItem[index].start.dateTime.toLocal()),
+                                                          style: TextStyle(fontSize: 11, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
                                                     ),
                                                   ],
                                                 ),
@@ -255,8 +249,8 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                                                     Container(
                                                         child: Text(
                                                           DateFormat('EE, d MMM, yyyy').format(eventItem[index].end.dateTime.toLocal()) + "  " +
-                                                              eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString(),
-                                                          style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5)),
+                                                              Constant.getTimeFormat(eventItem[index].end.dateTime.toLocal()),
+                                                          style: TextStyle(fontSize: 11, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5)),
                                                         )
                                                     ),
                                                   ],
@@ -275,19 +269,20 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                                                 child: Padding(
                                                     padding: EdgeInsets.only(left: 30),
                                                     child: Icon(Icons.edit_outlined,size: 20, color: Colors.black.withOpacity(0.5))),
+
                                                 onTap: (){
-                                                  isEventEdit = true;
-                                                  // model.openBottomSheetView(eventItem[index].summary,
-                                                  // eventItem[index].description, eventItem[index].start.dateTime,
-                                                  // eventItem[index].end.dateTime, eventItem[index].start.timeZone,
-                                                  // eventItem[index].);
+                                                  model.openBottomSheetView(description: eventItem[index].description,
+                                                  summary: eventItem[index].summary, startDate: eventItem[index].start.dateTime,
+                                                      timeZone: eventItem[index].start.timeZone, endDate: eventItem[index].end.dateTime,
+                                                      isEdit: true, eventID: eventItem[index].id);
                                                 },
                                               ),
 
                                               GestureDetector(
                                                 child: Padding(
                                                     padding:EdgeInsets.only(left:10),
-                                                    child: Icon(Icons.share_rounded,size: 20, color: Colors.black.withOpacity(0.5))),
+                                                    child: Icon(Icons.share_rounded,size: 20, color: Colors.black.withOpacity(0.5))
+                                                ),
                                                 onTap: (){
 
                                                 },
@@ -498,7 +493,8 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
               ),
               onRefresh: () {
                 print('onrefresh::::${access_token}');
-                return presenter.getCalendarEvent(pageToken: map['']);
+                // return presenter.getCalendarEvent(pageToken: map['']);
+                return presenter.getCalendarEvent();
               }),
         ),
 
@@ -526,8 +522,8 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
               //                 itemList: itemList);
               //           });
               //     }).whenComplete(() => {presenter.getCalendarEvent()});
-              isEventEdit = false;
-              model.openBottomSheetView();
+
+              model.openBottomSheetView(isEdit: false);
             }));
   }
 
@@ -986,5 +982,10 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     toast.overLay = false;
     toast.showOverLay("Appointment created successfully", Colors.white, Colors.black54, context);
     presenter.getCalendarEvent();
+  }
+
+  @override
+  onUpdateEvent(response) {
+    print('update:::;$response');
   }
 }

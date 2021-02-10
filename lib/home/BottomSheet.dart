@@ -10,41 +10,42 @@ import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'OnHomeView.dart';
+
 
 class MyBottomSheet extends StatefulWidget {
   final String token;
   final List<Item> list;
   final List<Item> itemList;
-  String title, calender_id, description, date, startTime, endTime;
+  String title, description;
   bool isEdit;
+  String summary;
+  DateTime getStartDate, getendDate;
+  String timeZone;
+  String eventID;
 
-  MyBottomSheet({this.token,this.list,this.itemList, this.title, this.calender_id,
-    this.description, this.date, this.startTime, this.endTime, this.isEdit});
+  MyBottomSheet({this.token, this.list, this.itemList, this.title, this.description,
+    this.getStartDate, this.getendDate, this.timeZone, this.isEdit, this.eventID});
 
   @override
   _MyBottomSheetState createState() => _MyBottomSheetState();
 }
 
 class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
-  DateTime _startDateTime = DateTime.now();
-  DateTime _currentTime = DateTime.now();
-
+  DateTime _startDateTime;
   HomePresenter _presenter;
   TextEditingController title =  TextEditingController();
   TextEditingController desc = TextEditingController();
   FocusNode _titleFocus = FocusNode();
   FocusNode _discFocus = FocusNode();
   bool loader = false;
-  int temp;
   String setEmail;
-  SharedPreferences _sharedPreferences;
+
+  DateTime currentDateTime = DateTime.now();
 
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _discFocus.unfocus();
   }
@@ -52,19 +53,21 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   @override
   void initState() {
     super.initState();
-    startTime = _startDateTime.hour.toString() + ":" + _startDateTime.minute.toString();
-    startDate = DateFormat('EE, d MMM, yyyy').format(_startDateTime);
-    temp = _startDateTime.hour + 1;
-    _endTime = temp.toString() + ":" + "00" ;
-    print(_endTime);
-    print(startTime);
-    init();
-  }
+    widget.isEdit? _startDateTime = widget.getStartDate.toLocal() :_startDateTime = DateTime.now();
 
-  init() async{
-    _sharedPreferences = await SharedPreferences.getInstance();
-  }
+    startDate = _startDateTime.year.toString()  + "-" +_startDateTime.month.toString() + "-" + _startDateTime.day.toString();
 
+    startTime = Constant.getTimeFormat(_startDateTime);
+
+    widget.isEdit ?_endTime = Constant.getTimeFormat(widget.getendDate.toLocal())
+        :_endTime =  (_startDateTime.toLocal().hour + 1).toString()+":"
+        + _startDateTime.toLocal().minute.toString()+ ":"+ _startDateTime.toLocal().second.toString();
+
+    /*set text for edit*/
+    widget.isEdit? title.text = widget.title : null;
+    widget.isEdit? desc.text = widget.description : null;
+    widget.isEdit? setEmail = Constant.email : null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +154,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                 calendarListDialog();
               },
             ),
+
             Container(
                 margin: EdgeInsets.only(top: Dimen().dp_10),
                 child: TextFormField(
@@ -192,7 +196,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                   _selectDate(context);
                 },
                 color: Colors.grey[200],
-                child: Text(startDate??DateFormat('EE, d MMM, yyyy').format(_currentTime),style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
+                child: Text(DateFormat('EE, d MMM, yyyy').format(_startDateTime),style: TextStyle(fontSize: 15,fontFamily: 'poppins_medium'),),
               ),
             ),
             Container(
@@ -242,6 +246,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                 ],
               ),
             ),
+
             Container(
                 margin: EdgeInsets.only(top: Dimen().dp_20,left: 80,right: 80),
                 child:FlatButton(
@@ -258,14 +263,24 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                       toast.overLay = false;
                       toast.showOverLay("Fill all details", Colors.white, Colors.black54, context);
                     }
-                    else if(startDate == DateFormat('EE, d MMM, yyyy').format(_currentTime)){
+                    else if(startDate == DateFormat('EE, d MMM, yyyy').format(_startDateTime)){
                       toast.overLay = false;
                       toast.showOverLay("Select Date", Colors.white, Colors.black54, context);
                     }
                     else{
-                      _presenter = new HomePresenter(this,token: widget.token);
+                      _presenter = new HomePresenter(this, token: widget.token);
                       _presenter.attachView(this);
-                      _presenter.setAppointment(endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,timeZone: _currentTime.timeZoneName,summary: title.text,description: desc.text);
+
+                      print("start::::${startDate+"T"+startTime}");
+                      print("end::::${startDate+"T"+_endTime}");
+
+                      widget.isEdit?
+                      _presenter.updatevent(endDate: startDate+"T"+_endTime, startDate: startDate+"T"+startTime,
+                          timeZone: widget.timeZone, summary: title.text, description: desc.text,
+                          id: widget.eventID, email: setEmail)
+                      :
+                      _presenter.setAppointment(endDate: startDate+"T"+_endTime,startDate: startDate+"T"+startTime,
+                          timeZone: _startDateTime.timeZoneName, summary: title.text,description: desc.text);
                     }
                   },
                   color: Palette.colorPrimary,
@@ -283,16 +298,17 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
       context: context,
-      initialDate: _currentTime,
+      initialDate: _startDateTime,
       firstDate: DateTime.now(),
-      lastDate: DateTime(_currentTime.year + 25),
+      lastDate: DateTime(_startDateTime.year + 25),
     );
-    if (picked != null && picked != _startDateTime)
+
+    if(picked != null && picked != _startDateTime)
       setState(() {
         _startDateTime = picked;
         startDate = _startDateTime.year.toString()  + "-" +_startDateTime.month.toString() + "-" + _startDateTime.day.toString();
       });
-    print(startDate);
+    print('format:::$startDate');
     return picked;
   }
 
@@ -310,7 +326,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
         selectedTime = picked;
         _hour = selectedTime.hour.toString();
         _minute = selectedTime.minute.toString();
-        startTime = _hour +":"+ _minute.toString()+":" +"00";
+        startTime = _hour +":"+ _minute +":" +"00";
       });
   }
 
@@ -328,7 +344,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
         selectedTime = picked;
         _endHour = selectedTime.hour.toString();
         _endMinute = selectedTime.minute.toString();
-        _endTime = _endHour +":"+ _endMinute.toString()+":"+"00";
+        _endTime = _endHour +":"+ _endMinute+":"+"00";
       });
   }
 
@@ -361,7 +377,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                                 height: 20,
                                 width: 20,
                                 child: CircleAvatar(
-                                    backgroundColor:widget.itemList[index].id ==setEmail? Palette.colorPrimary:Colors.grey),
+                                    backgroundColor : widget.itemList[index].id ==setEmail? Palette.colorPrimary:Colors.grey),
                               ),
 
                               Container(
@@ -417,7 +433,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   @override
   onSuccessRes(response) {
     print('onSucess:::$response');
-
   }
 
   @override
@@ -428,6 +443,11 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
   @override
   onCreateEvent(response) {
     print('onSucess:::$response');
+  }
+
+  @override
+  onUpdateEvent(response) {
+    print('onUpdate:::$response');
   }
 
 }
