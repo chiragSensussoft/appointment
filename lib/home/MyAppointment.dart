@@ -868,6 +868,8 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     initialLoad = presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
     hasMoreItems = true;
 
+
+
     return googleSignInAuthentication.accessToken;
   }
 
