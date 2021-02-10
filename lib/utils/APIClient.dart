@@ -18,7 +18,7 @@ class APIClient extends BasePresenter<OnHomeView>{
   APIClient(this.view);
 
   Future<dynamic> api({String apiName, method,dynamic body, String token,String endPoint,
-    String user,String pageToken,String maxResult,String currentTime}) async{
+    String user,String pageToken,String maxResult,String currentTime,bool isPageToken}) async{
     var response;
     var responseJson;
 
@@ -55,10 +55,15 @@ class APIClient extends BasePresenter<OnHomeView>{
                 break;
 
               case "events":
+                print('events:::::$apiName');
+                print('events:::::$BASEURL');
+                print('events:::::${Constant.email}');
                 /* calendar Event List*/
                 try {
-                  // response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="+maxResult+"&"+"singleEvents="+"true"+"pageToken="+pageToken+"&"+"timeMin="+currentTime);
-                  response = await dio.get(BASEURL+ Constant.email+"/"+ apiName);
+                  String time = currentTime.replaceAll(" ", "T");
+                  print("Formatted Time --->$time ----> 2011-06-03T10:00:00-07:00");
+                  isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"pageToken="+pageToken)
+                      :response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time);
                   responseJson = _returnResponse(response);
                   print('response:::$response');
 

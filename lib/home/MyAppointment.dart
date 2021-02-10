@@ -5,24 +5,20 @@ import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
-import 'package:appointment/utils/DescriptionTextWidget.dart';
-import 'package:appointment/utils/RoundShapeButton.dart';
 import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/slide_menu.dart';
 import 'package:appointment/utils/values/Constant.dart';
-import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:intl/intl.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sliding_sheet/sliding_sheet.dart';
 import 'package:sqflite/sqflite.dart';
-import 'BottomSheet.dart';
+import 'LoadMore.dart';
 import 'OnHomeView.dart';
 
 class MyAppointment extends StatefulWidget {
@@ -60,7 +56,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   bool descTextShowFlag = false;
   bool isLoading = false;
   // bool isEventEdit = false;
-  bool _enabled =  false;
   ScrollController controller = ScrollController(keepScrollOffset: false);
 
   @override
@@ -101,53 +96,15 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    controller.dispose();
-  }
+  bool loadingMore;
+  bool hasMoreItems;
+  Future initialLoad;
+  Future _loadMoreItems() async {
+    if(controller.position.pixels == controller.position.maxScrollExtent){
+      await presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: true,pageToken: map['nextPageToken']);
 
-  void _scrollListener() {
-    if (controller.position.pixels == controller.position.maxScrollExtent) {
-      startLoader();
     }
-  }
-
-  void startLoader() {
-    setState(() {
-      isLoading = !isLoading;
-      fetchData();
-    });
-  }
-
-  fetchData() async {
-    var _duration = new Duration(seconds: 2);
-    return new Timer(_duration, onResponse);
-  }
-
-  void onResponse() {
-    setState(() {
-      isLoading = !isLoading;
-      // _All.addAll(generateWordPairs().take(20));
-    });
-  }
-
-  Widget _loader() {
-    return isLoading
-        ? new Align(
-          child: new Container(
-            width: 70.0,
-            height: 70.0,
-            child: new Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: new Center(child: new CircularProgressIndicator())),
-          ),
-          alignment: FractionalOffset.bottomCenter,
-        )
-            : new SizedBox(
-          width: 0.0,
-          height: 0.0,
-        );
+    hasMoreItems = map['nextPageToken'] != null;
   }
 
   @override
@@ -164,263 +121,109 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                     color: Colors.grey[200],
                     child: isVisible == false
                         ? eventItem.length != 0
-                        ?
-                    ListView.builder(
-                      itemCount: eventItem.length,
-                      itemBuilder: (_, index) {
-
-                    return SlideMenu(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom:5),
-                        child: GestureDetector(
-                          onTap: () async {
-                            model.detailSheet(eventItem[index].start.dateTime);
-
-                            print('getStart:::::${Constant.getFullDateFormat(eventItem[index].start.dateTime)}');
-
-                            dynamicLink = await createDynamicLink(
-                                title: eventItem[index].summary,
-                                desc: eventItem[index].description,
-                                startDate: Constant.getFullDateFormat(eventItem[index].start.dateTime),
-                                endDate: Constant.getFullDateFormat(eventItem[index].end.dateTime),
-                                email: email,
-                                photoUrl: url,
-                                senderName: userName,
-                                timeZone: eventItem[index].start.timeZone);
-                            print("Dynamic Link: $dynamicLink");
-                          },
-
-                          child: Material(
-                            elevation: 1,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-
-                            child: Container(
-                                width: MediaQuery.of(context).size.width,
-                                padding: EdgeInsets.only(top: 8, bottom: 8, left: 18, right: 18),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-
-                                  children: [
-                                    SizedBox(height: 5),
-                                    Container(child: Text(eventItem[index].summary.toString(), style: TextStyle(color: Colors.black.withOpacity(0.6),fontSize: 13, fontFamily: "poppins_medium")),),
-
-                                    SizedBox(height: 5),
-
-                                    Container(
-                                      margin: EdgeInsets.only(bottom: 5),
-                                      child: eventItem[index].description != null ?  DescriptionTextWidget(text: eventItem[index].description) :Text("", style: TextStyle(fontSize: 13, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
-                                    ),
-
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                                      children: [
-                                        Expanded(
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Container(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Container(child: Text('From', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5)))),
-
-                                                    Container(
-                                                      child: Text(
-                                                          DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
-                                                              Constant.getTimeFormat(eventItem[index].start.dateTime.toLocal()),
-                                                          style: TextStyle(fontSize: 11, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              Container(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Container(
-                                                      child: Text('To', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5))),
-                                                    ),
-
-                                                    Container(
-                                                        child: Text(
-                                                          DateFormat('EE, d MMM, yyyy').format(eventItem[index].end.dateTime.toLocal()) + "  " +
-                                                              Constant.getTimeFormat(eventItem[index].end.dateTime.toLocal()),
-                                                          style: TextStyle(fontSize: 11, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5)),
-                                                        )
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                        Container(
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            children: [
-                                              GestureDetector(
-                                                child: Padding(
-                                                    padding: EdgeInsets.only(left: 30),
-                                                    child: Icon(Icons.edit_outlined,size: 20, color: Colors.black.withOpacity(0.5))),
-
-                                                onTap: (){
-                                                  model.openBottomSheetView(description: eventItem[index].description,
-                                                  summary: eventItem[index].summary, startDate: eventItem[index].start.dateTime,
-                                                      timeZone: eventItem[index].start.timeZone, endDate: eventItem[index].end.dateTime,
-                                                      isEdit: true, eventID: eventItem[index].id);
-                                                },
-                                              ),
-
-                                              GestureDetector(
-                                                child: Padding(
-                                                    padding:EdgeInsets.only(left:10),
-                                                    child: Icon(Icons.share_rounded,size: 20, color: Colors.black.withOpacity(0.5))
-                                                ),
-                                                onTap: (){
-
-                                                },
-                                              )
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                    )
-
-                                    // Row(
-                                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    //     children: [
-                                    //       Expanded(
-                                    //         child: Column(
-                                    //           mainAxisAlignment: MainAxisAlignment.start,
-                                    //           crossAxisAlignment: CrossAxisAlignment.start,
-                                    //
-                                    //           children: [
-                                    //
-                                    //             Container(
-                                    //               child: Text(eventItem[index].summary.toString(), style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
-                                    //             ),
-                                    //
-                                    //             SizedBox(height: 5),
-                                    //
-                                    //             Container(
-                                    //               child: Text(eventItem[index].description != null? eventItem[index].description : "",
-                                    //                   style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
-                                    //             ),
-                                    //           ],
-                                    //         ),
-                                    //         flex: 8,
-                                    //       ),
-                                    //       Expanded(
-                                    //         flex: 6,
-                                    //         child: Column(
-                                    //           crossAxisAlignment: CrossAxisAlignment.start,
-                                    //           children: [
-                                    //             Container(
-                                    //               margin: EdgeInsets.only(top: 5),
-                                    //               child: Text('From', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
-                                    //               ),
-                                    //             ),
-                                    //             Container(
-                                    //               child: Text(
-                                    //                   DateFormat('EE, d MMM, yyyy').format(eventItem[index].start.dateTime.toLocal()) + "  " +
-                                    //                       eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
-                                    //                       eventItem[index].start.dateTime.toLocal().minute.toString(),
-                                    //                   style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
-                                    //             ),
-                                    //             Container(
-                                    //               margin: EdgeInsets.only(top: 5),
-                                    //               child: Text('To', style: TextStyle(fontSize: 14, fontFamily: "poppins_medium"),
-                                    //               ),
-                                    //             ),
-                                    //             Container(
-                                    //               child: Text(
-                                    //                   DateFormat('EE, d MMM, yyyy').format(eventItem[index]
-                                    //                           .end
-                                    //                           .dateTime
-                                    //                           .toLocal()) +
-                                    //                       "  " +
-                                    //                       eventItem[index]
-                                    //                           .end
-                                    //                           .dateTime
-                                    //                           .toLocal()
-                                    //                           .hour
-                                    //                           .toString() +
-                                    //                       ":" +
-                                    //                       eventItem[index]
-                                    //                           .end
-                                    //                           .dateTime
-                                    //                           .toLocal()
-                                    //                           .minute
-                                    //                           .toString(),
-                                    //                   style: TextStyle(
-                                    //                       fontSize:
-                                    //                           14,
-                                    //                       fontFamily:
-                                    //                           "poppins_regular")),
-                                    //             ),
-                                    //           ],
-                                    //         ),
-                                    //       )
-                                    //     ]),
-                                  ],
-                                )
-                            ),
-                          ),
-                          // ),
-                        ),
-                      ),
-
-                          menuItems: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(top: 5, bottom: 5),
-                              child: Container(
-                                height: MediaQuery.of(context).size.height,
-                                width: 10,
-                                color: Colors.red,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
-                                      onPressed: () {
-                                        _showConfirmationDialog(context, 'Delete', index);
-                                      },
-                                    ),
-                                    Text("Delete", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            // Padding(
-                            //   padding: EdgeInsets.only(top: 5, bottom: 5),
-                            //   child: Container(
-                            //     height: MediaQuery.of(context).size.height,
-                            //     width: 10,
-                            //     color: Colors.blueAccent,
-                            //     child: Column(
-                            //       mainAxisAlignment: MainAxisAlignment.center,
-                            //       children: [
-                            //         IconButton(
-                            //           icon: Icon(Icons.share_sharp,color: Colors.white),
-                            //           onPressed: () {
-                            //             _showShareDialog(context, "Share", index);
-                            //           },
-                            //         ),
-                            //         Text("Share", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-                            //       ],
-                            //     ),
-                            //   ),
-                            // ),
-                          ],
-                        );
+                        ? FutureBuilder(
+                      future: initialLoad,
+                      builder: (context, snapshot) {
+                        switch (snapshot.connectionState) {
+                          case ConnectionState.waiting:
+                            return Center(child: CircularProgressIndicator());
+                          case ConnectionState.done:
+                            return IncrementallyLoadingListView(
+                              hasMore: () => hasMoreItems,
+                              itemCount: () => eventItem.length,
+                              loadMore: () async {
+                                await _loadMoreItems();
+                              },
+                              onLoadMore: () {
+                                setState(() {
+                                  loadingMore = true;
+                                });
+                              },
+                              onLoadMoreFinished: () {
+                                setState(() {
+                                  loadingMore = false;
+                                });
+                              },
+                              controller: controller,
+                              loadMoreOffsetFromBottom: 2,
+                              itemBuilder: (context, index) {
+                                if ((loadingMore ?? false) && index == eventItem.length -1) {
+                                  return Column(
+                                    children: <Widget>[
+                                      model.slideMenu(index),
+                                      // Container(
+                                      //   width: double.infinity,
+                                      //   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                                      //   child: Column(
+                                      //     mainAxisSize: MainAxisSize.max,
+                                      //     children: <Widget>[
+                                      //       Expanded(
+                                      //         child: Shimmer.fromColors(
+                                      //           baseColor: Colors.grey[300],
+                                      //           highlightColor: Colors.grey[100],
+                                      //           enabled: true,
+                                      //           child: ListView.builder(
+                                      //             itemBuilder: (_, __) => Padding(
+                                      //               padding: const EdgeInsets.only(bottom: 8.0),
+                                      //               child: Row(
+                                      //                 crossAxisAlignment: CrossAxisAlignment.start,
+                                      //                 children: [
+                                      //                   Container(
+                                      //                     width: 48.0,
+                                      //                     height: 48.0,
+                                      //                     color: Colors.white,
+                                      //                   ),
+                                      //                   const Padding(
+                                      //                     padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                      //                   ),
+                                      //                   Expanded(
+                                      //                     child: Column(
+                                      //                       crossAxisAlignment: CrossAxisAlignment.start,
+                                      //                       children: <Widget>[
+                                      //                         Container(
+                                      //                           width: double.infinity,
+                                      //                           height: 8.0,
+                                      //                           color: Colors.white,
+                                      //                         ),
+                                      //                         const Padding(
+                                      //                           padding: EdgeInsets.symmetric(vertical: 2.0),
+                                      //                         ),
+                                      //                         Container(
+                                      //                           width: double.infinity,
+                                      //                           height: 8.0,
+                                      //                           color: Colors.white,
+                                      //                         ),
+                                      //                         const Padding(
+                                      //                           padding: EdgeInsets.symmetric(vertical: 2.0),
+                                      //                         ),
+                                      //                         Container(
+                                      //                           width: 40.0,
+                                      //                           height: 8.0,
+                                      //                           color: Colors.white,
+                                      //                         ),
+                                      //                       ],
+                                      //                     ),
+                                      //                   )
+                                      //                 ],
+                                      //               ),
+                                      //             ),
+                                      //             itemCount: 1,
+                                      //           ),
+                                      //         ),
+                                      //       ),
+                                      //     ],
+                                      //   ),
+                                      // )
+                                      CircularProgressIndicator()
+                                    ],
+                                  );
+                                }
+                                return model.slideMenu(index);
+                              },
+                            );
+                          default:
+                            return Text('Something went wrong');
+                        }
                       },
                     )
                         : Center(child: Text("No Event Created"))
@@ -434,49 +237,161 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                             child: Shimmer.fromColors(
                               baseColor: Colors.grey[300],
                               highlightColor: Colors.grey[100],
-                              enabled: _enabled,
+                              enabled: true,
                               child: ListView.builder(
                                 itemBuilder: (_, __) => Padding(
                                   padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 48.0,
-                                        height: 48.0,
-                                        color: Colors.white,
-                                      ),
-                                      const Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                      ),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Container(
-                                              width: double.infinity,
-                                              height: 8.0,
-                                              color: Colors.white,
-                                            ),
-                                            const Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 2.0),
-                                            ),
-                                            Container(
-                                              width: double.infinity,
-                                              height: 8.0,
-                                              color: Colors.white,
-                                            ),
-                                            const Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 2.0),
-                                            ),
-                                            Container(
-                                              width: 40.0,
-                                              height: 8.0,
-                                              color: Colors.white,
-                                            ),
-                                          ],
+                                  child: SlideMenu(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom:5),
+                                      child: GestureDetector(
+                                        child: Material(
+                                          elevation: 1,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          child: Container(
+                                              width: MediaQuery.of(context).size.width,
+                                              padding: EdgeInsets.only(top: 8, bottom: 8, left: 18, right: 18),
+
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.center,
+
+                                                children: [
+                                                  SizedBox(height: 5),
+
+                                                  Container(
+                                                    child: SizedBox(),
+                                                  ),
+
+                                                  SizedBox(height: 5),
+
+                                                  Container(
+                                                    margin: EdgeInsets.only(bottom: 5),
+                                                    // child: state.eventItem[index].description != null ?  DescriptionTextWidget(text: state.eventItem[index].description) :Text("", style: TextStyle(fontSize: 13, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
+                                                  ),
+
+                                                  Row(
+                                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                                                    children: [
+                                                      Expanded(
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                            Container(
+                                                              child: Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+                                                                  Container(child: Text('From', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5)))),
+
+                                                                  Container(
+                                                                    child: Text(""
+                                                                      // DateFormat('EE, d MMM, yyyy').format(state.eventItem[index].start.dateTime.toLocal()) + "  " +
+                                                                      //     state.eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
+                                                                      //     state.eventItem[index].start.dateTime.toLocal().minute.toString(),
+                                                                      // style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+
+                                                            Container(
+                                                              child: Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+                                                                  Container(
+                                                                    child: Text('   ', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5))),
+                                                                  ),
+
+                                                                  Container(
+                                                                      child: Text("  "
+                                                                        // DateFormat('EE, d MMM, yyyy').format(state.eventItem[index].end.dateTime.toLocal()) + "  " +
+                                                                        //     state.eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + state.eventItem[index].end.dateTime.toLocal().minute.toString(),
+                                                                        // style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5)),
+                                                                      )
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+
+                                                      Container(
+                                                        child: Row(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          mainAxisAlignment: MainAxisAlignment.end,
+                                                          children: [
+                                                            GestureDetector(
+                                                              child: Padding(
+                                                                  padding: EdgeInsets.only(left: 30),
+                                                                  child: Icon(Icons.edit_outlined,size: 20, color: Colors.black.withOpacity(0.5))),
+                                                            ),
+
+                                                            GestureDetector(
+                                                              child: Padding(
+                                                                  padding:EdgeInsets.only(left:10),
+                                                                  child: Icon(Icons.share_rounded,size: 20, color: Colors.black.withOpacity(0.5))),
+                                                              onTap: (){
+
+                                                              },
+                                                            )
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  )
+
+                                                ],
+                                              )
+                                          ),
                                         ),
-                                      )
+                                        // ),
+                                      ),
+                                    ),
+
+                                    menuItems: <Widget>[
+                                      Padding(
+                                        padding: EdgeInsets.only(top: 5, bottom: 5),
+                                        child: Container(
+                                          height: MediaQuery.of(context).size.height,
+                                          width: 10,
+                                          color: Colors.red,
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
+                                              ),
+                                              Text("Delete", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Padding(
+                                      //   padding: EdgeInsets.only(top: 5, bottom: 5),
+                                      //   child: Container(
+                                      //     height: MediaQuery.of(context).size.height,
+                                      //     width: 10,
+                                      //     color: Colors.blueAccent,
+                                      //     child: Column(
+                                      //       mainAxisAlignment: MainAxisAlignment.center,
+                                      //       children: [
+                                      //         IconButton(
+                                      //           icon: Icon(Icons.share_sharp,color: Colors.white),
+                                      //           onPressed: () {
+                                      //             _showShareDialog(context, "Share", index);
+                                      //           },
+                                      //         ),
+                                      //         Text("Share", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
+                                      //       ],
+                                      //     ),
+                                      //   ),
+                                      // ),
                                     ],
                                   ),
                                 ),
@@ -488,13 +403,13 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
                       ),
                     ),
                   ),
-                  _loader(),
                 ],
               ),
               onRefresh: () {
                 print('onrefresh::::${access_token}');
-                // return presenter.getCalendarEvent(pageToken: map['']);
-                return presenter.getCalendarEvent();
+                eventItem.clear();
+                hasMoreItems = true;
+                return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
               }),
         ),
 
@@ -503,25 +418,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
             backgroundColor: Palette.colorPrimary,
             onPressed: () async {
               print(dynamicLink);
-
-              // showModalBottomSheet(
-              //     backgroundColor: Colors.transparent,
-              //     context: context,
-              //     isScrollControlled: true,
-              //     isDismissible: true,
-              //     enableDrag: true,
-              //     builder: (context) {
-              //       return DraggableScrollableSheet(
-              //           initialChildSize: 0.80,
-              //           expand: true,
-              //           builder: (context, scrollController) {
-              //             return MyBottomSheet(
-              //                 isEdit: false,
-              //                 token: access_token,
-              //                 list: list,
-              //                 itemList: itemList);
-              //           });
-              //     }).whenComplete(() => {presenter.getCalendarEvent()});
 
               model.openBottomSheetView(isEdit: false);
             }));
@@ -561,7 +457,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     return shortenedLink.shortUrl;
   }
 
-  Future<bool> _showConfirmationDialog(BuildContext context, String action, int index) {
+  Future<bool> showConfirmationDialog(BuildContext context, String action, int index) {
     return showDialog<bool>(
       context: context,
       barrierDismissible: true,
@@ -935,7 +831,6 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     print("success ${response.runtimeType}");
 
     setState(() {
-      eventItem.clear();
       map = calendarResponse;
       List<dynamic> data = response;
       eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
@@ -970,9 +865,10 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     presenter.attachView(this);
     presenter.getCalendar(googleSignInAuthentication.accessToken);
-    presenter.getCalendarEvent();
+    initialLoad = presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
+    hasMoreItems = true;
 
-    return googleSignInAuthentication.accessToken; //new token
+    return googleSignInAuthentication.accessToken;
   }
 
   @override

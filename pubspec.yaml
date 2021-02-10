@@ -61,6 +61,8 @@ dependencies:
   # share
   share: ^0.6.5+4
 
+  rxdart: ^0.23.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
