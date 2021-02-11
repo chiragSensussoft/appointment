@@ -441,7 +441,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Do you want to $action this Event?'),
+          title: Text('Are you sure you want to $action this Event?', style: TextStyle(fontSize: 14, fontFamily: "poppins_regular"),),
           actions: <Widget>[
             FlatButton(
               child: const Text('No'),

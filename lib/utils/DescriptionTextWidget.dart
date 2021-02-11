@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class DescriptionTextWidget extends StatefulWidget {
@@ -30,38 +31,27 @@ class _DescriptionTextWidgetState extends State<DescriptionTextWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-
+    return Container(
       child: secondHalf.isEmpty
-          ? new Text(firstHalf,style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 13, fontFamily: "poppins_regular"))
-          : Container(
-        transform: Matrix4.translationValues(0.0, 0.0, 0.0),
-            child: new Column(
-        children: <Widget>[
-            new Text(flag ? (firstHalf + "...") : (firstHalf + secondHalf), style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 13, fontFamily: "poppins_regular")),
-            new InkWell(
-              child: new Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.only(top: 10, left: 10, right: 10),
-                    child: new Text(
-                      flag ? "show more" : "show less",
-                      style: new TextStyle(color: Colors.blue, fontSize: 10, fontFamily: 'poppins_regular', decoration: TextDecoration.underline),
-                    ),
-                  ),
-                ],
-              ),
-
-              onTap: () {
-                setState(() {
-                  flag = !flag;
-                });
-              },
-            ),
-        ],
-      ),
+          ? Text(firstHalf, style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 12, fontFamily: "poppins_regular"))
+          :
+      Container(
+        child: RichText(
+          text: TextSpan(
+              children :[
+                TextSpan(text: flag ? (firstHalf + "...") :(firstHalf + secondHalf),
+                    style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 13, fontFamily: "poppins_regular")),
+                TextSpan(text: flag ? "  show more" : "  show less", style: TextStyle(color: Colors.blue, fontSize: 12),
+                  recognizer: TapGestureRecognizer()..onTap = (){
+                   setState(() {
+                     flag = !flag;
+                   });
+                  }),
+              ]
           ),
+        ),
+
+      ),
     );
   }
 }

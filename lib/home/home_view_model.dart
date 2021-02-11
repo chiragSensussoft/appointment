@@ -1,5 +1,6 @@
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/MyAppointment.dart';
+import 'package:appointment/utils/expandable_text.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,8 @@ import '../utils/values/Constant.dart';
 import 'event_calendar.dart';
 
 
-class HomeViewModel {
+class HomeViewModel implements IsCreatedOrUpdate {
+  bool isCreateUpdate = false;
 
   MyAppointmentState state;
 
@@ -43,7 +45,6 @@ class HomeViewModel {
         context: state.context,
         isScrollControlled: true,
         isDismissible: true,
-        // enableDrag: true,
 
         builder: (context) {
           return DraggableScrollableSheet(
@@ -54,16 +55,21 @@ class HomeViewModel {
                 return isEdit?
                 MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: true,
                 title: summary, description: description, getStartDate: startDate, getendDate: endDate,
-                  timeZone: timeZone, eventID: eventID):
+                  timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this):
 
-                 MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: false);
+                 MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: false,
+                 isCreatedOrUpdate: this);
               });
-        }).whenComplete(() => {
-          state.eventItem.clear(),
-          state.presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false),
-          state.setState(() {
-            state.hasMoreItems = true;
-          }),
+        })
+        .whenComplete(() => {
+       /*add condition*/
+       if(isCreateUpdate){
+         state.eventItem.clear(),
+         state.presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false),
+         state.setState(() {
+           state.hasMoreItems = true;
+         }),
+       }
     });
   }
 
@@ -104,7 +110,7 @@ class HomeViewModel {
                   children: [
                     SizedBox(height: 5),
                     Container(
-                      padding: EdgeInsets.only(left: 18, right: 18),
+                      padding: EdgeInsets.only(left: 15, right: 15),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -147,15 +153,16 @@ class HomeViewModel {
                       thickness: 0.3,
                       height: 0.3,
                     ),
-                    SizedBox(height: 5),
+                    SizedBox(height: 10),
                     Container(
-                      padding: EdgeInsets.only(left: 18, right: 18),
+                      padding: EdgeInsets.only(left: 15, right: 15),
                       child: state.eventItem[index].description != null ?  DescriptionTextWidget(text: state.eventItem[index].description) :Text("", style: TextStyle(fontSize: 13, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
+                      // child: ExpandableText(text: "You should make an appointment by calling or by email. Do not try to make appointments by text, unless you are simply asking a good friend if they would like to have lunch. When making an appointment you should give the person your name and the reason for wanting an appointment.",),
                     ),
-                    SizedBox(height: 5),
+                    SizedBox(height: 10),
 
                     Container(
-                      margin: EdgeInsets.only(left: 18,bottom: 10),
+                      margin: EdgeInsets.only(left: 15,bottom: 10),
                       child:Column(
                         children: [
                           Container(
@@ -205,6 +212,7 @@ class HomeViewModel {
                                             borderRadius: BorderRadius.circular(60)
                                         ),
                                       ),
+
                                       Container(
                                           margin: EdgeInsets.only(left: 7,top: 1),
                                           child: Text(
@@ -232,49 +240,43 @@ class HomeViewModel {
       menuItems: <Widget>[
         Padding(
           padding: EdgeInsets.only(top: 5, bottom: 5),
-          child: Container(
-            height: MediaQuery.of(state.context).size.height,
-            width: 10,
-            color: Colors.red,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
-                  onPressed: () {
-                    state.showConfirmationDialog(state.context, 'Delete', index);
-                  },
-                ),
-                Text("Delete", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-              ],
+          child: GestureDetector(
+            onTap: (){
+              state.showConfirmationDialog(state.context, 'Delete', index);
+            },
+            
+            child: Container(
+              alignment: Alignment.center,
+              height: MediaQuery.of(state.context).size.height,
+              width: 10,
+              color: Colors.red,
+
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
+                    onPressed: () {},
+                  ),
+                  Flexible(child: Text("Delete", style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular', color: Colors.white)))
+                ],
+              ),
             ),
           ),
         ),
-
-        // Padding(
-        //   padding: EdgeInsets.only(top: 5, bottom: 5),
-        //   child: Container(
-        //     height: MediaQuery.of(context).size.height,
-        //     width: 10,
-        //     color: Colors.blueAccent,
-        //     child: Column(
-        //       mainAxisAlignment: MainAxisAlignment.center,
-        //       children: [
-        //         IconButton(
-        //           icon: Icon(Icons.share_sharp,color: Colors.white),
-        //           onPressed: () {
-        //             _showShareDialog(context, "Share", index);
-        //           },
-        //         ),
-        //         Text("Share", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-        //       ],
-        //     ),
-        //   ),
         // ),
       ],
     );
   }
 
+  @override
+  onCreatUpdate(bool bool) {
+    isCreateUpdate = bool;
+    print('isCreateUpdtae::::$bool   $isCreateUpdate');
+  }
 }
 
 class PlaceholderItemCard extends StatelessWidget {
@@ -329,6 +331,8 @@ class PlaceholderItemCard extends StatelessWidget {
     );
   }
 }
+
+
 class ItemList {
   final String name;
   final String avatarUrl = 'http://via.placeholder.com/60x60';

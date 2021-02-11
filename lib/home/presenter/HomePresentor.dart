@@ -133,7 +133,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
         }
         )
     );
-
+    print('update:::${postResponse.statusCode}');
     if (postResponse.statusCode == 200) {
       isViewAttached ? getView().onUpdateEvent(postResponse.data) : null;
       view.onHideLoader();
