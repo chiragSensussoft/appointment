@@ -86,15 +86,17 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
       print("RunTimeType${deleteCalendarEvent.runtimeType}");
     }
     else{
-      Response getCalendarEventList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().event,endPoint: Constant().event);
-      if(getCalendarEventList.statusCode == 200){
-        isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items'],getCalendarEventList.data) : null;
-        view.onHideLoader();
-        print("RunTimeType${deleteCalendarEvent.runtimeType}");
-      }else{
-        view.onHideLoader();
-        print("RunTimeType${deleteCalendarEvent.runtimeType}");
-      }
+      view.onDelete(id);
+      view.onHideLoader();
+      // Response getCalendarEventList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().event,endPoint: Constant().event,isPageToken: false,maxResult: "10",currentTime: DateTime.now().toUtc().toString());
+      // if(getCalendarEventList.statusCode == 200){
+      //   isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items'],getCalendarEventList.data) : null;
+      //   view.onHideLoader();
+      //   print("RunTimeType${deleteCalendarEvent.runtimeType}");
+      // }else{
+      //   view.onHideLoader();
+      //   print("RunTimeType${deleteCalendarEvent.runtimeType}");
+      // }
     }
   }
 

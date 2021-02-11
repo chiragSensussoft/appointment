@@ -538,4 +538,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     widget.isCreatedOrUpdate.onCreatUpdate(true);
   }
 
+  @override
+  onDelete(delete) {
+
+  }
+
 }

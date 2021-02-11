@@ -4,6 +4,7 @@ import 'package:appointment/utils/expandable_text.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:share/share.dart';
 import 'package:shimmer/shimmer.dart';
 import '../utils/DescriptionTextWidget.dart';
 import '../utils/slide_menu.dart';
@@ -137,8 +138,23 @@ class HomeViewModel implements IsCreatedOrUpdate {
                                       padding:EdgeInsets.only(left:10),
                                       child: Icon(Icons.share_rounded,size: 20, color: Colors.black.withOpacity(0.5))
                                   ),
-                                  onTap: (){
+                                  onTap: ()async{
+                                      // state.showShareDialog(state.context, "Share", index);
+                                    state.dynamicLink = await state.createDynamicLink(
+                                        title: state.eventItem[index].summary,
+                                        desc: state.eventItem[index].description,
+                                        startDate: Constant.getFullDateFormat(state.eventItem[index].start.dateTime),
+                                        endDate: Constant.getFullDateFormat(state.eventItem[index].end.dateTime),
+                                        email: state.email,
+                                        photoUrl: state.url,
+                                        senderName: state.userName,
+                                        timeZone: state.eventItem[index].start.timeZone);
 
+                                    print("Dynamic Link: $state.dynamicLink");
+
+                                    if (state.dynamicLink != "") {
+                                      Share.share(state.dynamicLink.toString());
+                                    }
                                   },
                                 )
                               ],

@@ -1,6 +1,7 @@
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/app_bar/ScrollAppBar.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,7 @@ class HomeState extends State<Home>{
   String userName = '';
   String email = '';
   bool visibility = true;
+  ScrollController controller = ScrollController();
 
 
   void initState() {
@@ -72,91 +74,98 @@ class HomeState extends State<Home>{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          backgroundColor: Palette.colorPrimary,
-          automaticallyImplyLeading: false,
-          title: new Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  url != null ?CircleAvatar(
-                    backgroundImage: NetworkImage(url,),
-                  ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 32),
-
-                  Container(
-                    margin: EdgeInsets.only(left: 10,right: 10),
-                    child:Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      color: Colors.blue,
+      child: SafeArea(
+        top: true,
+        child: Scaffold(
+          appBar: ScrollAppBar(
+            controller: controller,
+            backgroundColor: Colors.blue,
+            automaticallyImplyLeading: false,
+            title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
                       children: [
+                        url != null ?CircleAvatar(
+                          backgroundImage: NetworkImage(url,),
+                        ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 32),
+
                         Container(
-                            child: Text(userName!=''?userName : "Default User", style: TextStyle(fontSize: 17))
-                        ),
-                        Container(
-                            child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12))
-                        ),
+                          margin: EdgeInsets.only(left: 10,right: 10),
+                          child:Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                  child: Text(userName!=''?userName : "Default User", style: TextStyle(fontSize: 17))
+                              ),
+                              Container(
+                                  child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12))
+                              ),
+                            ],
+                          ),
+                        )
                       ],
                     ),
-                  )
-                ],
-              ),
-              Container(
-                child: Icon(Icons.settings, size: 30),
-              )
-            ],
-          )
+                    Container(
+                      child: Icon(Icons.settings, size: 30),
+                    )
+                  ],
+                )
+          ),
+
+          // body: DefaultTabController(
+          //   length: 2,
+          //   child: Container(
+          //     child: Column(
+          //       children: [
+          //         Container(
+          //           color: Colors.grey.withOpacity(0.1),
+          //           child: TabBar(
+          //             indicator: UnderlineTabIndicator(
+          //               borderSide: BorderSide(color: Palette.colorPrimary, width: 2.0),
+          //               insets: EdgeInsets.fromLTRB(45.0, 0.0, 45.0, 0.0),
+          //             ),
+          //
+          //             tabs: [
+          //               Padding(
+          //                   padding: EdgeInsets.all(12),
+          //                   child: Text("My Appointment", style: TextStyle(fontSize: 12, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
+          //               ),
+          //
+          //               Padding(
+          //                   padding: EdgeInsets.all(12),
+          //                   child: Text("Other Appointment", style: TextStyle(fontSize: 12, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
+          //               ),
+          //             ],
+          //           ),
+          //         ),
+          //
+          //         Expanded(
+          //             child: Container(
+          //               decoration: BoxDecoration(
+          //                   borderRadius: BorderRadius.only(
+          //                       topLeft: Radius.circular(30), topRight: Radius.circular(30)
+          //                   ), color: Colors.white
+          //               ),
+          //
+          //               child: TabBarView(
+          //                 children: [
+          //                   MyAppointment(),
+          //                   OtherAppointment(),
+          //                 ],
+          //               ),
+          //             )
+          //         )
+          //       ],
+          //     ),
+          //   ),
+          // ),
+
+          body: MyAppointment(controller),
+        ),
       ),
-
-      // body: DefaultTabController(
-      //   length: 2,
-      //   child: Container(
-      //     child: Column(
-      //       children: [
-      //         Container(
-      //           color: Colors.grey.withOpacity(0.1),
-      //           child: TabBar(
-      //             indicator: UnderlineTabIndicator(
-      //               borderSide: BorderSide(color: Palette.colorPrimary, width: 2.0),
-      //               insets: EdgeInsets.fromLTRB(45.0, 0.0, 45.0, 0.0),
-      //             ),
-      //
-      //             tabs: [
-      //               Padding(
-      //                   padding: EdgeInsets.all(12),
-      //                   child: Text("My Appointment", style: TextStyle(fontSize: 12, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
-      //               ),
-      //
-      //               Padding(
-      //                   padding: EdgeInsets.all(12),
-      //                   child: Text("Other Appointment", style: TextStyle(fontSize: 12, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
-      //               ),
-      //             ],
-      //           ),
-      //         ),
-      //
-      //         Expanded(
-      //             child: Container(
-      //               decoration: BoxDecoration(
-      //                   borderRadius: BorderRadius.only(
-      //                       topLeft: Radius.circular(30), topRight: Radius.circular(30)
-      //                   ), color: Colors.white
-      //               ),
-      //
-      //               child: TabBarView(
-      //                 children: [
-      //                   MyAppointment(),
-      //                   OtherAppointment(),
-      //                 ],
-      //               ),
-      //             )
-      //         )
-      //       ],
-      //     ),
-      //   ),
-      // ),
-
-      body: MyAppointment(),
     );
   }
 }

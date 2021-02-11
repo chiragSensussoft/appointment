@@ -6,4 +6,5 @@ abstract class OnHomeView extends BaseLoaderView{
   onEventSuccess(response,calendarResponse);
   onCreateEvent(response);
   onUpdateEvent(response);
+  onDelete(delete);
 }

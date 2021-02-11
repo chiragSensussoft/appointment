@@ -5,13 +5,14 @@ import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/app_bar/ScrollAppBar.dart';
 import 'package:appointment/utils/Toast.dart';
-import 'package:appointment/utils/slide_menu.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,11 +23,15 @@ import 'LoadMore.dart';
 import 'OnHomeView.dart';
 
 class MyAppointment extends StatefulWidget {
+  ScrollController controller = ScrollController(keepScrollOffset: false);
+
+  MyAppointment(this.controller);
+
   @override
   MyAppointmentState createState() => MyAppointmentState();
 }
 
-class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
+class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMixin implements OnHomeView {
   bool isVisible;
   List<Item> list = List.empty(growable: true);
   List<Item> itemList = List.empty(growable: true);
@@ -55,8 +60,9 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   bool loader = false;
   bool descTextShowFlag = false;
   bool isLoading = false;
-  // bool isEventEdit = false;
-  ScrollController controller = ScrollController(keepScrollOffset: false);
+  // controller = ScrollController(keepScrollOffset: false);
+
+
 
   @override
   void initState() {
@@ -65,6 +71,14 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     init();
     refreshToken();
     _query();
+    _hideFabAnimation = AnimationController(vsync: this, duration: Duration(milliseconds: 300),animationBehavior: AnimationBehavior.normal);
+  }
+
+  @override
+  void dispose() {
+    _hideFabAnimation.dispose();
+
+    super.dispose();
   }
 
   init() async {
@@ -99,10 +113,13 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   bool loadingMore;
   bool hasMoreItems;
   Future initialLoad;
+  int lastIndex;
   Future _loadMoreItems() async {
-    if(controller.position.pixels == controller.position.maxScrollExtent){
+    if(widget.controller.position.pixels == widget.controller.position.maxScrollExtent){
       await presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: true,pageToken: map['nextPageToken']);
-
+    }
+    else{
+      hasMoreItems = false;
     }
     hasMoreItems = map['nextPageToken'] != null;
   }
@@ -111,294 +128,191 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   Widget build(BuildContext context) {
     model = HomeViewModel(this);
 
-    return Scaffold(
-        key: _scaffoldKey,
-        body: Container(
-          child: RefreshIndicator(
-              child: Stack(
-                children: [
-                  Container(
-                    color: Colors.grey[200],
-                    child: isVisible == false
-                        ? eventItem.length != 0
-                        ? FutureBuilder(
-                      future: initialLoad,
-                      builder: (context, snapshot) {
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.waiting:
-                            return Center(child: CircularProgressIndicator());
-                          case ConnectionState.done:
-                            return IncrementallyLoadingListView(
-                              hasMore: () => hasMoreItems,
-                              itemCount: () => eventItem.length,
-                              loadMore: () async {
-                                await _loadMoreItems();
-                              },
-                              onLoadMore: () {
-                                setState(() {
-                                  loadingMore = true;
-                                });
-                              },
-                              onLoadMoreFinished: () {
-                                setState(() {
-                                  loadingMore = false;
-                                });
-                              },
-                              controller: controller,
-                              loadMoreOffsetFromBottom: 2,
-                              itemBuilder: (context, index) {
-                                if ((loadingMore ?? false) && index == eventItem.length -1) {
-                                  return Column(
-                                    children: <Widget>[
-                                      model.slideMenu(index),
-                                      // Container(
-                                      //   width: double.infinity,
-                                      //   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                                      //   child: Column(
-                                      //     mainAxisSize: MainAxisSize.max,
-                                      //     children: <Widget>[
-                                      //       Expanded(
-                                      //         child: Shimmer.fromColors(
-                                      //           baseColor: Colors.grey[300],
-                                      //           highlightColor: Colors.grey[100],
-                                      //           enabled: true,
-                                      //           child: ListView.builder(
-                                      //             itemBuilder: (_, __) => Padding(
-                                      //               padding: const EdgeInsets.only(bottom: 8.0),
-                                      //               child: Row(
-                                      //                 crossAxisAlignment: CrossAxisAlignment.start,
-                                      //                 children: [
-                                      //                   Container(
-                                      //                     width: 48.0,
-                                      //                     height: 48.0,
-                                      //                     color: Colors.white,
-                                      //                   ),
-                                      //                   const Padding(
-                                      //                     padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                      //                   ),
-                                      //                   Expanded(
-                                      //                     child: Column(
-                                      //                       crossAxisAlignment: CrossAxisAlignment.start,
-                                      //                       children: <Widget>[
-                                      //                         Container(
-                                      //                           width: double.infinity,
-                                      //                           height: 8.0,
-                                      //                           color: Colors.white,
-                                      //                         ),
-                                      //                         const Padding(
-                                      //                           padding: EdgeInsets.symmetric(vertical: 2.0),
-                                      //                         ),
-                                      //                         Container(
-                                      //                           width: double.infinity,
-                                      //                           height: 8.0,
-                                      //                           color: Colors.white,
-                                      //                         ),
-                                      //                         const Padding(
-                                      //                           padding: EdgeInsets.symmetric(vertical: 2.0),
-                                      //                         ),
-                                      //                         Container(
-                                      //                           width: 40.0,
-                                      //                           height: 8.0,
-                                      //                           color: Colors.white,
-                                      //                         ),
-                                      //                       ],
-                                      //                     ),
-                                      //                   )
-                                      //                 ],
-                                      //               ),
-                                      //             ),
-                                      //             itemCount: 1,
-                                      //           ),
-                                      //         ),
-                                      //       ),
-                                      //     ],
-                                      //   ),
-                                      // )
-                                      CircularProgressIndicator()
-                                    ],
-                                  );
-                                }
-                                return model.slideMenu(index);
-                              },
-                            );
-                          default:
-                            return Text('Something went wrong');
-                        }
-                      },
-                    )
-                        : Center(child: Text("No Event Created"))
-                        :  Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          Expanded(
-                            child: Shimmer.fromColors(
-                              baseColor: Colors.grey[300],
-                              highlightColor: Colors.grey[100],
-                              enabled: true,
-                              child: ListView.builder(
-                                itemBuilder: (_, __) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: SlideMenu(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom:5),
-                                      child: GestureDetector(
-                                        child: Material(
-                                          elevation: 1,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                          child: Container(
-                                              width: MediaQuery.of(context).size.width,
-                                              padding: EdgeInsets.only(top: 8, bottom: 8, left: 18, right: 18),
-
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-
-                                                children: [
-                                                  SizedBox(height: 5),
-
-                                                  Container(
-                                                    child: SizedBox(),
-                                                  ),
-
-                                                  SizedBox(height: 5),
-
-                                                  Container(
-                                                    margin: EdgeInsets.only(bottom: 5),
-                                                    // child: state.eventItem[index].description != null ?  DescriptionTextWidget(text: state.eventItem[index].description) :Text("", style: TextStyle(fontSize: 13, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
-                                                  ),
-
-                                                  Row(
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                                                    children: [
-                                                      Expanded(
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                          children: [
-                                                            Container(
-                                                              child: Column(
-                                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                                children: [
-                                                                  Container(child: Text('From', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5)))),
-
-                                                                  Container(
-                                                                    child: Text(""
-                                                                      // DateFormat('EE, d MMM, yyyy').format(state.eventItem[index].start.dateTime.toLocal()) + "  " +
-                                                                      //     state.eventItem[index].start.dateTime.toLocal().hour.toString() + ":" +
-                                                                      //     state.eventItem[index].start.dateTime.toLocal().minute.toString(),
-                                                                      // style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-
-                                                            Container(
-                                                              child: Column(
-                                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                                children: [
-                                                                  Container(
-                                                                    child: Text('   ', style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5))),
-                                                                  ),
-
-                                                                  Container(
-                                                                      child: Text("  "
-                                                                        // DateFormat('EE, d MMM, yyyy').format(state.eventItem[index].end.dateTime.toLocal()) + "  " +
-                                                                        //     state.eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + state.eventItem[index].end.dateTime.toLocal().minute.toString(),
-                                                                        // style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.5)),
-                                                                      )
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-
-                                                      Container(
-                                                        child: Row(
-                                                          mainAxisSize: MainAxisSize.min,
-                                                          mainAxisAlignment: MainAxisAlignment.end,
-                                                          children: [
-                                                            GestureDetector(
-                                                              child: Padding(
-                                                                  padding: EdgeInsets.only(left: 30),
-                                                                  child: Icon(Icons.edit_outlined,size: 20, color: Colors.black.withOpacity(0.5))),
-                                                            ),
-
-                                                            GestureDetector(
-                                                              child: Padding(
-                                                                  padding:EdgeInsets.only(left:10),
-                                                                  child: Icon(Icons.share_rounded,size: 20, color: Colors.black.withOpacity(0.5))),
-                                                              onTap: (){
-
-                                                              },
-                                                            )
-                                                          ],
-                                                        ),
-                                                      )
-                                                    ],
-                                                  )
-
-                                                ],
-                                              )
-                                          ),
-                                        ),
-                                        // ),
-                                      ),
-                                    ),
-
-                                    menuItems: <Widget>[
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 5, bottom: 5),
-                                        child: Container(
-                                          height: MediaQuery.of(context).size.height,
-                                          width: 10,
-                                          color: Colors.red,
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              IconButton(
-                                                icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
-                                              ),
-                                              Text("Delete", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.white))
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                itemCount: 6,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+    return NotificationListener<ScrollNotification>(
+      onNotification: _handleScrollNotification,
+      child: Scaffold(
+          key: _scaffoldKey,
+          body: RefreshIndicator(
+                child: Stack(
+                  children: [
+                    Container(
+                        color: Colors.grey[200],
+                        child: isVisible == false
+                            ? eventItem.length != 0
+                            ? FutureBuilder(
+                          future: initialLoad,
+                          builder: (context, snapshot) {
+                            switch (snapshot.connectionState) {
+                              case ConnectionState.waiting:
+                                return Center(child: CircularProgressIndicator());
+                              case ConnectionState.done:
+                                return IncrementallyLoadingListView(
+                                  hasMore: () => hasMoreItems,
+                                  itemCount: () => eventItem.length,
+                                  loadMore: () async {
+                                    await _loadMoreItems();
+                                  },
+                                  onLoadMore: () {
+                                    setState(() {
+                                      loadingMore = true;
+                                    });
+                                  },
+                                  onLoadMoreFinished: () {
+                                    setState(() {
+                                      loadingMore = false;
+                                    });
+                                  },
+                                  controller: widget.controller,
+                                  loadMoreOffsetFromBottom: 2,
+                                  shrinkWrap: false,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    lastIndex = index;
+                                    if ((loadingMore ?? false) && index == eventItem.length-1) {
+                                      return Column(
+                                        children: <Widget>[
+                                          model.slideMenu(index),
+                                          PlaceholderItemCard(index: index,)
+                                        ],
+                                      );
+                                    }
+                                    return model.slideMenu(index);
+                                  },
+                                );
+                              default:
+                                return Text('Something went wrong');
+                            }
+                          },
+                        )
+                            : Center(child: Text("No Event Created"))
+                            :  ListView.builder(
+                          itemCount: 40,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (_,index){
+                            return PlaceholderItemCard(index: index);
+                          },
+                        )
                     ),
-                  ),
-                ],
-              ),
-              onRefresh: () {
-                print('onrefresh::::${access_token}');
-                eventItem.clear();
-                return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
-              }),
-        ),
+                  ],
+                ),
+                onRefresh: () {
+                  print('onrefresh::::${access_token}');
+                  eventItem.clear();
+                  hasMoreItems = false;
+                  return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
+                }),
 
-        floatingActionButton: FloatingActionButton(
+
+          // Container(
+          //   child: RefreshIndicator(
+          //       child: Stack(
+          //         children: [
+          //           Container(
+          //             color: Colors.grey[200],
+          //             child: isVisible == false
+          //                 ? eventItem.length != 0
+          //                 ? FutureBuilder(
+          //               future: initialLoad,
+          //               builder: (context, snapshot) {
+          //                 switch (snapshot.connectionState) {
+          //                   case ConnectionState.waiting:
+          //                     return Center(child: CircularProgressIndicator());
+          //                   case ConnectionState.done:
+          //                     return IncrementallyLoadingListView(
+          //                       hasMore: () => hasMoreItems,
+          //                       itemCount: () => eventItem.length,
+          //                       loadMore: () async {
+          //                         await _loadMoreItems();
+          //                       },
+          //                       onLoadMore: () {
+          //                         setState(() {
+          //                           loadingMore = true;
+          //                         });
+          //                       },
+          //                       onLoadMoreFinished: () {
+          //                         setState(() {
+          //                           loadingMore = false;
+          //                         });
+          //                       },
+          //                       controller: controller,
+          //                       loadMoreOffsetFromBottom: 3,
+          //                       itemBuilder: (context, index) {
+          //                         // print("Scroll Condition${lastIndex == eventItem.length -1}");
+          //                         lastIndex = index;
+          //                         if ((loadingMore ?? false) && index == eventItem.length-1) {
+          //                           return Column(
+          //                             children: <Widget>[
+          //                               model.slideMenu(index),
+          //                               PlaceholderItemCard(index: index,)
+          //                             ],
+          //                           );
+          //                         }
+          //                         return model.slideMenu(index);
+          //                       },
+          //                     );
+          //                   default:
+          //                     return Text('Something went wrong');
+          //                 }
+          //               },
+          //             )
+          //                 : Center(child: Text("No Event Created"))
+          //                 :  ListView.builder(
+          //                   itemCount: 40,
+          //                   physics: NeverScrollableScrollPhysics(),
+          //                   itemBuilder: (_,index){
+          //                     return PlaceholderItemCard(index: index);
+          //                   },
+          //             )
+          //           ),
+          //         ],
+          //       ),
+          //       onRefresh: () {
+          //         print('onrefresh::::${access_token}');
+          //         eventItem.clear();
+          //         hasMoreItems = true;
+          //         return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
+          //       }),
+          // ),
+
+          floatingActionButton: ScaleTransition(
+            scale: _hideFabAnimation,
+            alignment: Alignment.bottomCenter,
+            child: FloatingActionButton(
             child: Icon(Icons.add),
             backgroundColor: Palette.colorPrimary,
             onPressed: () async {
               print(dynamicLink);
-
               model.openBottomSheetView(isEdit: false);
-            }));
+            })
+          ),
+      ),
+    );
+  }
+
+  AnimationController _hideFabAnimation;
+  bool _handleScrollNotification(ScrollNotification notification) {
+      if (notification is UserScrollNotification) {
+        final UserScrollNotification userScroll = notification;
+
+        switch (userScroll.direction) {
+          case ScrollDirection.forward:
+            if (userScroll.metrics.maxScrollExtent !=
+                userScroll.metrics.minScrollExtent) {
+              _hideFabAnimation.forward();
+            }
+            break;
+          case ScrollDirection.reverse:
+            if (userScroll.metrics.maxScrollExtent !=
+                userScroll.metrics.minScrollExtent) {
+              _hideFabAnimation.reverse();
+            }
+            break;
+          case ScrollDirection.idle:
+            break;
+        }
+      }
+
+    return false;
   }
 
   var dynamicLink;
@@ -462,7 +376,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
     );
   }
 
-  Future<bool> _showShareDialog(
+  Future<bool> showShareDialog(
       BuildContext context, String action, int index) {
     return showDialog<bool>(
       context: context,
@@ -534,6 +448,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
         String senderPhoto = queryParams['senderPhoto'];
         String senderName = queryParams['senderName'];
         String timeZone = queryParams['timeZone'];
+
         print("My summary is: $summary");
         print("My description is: $description");
         print("My startDate is: $startDate");
@@ -813,6 +728,7 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
       List<dynamic> data = response;
       eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
     });
+    print("Length${eventItem.length}");
   }
 
   Future<String> refreshToken() async {
@@ -862,4 +778,195 @@ class MyAppointmentState extends State<MyAppointment> implements OnHomeView {
   onUpdateEvent(response) {
     print('update:::;$response');
   }
+
+  @override
+  onDelete(delete) {
+      eventItem.removeWhere((element) => element.id == delete);
+  }
 }
+
+class PlaceholderItemCard extends StatelessWidget {
+  const PlaceholderItemCard({Key key, @required this.index}) : super(key: key);
+
+  final index;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(left: 10, top: 5, right: 10, bottom:5),
+      child: Material(
+        color: Colors.grey[100],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Shimmer.fromColors(child: Padding(
+          padding: EdgeInsets.only(left: 0, top: 0, right: 0, bottom:0),
+          child: GestureDetector(
+           child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.only(top: 8, bottom: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+
+                    children: [
+                      SizedBox(height: 5),
+                      Container(
+                        padding: EdgeInsets.only(left: 18, right: 18),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              height: 5,
+                              width: 50,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(2),
+                                  color: Colors.white
+                              ),
+                            ),
+                            Container(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                 Container(
+                                   height: 15,
+                                   width: 15,
+                                   decoration: BoxDecoration(
+                                     borderRadius: BorderRadius.circular(2),
+                                     color: Colors.white
+                                   ),
+                                 ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 5),
+                                    height: 15,
+                                    width: 15,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.white
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Divider(
+                        color: Colors.white,
+                        thickness: 0.3,
+                        height: 0.3,
+                      ),
+                      SizedBox(height: 5),
+                      Container(
+                        padding: EdgeInsets.only(left: 18, right: 18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 5,
+                              width: MediaQuery.of(context).size.width,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(2),
+                                  color: Colors.white
+                              ),
+                            ),
+                            Container(
+                              height: 5,
+                              margin: EdgeInsets.only(top: 5),
+                              width: MediaQuery.of(context).size.width * 0.80,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(2),
+                                  color: Colors.white
+                              ),
+                            ),
+                          ],
+                        )
+                      ),
+                      SizedBox(height: 5),
+
+                      Container(
+                        margin: EdgeInsets.only(left: 18,bottom: 10),
+                        child:Column(
+                          children: [
+                            Container(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          height:10,
+                                          width: 10,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(60)
+                                          ),
+                                        ),
+                                        Container(
+                                          height: 5,
+                                          margin: EdgeInsets.only(left: 7),
+                                          width: MediaQuery.of(context).size.width * 0.50,
+                                          decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(2),
+                                              color: Colors.white
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.only(left: 4.5),
+                                        alignment: Alignment.centerLeft,
+                                        height: 20,
+                                        width: 1,
+                                        color: Colors.white,
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          height:10,
+                                          width: 10,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(60)
+                                          ),
+                                        ),
+                                        Container(
+                                          height: 5,
+                                          margin: EdgeInsets.only(left: 7),
+                                          width: MediaQuery.of(context).size.width * 0.50,
+                                          decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(2),
+                                              color: Colors.white
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+              ),
+          ),
+        ),
+          baseColor: Colors.grey[300],
+          highlightColor: Colors.grey[100],
+          enabled: true,
+        ),
+      ),
+    );
+  }
+}
+
