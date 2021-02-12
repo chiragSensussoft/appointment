@@ -60,7 +60,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   bool loader = false;
   bool descTextShowFlag = false;
   bool isLoading = false;
-
+  bool isShareAppointment = false;
   bool _isVisible = true;
 
 
@@ -209,7 +209,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
               onRefresh: () {
                 print('onrefresh::::${access_token}');
                 eventItem.clear();
-                hasMoreItems = false;
+                hasMoreItems = true;
                 return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
               }),
 
@@ -220,6 +220,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         elevation: 12,
         onPressed: () {
           model.openBottomSheetView(isEdit: false);
+          // showAsBottomSheet("afvbsd","Asgv","asgvasd","Asdgasdg","asdgadsg","Asdgs","adfgasdfg","adsfgad");
         },
       ) : null,
     );
@@ -381,11 +382,10 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
               seconds: 3);
         } else {
           print("Enter in Else");
-          refreshToken();
-          Future.delayed(Duration(seconds: 1)).whenComplete(() => {
-            showAsBottomSheet(senderName, senderPhoto, senderEmail,
-                startDate, endDate, summary, description, timeZone)
-          });
+          // refreshToken();
+          eventItem.clear();
+          showAsBottomSheet(senderName, senderPhoto, senderEmail,
+              startDate, endDate, summary, description, timeZone);
         }
       }
     }
@@ -400,7 +400,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         elevation: 8,
         cornerRadius: 20,
         snapSpec: const SnapSpec(
-          snap: false,
+          // snap: false,
           positioning: SnapPositioning.relativeToAvailableSpace,
         ),
         duration: Duration(milliseconds: 200),
@@ -503,6 +503,10 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                               startDate: startDate,
                               description: description,
                               timeZone: timeZone);
+                          setState(() {
+                            isShareAppointment = true;
+                          });
+                          // Navigator.pop(context);
                         },
                         child: Container(
                           margin: EdgeInsets.only(bottom: 15),
@@ -580,6 +584,197 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         },
       );
     });
+  }
+
+  shareSheet(String senderName, senderPhoto, senderEmail, startDate,
+      endDate, summary, description, timeZone){
+    return showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
+      ),
+      builder: (_){
+        return Material(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
+          ),
+          child: Container(
+            padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 15),
+            child: Column(
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  child: Text("Create New Event",
+                      style: TextStyle(
+                          fontSize: 16, fontFamily: "poppins_medium")),
+                ),
+                Row(
+                  children: [
+                    SizedBox(height: 20),
+                    Container(
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(senderPhoto),
+                      ),
+                    ),
+                    SizedBox(width: 15),
+                    Container(
+                      child: Text(senderName,
+                          style: TextStyle(
+                              fontSize: 16, fontFamily: "poppins_medium")),
+                    )
+                  ],
+                ),
+                SizedBox(height: 15),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  child: Text(summary,
+                      style: TextStyle(
+                          fontSize: 14, fontFamily: "poppins_regular")),
+                ),
+                SizedBox(height: 15),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  child: Text(description,
+                      style: TextStyle(
+                          fontSize: 14, fontFamily: "poppins_regular")),
+                ),
+                SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          child: Text(
+                            'From',
+                            style: TextStyle(
+                                fontSize: 16, fontFamily: "poppins_medium"),
+                          ),
+                        ),
+                        Container(
+                          child: Text(startDate,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: "poppins_regular")),
+                        )
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          child: Text(
+                            'To',
+                            style: TextStyle(
+                                fontSize: 16, fontFamily: "poppins_medium"),
+                          ),
+                          alignment: Alignment.centerLeft,
+                        ),
+                        Container(
+                          child: Text(endDate,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: "poppins_regular")),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+
+                SizedBox(height: 20),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    GestureDetector(
+                      onTap: (){
+                        presenter.setAppointment(
+                            summary: summary,
+                            endDate: endDate,
+                            startDate: startDate,
+                            description: description,
+                            timeZone: timeZone);
+                        setState(() {
+                          isShareAppointment = true;
+                        });
+                        // Navigator.pop(context);
+                      },
+                      child: Container(
+                          margin: EdgeInsets.only(bottom: 15),
+                          height: 40,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              color: Colors.green),
+
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Padding(
+                                  child: Text("Accept",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontFamily: "poppins_regular")),
+                                  padding: EdgeInsets.only(left: 10)),
+                              IconButton(
+                                iconSize: 20,
+                                onPressed: () {},
+                                color: Colors.white,
+                                icon: Icon(Icons.done),
+                              )
+                            ],
+                          )),
+                    ),
+
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                          margin: EdgeInsets.only(bottom: 15),
+                          height: 40,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              color: Colors.red),
+
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start,
+
+                            children: [
+                              Padding(
+                                child: Text("Cancel",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontFamily: "poppins_regular"),),
+                                padding: EdgeInsets.only(left: 10),
+                              ),
+
+                              IconButton(
+                                iconSize: 20,
+                                padding: EdgeInsets.zero,
+                                onPressed: () {},
+                                color: Colors.white,
+                                icon: Icon(Icons.close_rounded),
+                              )
+                            ],
+                          )),
+                    )
+                  ],
+                ),
+
+                SizedBox(height: 10),
+              ],
+            ),
+          ),
+        );
+      }
+    );
   }
 
 
@@ -681,7 +876,10 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     Navigator.pop(context);
     toast.overLay = false;
     toast.showOverLay("Appointment created successfully", Colors.white, Colors.black54, context);
-    presenter.getCalendarEvent();
+    if(isShareAppointment = true){
+      presenter.getCalendarEvent(maxResult: 10,isPageToken: false,currentTime: DateTime.now().toUtc());
+
+    }
   }
 
   @override
@@ -879,4 +1077,3 @@ class PlaceholderItemCard extends StatelessWidget {
     );
   }
 }
-

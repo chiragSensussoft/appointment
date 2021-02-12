@@ -24,14 +24,16 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
 
   @override
   void initState() {
-    checkIfLogin();
+    // checkIfLogin();
     super.initState();
 
     setState(() {
       setValue();
     });
   }
+
   var _value;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -178,14 +180,14 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     });
   }
 
-  checkIfLogin()async{
-    _sharedPreferences = await SharedPreferences.getInstance();
-    if(_sharedPreferences.getBool('isLogin')==true){
-      Navigator.pushReplacement(context, MaterialPageRoute(
-          builder: (_) => Home()
-      ));
-    }
-  }
+  // checkIfLogin()async{
+  //   _sharedPreferences = await SharedPreferences.getInstance();
+  //   if(_sharedPreferences.getBool('isLogin')==true){
+  //     Navigator.pushReplacement(context, MaterialPageRoute(
+  //         builder: (_) => Home()
+  //     ));
+  //   }
+  // }
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn(

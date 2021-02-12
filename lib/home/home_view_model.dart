@@ -65,10 +65,10 @@ class HomeViewModel implements IsCreatedOrUpdate {
        /*add condition*/
        if(isCreateUpdate){
          state.eventItem.clear(),
-         state.presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: true,pageToken: state.map['nextPageToken']),
-         // state.setState(() {
-         //   state.hasMoreItems = true;
-         // }),
+         state.presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false,pageToken: state.map['nextPageToken']),
+         state.setState(() {
+           state.hasMoreItems = true;
+         }),
        }
     });
   }
@@ -292,7 +292,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
   }
 
   @override
-  onCreatUpdate(bool bool) {
+  onCreateUpdate(bool bool) {
     isCreateUpdate = bool;
     print('isCreateUpdtae::::$bool   $isCreateUpdate');
   }

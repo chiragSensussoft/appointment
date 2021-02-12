@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:appointment/home/Home.dart';
 import 'package:appointment/login/Login.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,11 +29,24 @@ class _SplashScreenState extends State<SplashScreen>  with SingleTickerProviderS
     _animationController.forward();
 
     checkLanguage();
+    checkIfLogin();
+  }
 
-    Future.delayed(Duration(milliseconds: _duration)).then((value) {
-      Navigator.of(context).pushReplacement(CupertinoPageRoute(
-          builder: (BuildContext context) => Login()));
-    });
+  checkIfLogin()async{
+    _sharedPreferences = await SharedPreferences.getInstance();
+    if(_sharedPreferences.getBool('isLogin')==true){
+      Future.delayed(Duration(milliseconds: _duration)).then((value) {
+        Navigator.of(context).pushReplacement(CupertinoPageRoute(
+            builder: (BuildContext context) => Home()));
+      });
+    }
+
+    else{
+      Future.delayed(Duration(milliseconds: _duration)).then((value) {
+        Navigator.of(context).pushReplacement(CupertinoPageRoute(
+            builder: (BuildContext context) => Login()));
+      });
+    }
   }
 
   @override

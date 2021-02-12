@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:math';
+
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/Toast.dart';
@@ -12,8 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'OnHomeView.dart';
 
-abstract class IsCreatedOrUpdate {
-  onCreatUpdate(bool bool);
+abstract class IsCreatedOrUpdate{
+  onCreateUpdate(bool bool);
 }
 
 class MyBottomSheet extends StatefulWidget {
@@ -446,24 +447,24 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView {
       lastDate: DateTime(_startDateTime.year + 25),
     );
 
-    if (picked != null && picked != _startDateTime)
+    if(picked != null && picked != _startDateTime)
       setState(() {
         _startDateTime = picked;
-        startDate = _startDateTime.year.toString() + "-" +
-            _startDateTime.month.toString() + "-" + _startDateTime.day.toString();
+        startDate = _startDateTime.year.toString()  + "-" +_startDateTime.month.toString() + "-" + _startDateTime.day.toString();
       });
+    print('format:::$startDate');
     return picked;
   }
 
+
   ///Start Time
-  String _startHour, _startTime, _startMinute;
+  String _startHour, _startTime,_startMinute;
   var start;
 
   Future<Null> _selectTime(BuildContext context) async {
     final TimeOfDay picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay(
-          hour: int.parse(_startHour), minute: int.parse(_startMinute)),
+      initialTime: TimeOfDay(hour: int.parse(_startHour), minute: int.parse(_startMinute)),
     );
 
     if (picked != null)
@@ -472,28 +473,27 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView {
         _startHour = selectedStartTime.hour.toString();
         _startMinute = selectedStartTime.minute.toString();
 
-        start = DateTime(_startDateTime.year, _startDateTime.month,
-            _startDateTime.day, int.parse(_startHour), int.parse(_startMinute));
+        start = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_startHour), int.parse(_startMinute));
 
-        if (start.isAfter(DateTime.now())) {
-          _startTime = _startHour + ":" + _startMinute + ":" + "00";
-        } else {
-          toast.overLay = false;
-          toast.showOverLay("Start time should be greater than Current time!",
-              Colors.white, Colors.black54, context);
+        if(start.isAfter(DateTime.now())){
+          print('AFTER:::::');
+          _startTime = _startHour +":"+ _startMinute +":" +"00";
+        }else{
+          print('BEFORE:::::');
+          messageDialog("Start Time");
         }
+
       });
   }
 
   ///End Time
-  String _endHour, _endTime, _endMinute;
+  String _endHour, _endTime,_endMinute;
   var end;
 
   Future<Null> _endSelectTime(BuildContext context) async {
     final TimeOfDay picked = await showTimePicker(
       context: context,
-      initialTime:
-          TimeOfDay(hour: int.parse(_endHour), minute: int.parse(_endMinute)),
+      initialTime: TimeOfDay(hour: int.parse(_endHour), minute: int.parse(_endMinute)),
     );
 
     if (picked != null)
@@ -505,12 +505,10 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView {
         end = DateTime(_startDateTime.year, _startDateTime.month,
             _startDateTime.day, int.parse(_endHour), int.parse(_endMinute));
 
-        if (end.isAfter(start)) {
-          _endTime = _endHour + ":" + _endMinute + ":" + "00";
-        } else {
-          toast.overLay = false;
-          toast.showOverLay("End time should be greater than Start time!",
-              Colors.white, Colors.black54, context);
+        if(end.isAfter(start)){
+          _endTime = _endHour +":"+ _endMinute+":"+"00";
+        }else{
+          messageDialog("End Time");
         }
       });
   }
@@ -570,6 +568,46 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView {
         });
   }
 
+  Future<void> messageDialog(String dialog) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                dialog=="End Time"?Text('End time should be greater than Start time'):
+                dialog=="Start Time"?Text('Start time should be greater than Current time'):null,
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Okay'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                switch(dialog){
+                  case "End Time":
+                    return _endSelectTime(context);
+                  case "Start Time":
+                    return _selectTime(context);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   @override
   onShowLoader() {
     setState(() {
@@ -603,18 +641,17 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView {
   onCreateEvent(response) {
     Navigator.pop(context);
     toast.overLay = false;
-    toast.showOverLay("Appointment created successfully", Colors.white,
-        Colors.black54, context);
-    widget.isCreatedOrUpdate.onCreatUpdate(true);
+    toast.showOverLay("Appointment created successfully", Colors.white, Colors.black54, context);
+    widget.isCreatedOrUpdate.onCreateUpdate(true);
   }
 
   @override
   onUpdateEvent(response) {
+    print('onUpdate:::$response');
     Navigator.pop(context);
     toast.overLay = false;
-    toast.showOverLay("Appointment updated successfully", Colors.white,
-        Colors.black54, context);
-    widget.isCreatedOrUpdate.onCreatUpdate(true);
+    toast.showOverLay("Appointment updated successfully", Colors.white, Colors.black54, context);
+    widget.isCreatedOrUpdate.onCreateUpdate(true);
   }
 
   @override
