@@ -1,5 +1,6 @@
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/MyAppointment.dart';
+import 'package:appointment/textdemo.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
   MyAppointmentState state;
 
   HomeViewModel(this.state);
+  bool isVisible;
+
 
   detailSheet(index){
     return showModalBottomSheet(
@@ -167,17 +170,22 @@ class HomeViewModel implements IsCreatedOrUpdate {
                       ),
                     ),
                     SizedBox(height: 3),
+
                     Divider(
                       color: Colors.grey,
                       thickness: 0.3,
                       height: 0.3,
                     ),
-                    SizedBox(height: 10),
-                    Container(
-                      padding: EdgeInsets.only(left: 15, right: 15),
-                      child: state.eventItem[index].description != null ?  DescriptionTextWidget(text: state.eventItem[index].description) :Text("", style: TextStyle(fontSize: 13, fontFamily: "poppins_regular", color: Colors.black.withOpacity(0.5))),
-                      // child: ExpandableText(text: "You should make an appointment by calling or by email. Do not try to make appointments by text, unless you are simply asking a good friend if they would like to have lunch. When making an appointment you should give the person your name and the reason for wanting an appointment.",),
+
+                    Visibility(
+                      visible: state.eventItem[index].description!= null,
+                      child: Container(
+                        padding: EdgeInsets.only(left: 15, right: 15, top: 10),
+                        child: DescriptionTextWidget(text: state.eventItem[index].description),
+                        // child: ExpandableText(state.eventItem[index].description, trimLines: 3,key: ,),
+                      ),
                     ),
+
                     SizedBox(height: 10),
 
                     Container(

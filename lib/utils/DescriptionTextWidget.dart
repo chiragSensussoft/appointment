@@ -27,13 +27,19 @@ class _DescriptionTextWidgetState extends State<DescriptionTextWidget> {
       firstHalf = widget.text;
       secondHalf = "";
     }
+
+    if(flag){
+      // firstHalf = firstHalf.substring(13, )
+    }
+
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: secondHalf.isEmpty
-          ? Text(firstHalf, style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 12, fontFamily: "poppins_regular"))
+      child: secondHalf.isEmpty ?
+
+      Text(firstHalf, style: TextStyle(color: Colors.black.withOpacity(0.5), fontSize: 12, fontFamily: "poppins_regular"))
           :
       // Container(
       //   child: RichText(
@@ -58,16 +64,17 @@ class _DescriptionTextWidgetState extends State<DescriptionTextWidget> {
         child: flag? RichText(
           maxLines: 3,
             text: TextSpan(
-                      children :[
-                        TextSpan(text: firstHalf + "...",
-                            style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 13, fontFamily: "poppins_regular")),
+                children :[
+                  TextSpan(
+                      text: firstHalf + "...",
+                      style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 13, fontFamily: "poppins_regular")),
 
                         TextSpan(text: flag ? "  show more" : "  show less", style: TextStyle(color: Colors.blue, fontSize: 12),
                           recognizer: TapGestureRecognizer()..onTap = (){
                            setState(() {
                              flag = !flag;
                            });
-                          }),
+                        }),
                       ]
                   ),
 
@@ -75,7 +82,8 @@ class _DescriptionTextWidgetState extends State<DescriptionTextWidget> {
           text: TextSpan(
               children :[
                 TextSpan(text: firstHalf + secondHalf,
-                    style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 13, fontFamily: "poppins_regular")),
+                    style: TextStyle(color: Colors.black.withOpacity(0.5), fontSize: 13,
+                        fontFamily: "poppins_regular")),
 
                 TextSpan(text: flag ? "  show more" : "  show less", style: TextStyle(color: Colors.blue, fontSize: 12),
                     recognizer: TapGestureRecognizer()..onTap = (){
