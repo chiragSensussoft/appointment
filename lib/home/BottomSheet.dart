@@ -411,10 +411,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
               _endHour = "0"+_endHour;
             }
 
-            print('1::$_startHour   $_startMinute');
-            print('2::$_endHour   $_endMinute');
-            print('3::${_startDateTime.hour}   ${_startDateTime.minute}');
-
             if(_startHour!=""){
               if(int.parse(_endHour)>int.parse(_startHour) && int.parse(_endMinute) > int.parse(_startMinute)){
                 _endTime = _endHour +":"+ _endMinute+":"+"00";
