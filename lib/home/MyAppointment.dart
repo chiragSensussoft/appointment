@@ -5,10 +5,12 @@ import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/DescriptionTextWidget.dart';
 import 'package:appointment/utils/app_bar/ScrollAppBar.dart';
 import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Palette.dart';
+import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
@@ -220,7 +222,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         elevation: 12,
         onPressed: () {
           model.openBottomSheetView(isEdit: false);
-          // showAsBottomSheet("afvbsd","Asgv","asgvasd","Asdgasdg","asdgadsg","Asdgs","adfgasdfg","adsfgad");
         },
       ) : null,
     );
@@ -386,23 +387,28 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
           eventItem.clear();
           showAsBottomSheet(senderName, senderPhoto, senderEmail,
               startDate, endDate, summary, description, timeZone);
+          // sheetController.collapse();
         }
       }
     }
   }
 
+  SheetController sheetController = SheetController();
   void showAsBottomSheet(String senderName, senderPhoto, senderEmail, startDate,
       endDate, summary, description, timeZone) async {
     print('image:::$senderPhoto');
-
+    String sDate = startDate.replaceAll("T"," ");
+    String eDate = endDate.replaceAll("T"," ");
     return await showSlidingBottomSheet(context, builder: (context) {
       return SlidingSheetDialog(
         elevation: 8,
         cornerRadius: 20,
-        snapSpec: const SnapSpec(
-          // snap: false,
-          positioning: SnapPositioning.relativeToAvailableSpace,
-        ),
+        // snapSpec: const SnapSpec(
+        //   snap: false,
+        //   positioning: SnapPositioning.relativeToAvailableSpace,
+        // ),
+
+        controller: sheetController,
         duration: Duration(milliseconds: 200),
         builder: (context, state) {
           return Material(
@@ -442,52 +448,75 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                   SizedBox(height: 15),
                   Container(
                     alignment: Alignment.centerLeft,
-                    child: Text(description,
-                        style: TextStyle(
-                            fontSize: 14, fontFamily: "poppins_regular")),
+                    child: DescriptionTextWidget(text:description)
                   ),
                   SizedBox(height: 15),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            child: Text(
-                              'From',
-                              style: TextStyle(
-                                  fontSize: 16, fontFamily: "poppins_medium"),
-                            ),
+                  Container(
+                    margin: EdgeInsets.only(bottom: 10),
+                    child:Column(
+                      children: [
+                        Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height:10,
+                                      width: 10,
+                                      decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          borderRadius: BorderRadius.circular(60)
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(left: 7,top: 1),
+                                      child: Text(
+                                          DateFormat('EE, d MMM, yyyy').format(DateTime.parse(sDate)),
+                                          style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.only(left: 4.5),
+                                    alignment: Alignment.centerLeft,
+                                    height: 20,
+                                    width: 1,
+                                    color: Colors.grey,
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height:10,
+                                      width: 10,
+                                      decoration: BoxDecoration(
+                                          color: Colors.grey,
+                                          borderRadius: BorderRadius.circular(60)
+                                      ),
+                                    ),
+
+                                    Container(
+                                        margin: EdgeInsets.only(left: 7,top: 1),
+                                        child: Text(
+                                          DateFormat('EE, d MMM, yyyy').format(DateTime.parse(eDate)),
+                                          style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.7)),
+                                        )
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          Container(
-                            child: Text(startDate,
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    fontFamily: "poppins_regular")),
-                          )
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            child: Text(
-                              'To',
-                              style: TextStyle(
-                                  fontSize: 16, fontFamily: "poppins_medium"),
-                            ),
-                            alignment: Alignment.centerLeft,
-                          ),
-                          Container(
-                            child: Text(endDate,
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    fontFamily: "poppins_regular")),
-                          )
-                        ],
-                      )
-                    ],
+                        )
+                      ],
+                    ),
                   ),
 
                   SizedBox(height: 20),
@@ -506,7 +535,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                           setState(() {
                             isShareAppointment = true;
                           });
-                          // Navigator.pop(context);
+                          sheetController.collapse();
                         },
                         child: Container(
                           margin: EdgeInsets.only(bottom: 15),
@@ -584,197 +613,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         },
       );
     });
-  }
-
-  shareSheet(String senderName, senderPhoto, senderEmail, startDate,
-      endDate, summary, description, timeZone){
-    return showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
-      ),
-      builder: (_){
-        return Material(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
-          ),
-          child: Container(
-            padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 15),
-            child: Column(
-              children: [
-                Container(
-                  alignment: Alignment.center,
-                  child: Text("Create New Event",
-                      style: TextStyle(
-                          fontSize: 16, fontFamily: "poppins_medium")),
-                ),
-                Row(
-                  children: [
-                    SizedBox(height: 20),
-                    Container(
-                      child: CircleAvatar(
-                        backgroundImage: NetworkImage(senderPhoto),
-                      ),
-                    ),
-                    SizedBox(width: 15),
-                    Container(
-                      child: Text(senderName,
-                          style: TextStyle(
-                              fontSize: 16, fontFamily: "poppins_medium")),
-                    )
-                  ],
-                ),
-                SizedBox(height: 15),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  child: Text(summary,
-                      style: TextStyle(
-                          fontSize: 14, fontFamily: "poppins_regular")),
-                ),
-                SizedBox(height: 15),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  child: Text(description,
-                      style: TextStyle(
-                          fontSize: 14, fontFamily: "poppins_regular")),
-                ),
-                SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          child: Text(
-                            'From',
-                            style: TextStyle(
-                                fontSize: 16, fontFamily: "poppins_medium"),
-                          ),
-                        ),
-                        Container(
-                          child: Text(startDate,
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily: "poppins_regular")),
-                        )
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          child: Text(
-                            'To',
-                            style: TextStyle(
-                                fontSize: 16, fontFamily: "poppins_medium"),
-                          ),
-                          alignment: Alignment.centerLeft,
-                        ),
-                        Container(
-                          child: Text(endDate,
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily: "poppins_regular")),
-                        )
-                      ],
-                    )
-                  ],
-                ),
-
-                SizedBox(height: 20),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      onTap: (){
-                        presenter.setAppointment(
-                            summary: summary,
-                            endDate: endDate,
-                            startDate: startDate,
-                            description: description,
-                            timeZone: timeZone);
-                        setState(() {
-                          isShareAppointment = true;
-                        });
-                        // Navigator.pop(context);
-                      },
-                      child: Container(
-                          margin: EdgeInsets.only(bottom: 15),
-                          height: 40,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              color: Colors.green),
-
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                  child: Text("Accept",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontFamily: "poppins_regular")),
-                                  padding: EdgeInsets.only(left: 10)),
-                              IconButton(
-                                iconSize: 20,
-                                onPressed: () {},
-                                color: Colors.white,
-                                icon: Icon(Icons.done),
-                              )
-                            ],
-                          )),
-                    ),
-
-                    GestureDetector(
-                      onTap: (){
-                        Navigator.pop(context);
-                      },
-                      child: Container(
-                          margin: EdgeInsets.only(bottom: 15),
-                          height: 40,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              color: Colors.red),
-
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.start,
-
-                            children: [
-                              Padding(
-                                child: Text("Cancel",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontFamily: "poppins_regular"),),
-                                padding: EdgeInsets.only(left: 10),
-                              ),
-
-                              IconButton(
-                                iconSize: 20,
-                                padding: EdgeInsets.zero,
-                                onPressed: () {},
-                                color: Colors.white,
-                                icon: Icon(Icons.close_rounded),
-                              )
-                            ],
-                          )),
-                    )
-                  ],
-                ),
-
-                SizedBox(height: 10),
-              ],
-            ),
-          ),
-        );
-      }
-    );
   }
 
 
