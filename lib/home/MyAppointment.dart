@@ -23,7 +23,7 @@ import 'LoadMore.dart';
 import 'OnHomeView.dart';
 
 class MyAppointment extends StatefulWidget {
-  ScrollController controller = ScrollController(keepScrollOffset: false);
+  ScrollController controller = ScrollController();
 
   MyAppointment(this.controller);
 
@@ -60,8 +60,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   bool loader = false;
   bool descTextShowFlag = false;
   bool isLoading = false;
-  // controller = ScrollController(keepScrollOffset: false);
 
+  bool _isVisible = true;
 
 
   @override
@@ -71,13 +71,27 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     init();
     refreshToken();
     _query();
-    _hideFabAnimation = AnimationController(vsync: this, duration: Duration(milliseconds: 300),animationBehavior: AnimationBehavior.normal);
+
+    _isVisible = true;
+    widget.controller.addListener(() {
+      print("listener");
+      if (widget.controller.position.userScrollDirection ==
+          ScrollDirection.reverse) {
+        setState(() {
+          _isVisible = false;
+        });
+      }
+      if (widget.controller.position.userScrollDirection ==
+          ScrollDirection.forward) {
+        setState(() {
+          _isVisible = true;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
-    _hideFabAnimation.dispose();
-
     super.dispose();
   }
 
@@ -128,191 +142,88 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   Widget build(BuildContext context) {
     model = HomeViewModel(this);
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: _handleScrollNotification,
-      child: Scaffold(
-          key: _scaffoldKey,
-          body: RefreshIndicator(
-                child: Stack(
-                  children: [
-                    Container(
-                        color: Colors.grey[200],
-                        child: isVisible == false
-                            ? eventItem.length != 0
-                            ? FutureBuilder(
-                          future: initialLoad,
-                          builder: (context, snapshot) {
-                            switch (snapshot.connectionState) {
-                              case ConnectionState.waiting:
-                                return Center(child: CircularProgressIndicator());
-                              case ConnectionState.done:
-                                return IncrementallyLoadingListView(
-                                  hasMore: () => hasMoreItems,
-                                  itemCount: () => eventItem.length,
-                                  loadMore: () async {
-                                    await _loadMoreItems();
-                                  },
-                                  onLoadMore: () {
-                                    setState(() {
-                                      loadingMore = true;
-                                    });
-                                  },
-                                  onLoadMoreFinished: () {
-                                    setState(() {
-                                      loadingMore = false;
-                                    });
-                                  },
-                                  controller: widget.controller,
-                                  loadMoreOffsetFromBottom: 2,
-                                  shrinkWrap: false,
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    lastIndex = index;
-                                    if ((loadingMore ?? false) && index == eventItem.length-1) {
-                                      return Column(
-                                        children: <Widget>[
-                                          model.slideMenu(index),
-                                          PlaceholderItemCard(index: index,)
-                                        ],
-                                      );
-                                    }
-                                    return model.slideMenu(index);
-                                  },
-                                );
-                              default:
-                                return Text('Something went wrong');
-                            }
-                          },
-                        )
-                            : Center(child: Text("No Event Created"))
-                            :  ListView.builder(
-                          itemCount: 40,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (_,index){
-                            return PlaceholderItemCard(index: index);
-                          },
-                        )
-                    ),
-                  ],
-                ),
-                onRefresh: () {
-                  print('onrefresh::::${access_token}');
-                  eventItem.clear();
-                  hasMoreItems = false;
-                  return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
-                }),
+    return Scaffold(
+        key: _scaffoldKey,
+        body: RefreshIndicator(
+              child: Stack(
+                children: [
+                  Container(
+                      color: Colors.grey[200],
+                      child: isVisible == false
+                          ? eventItem.length != 0
+                          ? FutureBuilder(
+                        future: initialLoad,
+                        builder: (context, snapshot) {
+                          switch (snapshot.connectionState) {
+                            case ConnectionState.waiting:
+                              return Center(child: CircularProgressIndicator());
+                            case ConnectionState.done:
+                              return IncrementallyLoadingListView(
+                                hasMore: () => hasMoreItems,
+                                itemCount: () => eventItem.length,
+                                loadMore: () async {
+                                  await _loadMoreItems();
+                                },
+                                onLoadMore: () {
+                                  setState(() {
+                                    loadingMore = true;
+                                  });
+                                },
+                                onLoadMoreFinished: () {
+                                  setState(() {
+                                    loadingMore = false;
+                                  });
+                                },
+                                controller: widget.controller,
+                                loadMoreOffsetFromBottom: 2,
+                                shrinkWrap: false,
+                                physics: AlwaysScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  lastIndex = index;
+                                  if ((loadingMore ?? false) && index == eventItem.length-1) {
+                                    return Column(
+                                      children: <Widget>[
+                                        model.slideMenu(index),
+                                        PlaceholderItemCard(index: index,)
+                                      ],
+                                    );
+                                  }
+                                  return model.slideMenu(index);
+                                },
+                              );
+                            default:
+                              return Text('Something went wrong');
+                          }
+                        },
+                      )
+                          : Center(child: Text("No Event Created"))
+                          :  ListView.builder(
+                        itemCount: 40,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (_,index){
+                          return PlaceholderItemCard(index: index);
+                        },
+                      )
+                  ),
+                ],
+              ),
+              onRefresh: () {
+                print('onrefresh::::${access_token}');
+                eventItem.clear();
+                hasMoreItems = false;
+                return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
+              }),
 
-
-          // Container(
-          //   child: RefreshIndicator(
-          //       child: Stack(
-          //         children: [
-          //           Container(
-          //             color: Colors.grey[200],
-          //             child: isVisible == false
-          //                 ? eventItem.length != 0
-          //                 ? FutureBuilder(
-          //               future: initialLoad,
-          //               builder: (context, snapshot) {
-          //                 switch (snapshot.connectionState) {
-          //                   case ConnectionState.waiting:
-          //                     return Center(child: CircularProgressIndicator());
-          //                   case ConnectionState.done:
-          //                     return IncrementallyLoadingListView(
-          //                       hasMore: () => hasMoreItems,
-          //                       itemCount: () => eventItem.length,
-          //                       loadMore: () async {
-          //                         await _loadMoreItems();
-          //                       },
-          //                       onLoadMore: () {
-          //                         setState(() {
-          //                           loadingMore = true;
-          //                         });
-          //                       },
-          //                       onLoadMoreFinished: () {
-          //                         setState(() {
-          //                           loadingMore = false;
-          //                         });
-          //                       },
-          //                       controller: controller,
-          //                       loadMoreOffsetFromBottom: 3,
-          //                       itemBuilder: (context, index) {
-          //                         // print("Scroll Condition${lastIndex == eventItem.length -1}");
-          //                         lastIndex = index;
-          //                         if ((loadingMore ?? false) && index == eventItem.length-1) {
-          //                           return Column(
-          //                             children: <Widget>[
-          //                               model.slideMenu(index),
-          //                               PlaceholderItemCard(index: index,)
-          //                             ],
-          //                           );
-          //                         }
-          //                         return model.slideMenu(index);
-          //                       },
-          //                     );
-          //                   default:
-          //                     return Text('Something went wrong');
-          //                 }
-          //               },
-          //             )
-          //                 : Center(child: Text("No Event Created"))
-          //                 :  ListView.builder(
-          //                   itemCount: 40,
-          //                   physics: NeverScrollableScrollPhysics(),
-          //                   itemBuilder: (_,index){
-          //                     return PlaceholderItemCard(index: index);
-          //                   },
-          //             )
-          //           ),
-          //         ],
-          //       ),
-          //       onRefresh: () {
-          //         print('onrefresh::::${access_token}');
-          //         eventItem.clear();
-          //         hasMoreItems = true;
-          //         return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
-          //       }),
-          // ),
-
-          floatingActionButton: ScaleTransition(
-            scale: _hideFabAnimation,
-            alignment: Alignment.bottomCenter,
-            child: FloatingActionButton(
-            child: Icon(Icons.add),
-            backgroundColor: Palette.colorPrimary,
-            onPressed: () async {
-              print(dynamicLink);
-              model.openBottomSheetView(isEdit: false);
-            })
-          ),
-      ),
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
+      floatingActionButton: _isVisible ? FloatingActionButton(
+        backgroundColor: Colors.blue,
+        child: Icon(Icons.add),
+        elevation: 12,
+        onPressed: () {
+          model.openBottomSheetView(isEdit: false);
+        },
+      ) : null,
     );
-  }
-
-  AnimationController _hideFabAnimation;
-  bool _handleScrollNotification(ScrollNotification notification) {
-      if (notification is UserScrollNotification) {
-        final UserScrollNotification userScroll = notification;
-
-        switch (userScroll.direction) {
-          case ScrollDirection.forward:
-            if (userScroll.metrics.maxScrollExtent !=
-                userScroll.metrics.minScrollExtent) {
-              _hideFabAnimation.forward();
-            }
-            break;
-          case ScrollDirection.reverse:
-            if (userScroll.metrics.maxScrollExtent !=
-                userScroll.metrics.minScrollExtent) {
-              _hideFabAnimation.reverse();
-            }
-            break;
-          case ScrollDirection.idle:
-            break;
-        }
-      }
-
-    return false;
   }
 
   var dynamicLink;

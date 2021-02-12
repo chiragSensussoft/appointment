@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:appointment/home/Home.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
@@ -11,6 +10,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 
 class Login extends StatefulWidget {
   @override
@@ -141,7 +141,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                           width: 1,
                           color: Colors.white,
                           onPressed: (){
-                            Navigator.push(context, MaterialPageRoute(
+                            Navigator.pushReplacement(context, MaterialPageRoute(
                               builder: (_) => Home(),
                             ));
                           },radius: 25,
@@ -181,7 +181,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   checkIfLogin()async{
     _sharedPreferences = await SharedPreferences.getInstance();
     if(_sharedPreferences.getBool('isLogin')==true){
-      Navigator.push(context, MaterialPageRoute(
+      Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (_) => Home()
       ));
     }
@@ -270,13 +270,13 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     if (data.length != 0) {
       dbHelper.update(row, data[0]['_id']);
 
-      Navigator.push(context, MaterialPageRoute(
+      Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (_) => Home()
       ));
     }
     else {
       insertWithSocial(fName, lName, email, loginType,idToken,accessToken,photoUrl);
-      Navigator.push(context, MaterialPageRoute(
+      Navigator.pushReplacement(context, MaterialPageRoute(
           builder: (_) => Home()
       ));
     }

@@ -271,9 +271,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                       toast.overLay = false;
                       toast.showOverLay("Fill all details", Colors.white, Colors.black54, context);
 
-                      // }else if(desc.text.length!=50){
-                      // toast.overLay = false;
-                      // toast.showOverLay("Description must be 50 char long!", Colors.white, Colors.black54, context);
+                      }else if(desc.text.length < 50){
+                      toast.overLay = false;
+                      toast.showOverLay("Description must be 50 char long!", Colors.white, Colors.black54, context);
 
 
                       } else if(startDate == DateFormat('EE, d MMM, yyyy').format(_startDateTime)){
@@ -411,8 +411,12 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
               _endHour = "0"+_endHour;
             }
 
+            print('1::$_startHour   $_startMinute');
+            print('2::$_endHour   $_endMinute');
+            print('3::${_startDateTime.hour}   ${_startDateTime.minute}');
+
             if(_startHour!=""){
-              if(int.parse(_endHour)>int.parse(_startHour) || int.parse(_endHour) > int.parse(_startMinute)){
+              if(int.parse(_endHour)>int.parse(_startHour) && int.parse(_endMinute) > int.parse(_startMinute)){
                 _endTime = _endHour +":"+ _endMinute+":"+"00";
 
               }else{
@@ -421,7 +425,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
               }
 
             }else{
-              if(_startDateTime.hour < int.parse(_endHour)  || _startDateTime.minute < int.parse(_endMinute)){
+              if(_startDateTime.hour < int.parse(_endHour)  && _startDateTime.minute < int.parse(_endMinute)){
                 _endTime = _endHour +":"+ _endMinute+":"+"00";
               }else{
                 toast.overLay = false;

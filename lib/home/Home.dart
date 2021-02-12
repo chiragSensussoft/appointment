@@ -1,13 +1,9 @@
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/utils/DBProvider.dart';
-import 'package:appointment/utils/app_bar/ScrollAppBar.dart';
-import 'package:appointment/utils/values/Palette.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
-
-
 
 
 void main() => runApp(MyApp());
@@ -70,7 +66,6 @@ class HomeState extends State<Home>{
     });
   }
 
-  // google-site-verification=MOk_ae6Hu96QUj8TYw_iQhU_8ww7WGudmAbTLfO8lWk
 
   @override
   Widget build(BuildContext context) {
@@ -79,8 +74,7 @@ class HomeState extends State<Home>{
       child: SafeArea(
         top: true,
         child: Scaffold(
-          appBar: ScrollAppBar(
-            controller: controller,
+          appBar: AppBar(
             backgroundColor: Colors.blue,
             automaticallyImplyLeading: false,
             title: Row(
@@ -114,54 +108,6 @@ class HomeState extends State<Home>{
                   ],
                 )
           ),
-
-          // body: DefaultTabController(
-          //   length: 2,
-          //   child: Container(
-          //     child: Column(
-          //       children: [
-          //         Container(
-          //           color: Colors.grey.withOpacity(0.1),
-          //           child: TabBar(
-          //             indicator: UnderlineTabIndicator(
-          //               borderSide: BorderSide(color: Palette.colorPrimary, width: 2.0),
-          //               insets: EdgeInsets.fromLTRB(45.0, 0.0, 45.0, 0.0),
-          //             ),
-          //
-          //             tabs: [
-          //               Padding(
-          //                   padding: EdgeInsets.all(12),
-          //                   child: Text("My Appointment", style: TextStyle(fontSize: 12, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
-          //               ),
-          //
-          //               Padding(
-          //                   padding: EdgeInsets.all(12),
-          //                   child: Text("Other Appointment", style: TextStyle(fontSize: 12, fontFamily: 'poppins_medium', color: Palette.colorPrimary))
-          //               ),
-          //             ],
-          //           ),
-          //         ),
-          //
-          //         Expanded(
-          //             child: Container(
-          //               decoration: BoxDecoration(
-          //                   borderRadius: BorderRadius.only(
-          //                       topLeft: Radius.circular(30), topRight: Radius.circular(30)
-          //                   ), color: Colors.white
-          //               ),
-          //
-          //               child: TabBarView(
-          //                 children: [
-          //                   MyAppointment(),
-          //                   OtherAppointment(),
-          //                 ],
-          //               ),
-          //             )
-          //         )
-          //       ],
-          //     ),
-          //   ),
-          // ),
 
           body: MyAppointment(controller),
         ),
