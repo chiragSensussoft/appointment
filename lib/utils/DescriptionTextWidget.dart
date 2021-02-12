@@ -19,10 +19,10 @@ class _DescriptionTextWidgetState extends State<DescriptionTextWidget> {
   @override
   void initState() {
     super.initState();
-
     if (widget.text.length > 150) {
       firstHalf = widget.text.substring(0, 150);
       secondHalf = widget.text.substring(150, widget.text.length);
+
     } else {
       firstHalf = widget.text;
       secondHalf = "";
@@ -35,23 +35,58 @@ class _DescriptionTextWidgetState extends State<DescriptionTextWidget> {
       child: secondHalf.isEmpty
           ? Text(firstHalf, style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 12, fontFamily: "poppins_regular"))
           :
+      // Container(
+      //   child: RichText(
+      //     text: TextSpan(
+      //         children :[
+      //           TextSpan(text: flag ? (firstHalf + "...") :(firstHalf + secondHalf),
+      //               style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 13, fontFamily: "poppins_regular")),
+      //
+      //           TextSpan(text: flag ? "  show more" : "  show less", style: TextStyle(color: Colors.blue, fontSize: 12),
+      //             recognizer: TapGestureRecognizer()..onTap = (){
+      //              setState(() {
+      //                flag = !flag;
+      //              });
+      //             }),
+      //         ]
+      //     ),
+      //   ),
+      //
+      // ),
+
       Container(
-        child: RichText(
+        child: flag? RichText(
+          maxLines: 3,
+            text: TextSpan(
+                      children :[
+                        TextSpan(text: firstHalf + "...",
+                            style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 13, fontFamily: "poppins_regular")),
+
+                        TextSpan(text: flag ? "  show more" : "  show less", style: TextStyle(color: Colors.blue, fontSize: 12),
+                          recognizer: TapGestureRecognizer()..onTap = (){
+                           setState(() {
+                             flag = !flag;
+                           });
+                          }),
+                      ]
+                  ),
+
+        ) : RichText(
           text: TextSpan(
               children :[
-                TextSpan(text: flag ? (firstHalf + "...") :(firstHalf + secondHalf),
+                TextSpan(text: firstHalf + secondHalf,
                     style: TextStyle(color: Colors.black.withOpacity(0.5),fontSize: 13, fontFamily: "poppins_regular")),
+
                 TextSpan(text: flag ? "  show more" : "  show less", style: TextStyle(color: Colors.blue, fontSize: 12),
-                  recognizer: TapGestureRecognizer()..onTap = (){
-                   setState(() {
-                     flag = !flag;
-                   });
-                  }),
+                    recognizer: TapGestureRecognizer()..onTap = (){
+                      setState(() {
+                        flag = !flag;
+                      });
+                    }),
               ]
           ),
         ),
-
-      ),
+      )
     );
   }
 }

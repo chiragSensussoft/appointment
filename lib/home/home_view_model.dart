@@ -1,6 +1,5 @@
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/MyAppointment.dart';
-import 'package:appointment/utils/expandable_text.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -115,7 +114,11 @@ class HomeViewModel implements IsCreatedOrUpdate {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(child: Text(state.eventItem[index].summary.toString(), style: TextStyle(color: Colors.black,fontSize: 14, fontFamily: "poppins_medium")),),
+                          Expanded(
+                            child: Container(child: Text(state.eventItem[index].summary.toString(),
+                                style: TextStyle(color: Colors.black, fontSize: 14,
+                                    fontFamily: "poppins_medium")),),
+                          ),
                           Container(
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -138,8 +141,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
                                       padding:EdgeInsets.only(left:10),
                                       child: Icon(Icons.share_rounded,size: 20, color: Colors.black.withOpacity(0.5))
                                   ),
+
                                   onTap: ()async{
-                                      // state.showShareDialog(state.context, "Share", index);
                                     state.dynamicLink = await state.createDynamicLink(
                                         title: state.eventItem[index].summary,
                                         desc: state.eventItem[index].description,
