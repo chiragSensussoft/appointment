@@ -9,7 +9,7 @@ class Toast {
           left: left,right: right,top: top,bottom: bottom,
           child: Padding(
             padding: EdgeInsets.only(bottom: 10),
-            child: Flexible(
+            child: Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -18,12 +18,11 @@ class Toast {
                     children: [
                       FlatButton(
                         onPressed: () {},
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 25,vertical: 10),
+                        child: Container( padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 10),
                           decoration:BoxDecoration(
                             borderRadius: BorderRadius.circular(30),
                             color: bgClr,
-                          ),
+                          ) ,
                           child: Text(msg,style: TextStyle(color:txtClr,fontSize: 13)),
                         ),
                       )

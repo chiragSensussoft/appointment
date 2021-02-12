@@ -288,18 +288,18 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                       toast.overLay = false;
                       toast.showOverLay("Fill all details", Colors.white, Colors.black54, context);
 
-                      }else if(desc.text.length < 50){
+                    }else if(desc.text.length < 50){
                       toast.overLay = false;
                       toast.showOverLay("Description must be 50 char long!", Colors.white, Colors.black54, context);
 
 
-                      } else if(startDate == DateFormat('EE, d MMM, yyyy').format(_startDateTime)){
+                    } else if(startDate == DateFormat('EE, d MMM, yyyy').format(_startDateTime)){
                       toast.overLay = false;
                       toast.showOverLay("Select Date", Colors.white, Colors.black54, context);
 
                     } else{
-                        createAppointment();
-                      }
+                      createAppointment();
+                    }
                   },
                   color: Palette.colorPrimary,
                 )
@@ -360,20 +360,20 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
 
     if (picked != null)
       setState(() {
-         selectedStartTime = picked;
-         _startHour = selectedStartTime.hour.toString();
+        selectedStartTime = picked;
+        _startHour = selectedStartTime.hour.toString();
         _startMinute = selectedStartTime.minute.toString();
 
-         start = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_startHour), int.parse(_startMinute));
+        start = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_startHour), int.parse(_startMinute));
 
-         if(start.isAfter(DateTime.now())){
-           print('AFTER:::::');
-           _startTime = _startHour +":"+ _startMinute +":" +"00";
-         }else{
-           print('BEFORE:::::');
-           toast.overLay = false;
-           toast.showOverLay("Start time should be greater than Current time!", Colors.white, Colors.black54, context);
-         }
+        if(start.isAfter(DateTime.now())){
+          print('AFTER:::::');
+          _startTime = _startHour +":"+ _startMinute +":" +"00";
+        }else{
+          print('BEFORE:::::');
+          toast.overLay = false;
+          toast.showOverLay("Start time should be greater than Current time!", Colors.white, Colors.black54, context);
+        }
 
       });
   }
@@ -389,22 +389,22 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
     );
 
     if (picked != null)
-          setState(() {
-            selectedEndTime = picked;
-            _endHour = selectedEndTime.hour.toString();
-            _endMinute = selectedEndTime.minute.toString();
+      setState(() {
+        selectedEndTime = picked;
+        _endHour = selectedEndTime.hour.toString();
+        _endMinute = selectedEndTime.minute.toString();
 
-            end = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_endHour), int.parse(_endMinute));
+        end = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_endHour), int.parse(_endMinute));
 
-            print("text::::$start  $end");
+        print("text::::$start  $end");
 
-            if(end.isAfter(start)){
-              _endTime = _endHour +":"+ _endMinute+":"+"00";
-            }else{
-              toast.overLay = false;
-              toast.showOverLay("End time should be greater than Start time!", Colors.white, Colors.black54, context);
-            }
-          });
+        if(end.isAfter(start)){
+          _endTime = _endHour +":"+ _endMinute+":"+"00";
+        }else{
+          toast.overLay = false;
+          toast.showOverLay("End time should be greater than Start time!", Colors.white, Colors.black54, context);
+        }
+      });
   }
 
   calendarListDialog(){
