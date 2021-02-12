@@ -145,12 +145,12 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                               builder: (_) => Home(),
                             ));
                           },radius: 25,
-                          icon: Image.asset('images/outlook.png',height: 20,width: 20,),),
+                          icon: Image.asset('images/outlook.png',height: 20,width: 20),),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 30,),
+                SizedBox(height: 30),
               ],
             ),
           ),
@@ -282,7 +282,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     }
   }
 
-  void insertWithSocial(String fName,String lName,String email,String loginType,String idToken,String accessToken,String photoUrl){
+  void insertWithSocial(String fName,String lName,String email,String loginType,String idToken,String accessToken,
+      String photoUrl){
     Map<String, dynamic> row = {
       DatabaseHelper.columnfName : fName,
       DatabaseHelper.columnlName : lName,
@@ -291,7 +292,6 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
       DatabaseHelper.columnAccessToken : accessToken,
       DatabaseHelper.columnIdToken : idToken,
       DatabaseHelper.columnPhotoUrl : photoUrl
-
     };
     dbHelper.insert(row);
   }

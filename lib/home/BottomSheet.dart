@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:math';
 
 import 'package:appointment/home/model/CalendarList.dart';
@@ -61,20 +62,36 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
 
     startDate = _startDateTime.year.toString()  + "-" +_startDateTime.month.toString() + "-" + _startDateTime.day.toString();
 
+    _startHour = _startDateTime.hour.toString();
+    _startMinute = _startDateTime.minute.toString();
     _startTime = Constant.getTimeFormat(_startDateTime);
 
-    widget.isEdit ?_endTime = Constant.getTimeFormat(widget.getendDate.toLocal())
-        :_endTime =  (_startDateTime.toLocal().hour + 1).toString()+":"
-        + _startDateTime.toLocal().minute.toString()+ ":"+ _startDateTime.toLocal().second.toString();
+    start = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_startHour), int.parse(_startMinute));
+    // selectedStartTime = TimeOfDay(minute: int.parse(_startMinute) ,hour: int.parse(_startHour));
+    // print('timeNow:::${TimeOfDay.now()}');
+
+    if(widget.isEdit){
+      _endHour = widget.getendDate.toLocal().hour.toString();
+      _endMinute = widget.getendDate.toLocal().minute.toString();
+      _endTime = Constant.getTimeFormat(widget.getendDate.toLocal());
+
+
+    }else{
+      _endHour = (_startDateTime.toLocal().hour + 1).toString();
+      _endMinute = _startDateTime.toLocal().minute.toString();
+      _endTime =  (_startDateTime.toLocal().hour + 1).toString()+":"
+          + _startDateTime.toLocal().minute.toString()+ ":"+ _startDateTime.toLocal().second.toString();
+    }
+
+    end = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_endHour), int.parse(_endMinute));
 
     /*set text for edit*/
     widget.isEdit? title.text = widget.title : null;
     widget.isEdit? desc.text = widget.description : null;
     widget.isEdit? setEmail = Constant.email : null;
 
-    selectedStartTime = TimeOfDay(hour: _startDateTime.hour, minute: _startDateTime.minute);
-    selectedEndTime = TimeOfDay(hour: _startDateTime.hour, minute: _startDateTime.minute);
-
+    selectedStartTime = TimeOfDay();
+    selectedEndTime = TimeOfDay();
   }
 
   @override
@@ -281,32 +298,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
                       toast.showOverLay("Select Date", Colors.white, Colors.black54, context);
 
                     } else{
-
-                        if(_startHour!="") {
-                           if(!widget.isEdit) {
-                             if (int.parse(_startHour) > (_startDateTime.hour + 1)) {
-                               toast.overLay = false;
-                               toast.showOverLay(
-                                   "End Time should be grater than Start date",
-                                   Colors.white, Colors.black54, context);
-                             } else {
-                               createAppointment();
-                             }
-
-                           }else{
-                             if(int.parse(_startHour) > widget.getendDate.hour || int.parse(_startMinute) > widget.getendDate.minute){
-                               toast.overLay = false;
-                               toast.showOverLay(
-                                   "End Time should be grater than Start date",
-                                   Colors.white, Colors.black54, context);
-                             }else{
-                               createAppointment();
-                             }
-                           }
-
-                        }else{
-                          createAppointment();
-                        }
+                        createAppointment();
                       }
                   },
                   color: Palette.colorPrimary,
@@ -357,45 +349,43 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
 
 
   ///Start Time
-  String _startHour = "", _startTime,_startMinute;
+  String _startHour, _startTime,_startMinute;
+  var start;
 
   Future<Null> _selectTime(BuildContext context) async {
     final TimeOfDay picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: TimeOfDay(hour: int.parse(_startHour), minute: int.parse(_startMinute)),
     );
 
     if (picked != null)
       setState(() {
          selectedStartTime = picked;
-        _startHour = selectedStartTime.hour.toString();
+         _startHour = selectedStartTime.hour.toString();
         _startMinute = selectedStartTime.minute.toString();
 
-        if(_startMinute.length!=2){
-          _startMinute = "0"+_startMinute;
-        }
-        if(_startHour.length!=2){
-          _startHour = "0"+_startHour;
-        }
+         start = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_startHour), int.parse(_startMinute));
 
-         if(_startDateTime.day == DateTime.now().day && _startDateTime.month == DateTime.now().month){
-           if(int.parse(_startHour) > DateTime.now().hour || int.parse(_startMinute) > DateTime.now().minute){
-             _startTime = _startHour +":"+ _startMinute +":" +"00";
-           }else{
-             toast.overLay = false;
-             toast.showOverLay("Start time should be greater than Current time!", Colors.white, Colors.black54, context);
-           }
+         if(start.isAfter(DateTime.now())){
+           print('AFTER:::::');
+           _startTime = _startHour +":"+ _startMinute +":" +"00";
+         }else{
+           print('BEFORE:::::');
+           toast.overLay = false;
+           toast.showOverLay("Start time should be greater than Current time!", Colors.white, Colors.black54, context);
          }
+
       });
   }
 
   ///End Time
-  String _endHour = "", _endTime,_endMinute;
+  String _endHour, _endTime,_endMinute;
+  var end;
 
   Future<Null> _endSelectTime(BuildContext context) async {
     final TimeOfDay picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: TimeOfDay(hour: int.parse(_endHour), minute: int.parse(_endMinute)),
     );
 
     if (picked != null)
@@ -404,29 +394,15 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView{
             _endHour = selectedEndTime.hour.toString();
             _endMinute = selectedEndTime.minute.toString();
 
-            if(_endMinute.length!=2){
-              _endMinute = "0"+_endMinute;
-            }
-            if(_endHour.length!=2){
-              _endHour = "0"+_endHour;
-            }
+            end = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_endHour), int.parse(_endMinute));
 
-            if(_startHour!=""){
-              if(int.parse(_endHour)>int.parse(_startHour) && int.parse(_endMinute) > int.parse(_startMinute)){
-                _endTime = _endHour +":"+ _endMinute+":"+"00";
+            print("text::::$start  $end");
 
-              }else{
-                toast.overLay = false;
-                toast.showOverLay("End time should be greater than Start time!", Colors.white, Colors.black54, context);
-              }
-
+            if(end.isAfter(start)){
+              _endTime = _endHour +":"+ _endMinute+":"+"00";
             }else{
-              if(_startDateTime.hour < int.parse(_endHour)  && _startDateTime.minute < int.parse(_endMinute)){
-                _endTime = _endHour +":"+ _endMinute+":"+"00";
-              }else{
-                toast.overLay = false;
-                toast.showOverLay("End time should be greater than Start time!", Colors.white, Colors.black54, context);
-              }
+              toast.overLay = false;
+              toast.showOverLay("End time should be greater than Start time!", Colors.white, Colors.black54, context);
             }
           });
   }

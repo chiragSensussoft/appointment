@@ -74,7 +74,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
     _isVisible = true;
     widget.controller.addListener(() {
-      print("listener");
       if (widget.controller.position.userScrollDirection ==
           ScrollDirection.reverse) {
         setState(() {
