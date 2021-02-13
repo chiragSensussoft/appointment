@@ -82,33 +82,37 @@ class HomeState extends State<Home>{
             title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        url != null ?CircleAvatar(
-                          backgroundImage: NetworkImage(url,),
-                        ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 32),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          url != null ?CircleAvatar(
+                            backgroundImage: NetworkImage(url,),
+                          ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 32),
 
-                        Container(
-                          margin: EdgeInsets.only(left: 10,right: 10),
-                          child:Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                  child: Text(userName!=''?userName : "Default User", style: TextStyle(fontSize: 17))
-                              ),
-                              Container(
-                                  child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12))
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
+                          Container(
+                            margin: EdgeInsets.only(left: 10,right: 10),
+                            child:Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                    child: Text(userName!=''?userName : "Default User", style: TextStyle(fontSize: 17))
+                                ),
+                                Container(
+                                    child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12))
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
                     ),
+
+
                     GestureDetector(
                       child: Container(
                         // child: Icon(Icons.settings, size: 30),
                         child: DropdownButton(
-                            underline: Container(height: 0,),
+                            underline: Container(height: 0),
                             icon: Icon(Icons.language),
                             value: _value,
                             items: [

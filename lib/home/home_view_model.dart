@@ -293,7 +293,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
                     icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
                     onPressed: () {},
                   ),
-                  Flexible(child: Text(Resources.from(state.context, Constant.languageCode).strings.delete, style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular', color: Colors.white)))
+                  Flexible(child: Text(Resources.from(state.context, Constant.languageCode).strings.delete,
+                      style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular', color: Colors.white)))
                 ],
               ),
             ),

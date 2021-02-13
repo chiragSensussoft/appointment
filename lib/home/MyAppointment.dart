@@ -576,9 +576,9 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                     //
                     // ),
 
-                    ProgressButton(isAccept: this),
+                  ProgressButton(isAccept: this, text: Resources.from(context, Constant.languageCode).strings.saveBtn),
 
-                    SizedBox(height: 10),
+                  SizedBox(height: 10),
                   ],
                 ),
               ),

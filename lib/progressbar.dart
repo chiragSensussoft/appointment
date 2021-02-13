@@ -10,7 +10,8 @@ class ProgressButton extends StatefulWidget {
   String text;
   Function onTap;
   
-  ProgressButton({this.isAccept, this.text, this.onTap});
+  // ProgressButton({this.isAccept, this.text, this.onTap});
+  ProgressButton({this.isAccept, this.text});
 
   @override
   _ProgressButtonState createState() => _ProgressButtonState();
@@ -53,7 +54,7 @@ class _ProgressButtonState extends State<ProgressButton>
             onPressed: () {
               setState(() {
                 if (_state == 0) {
-                  widget.onTap();
+                  // widget.onTap();
                   animateButton();
                 }
               });
