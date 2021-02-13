@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:appointment/home/Home.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
+import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
@@ -33,6 +34,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   }
 
   var _value;
+  Toast toast = Toast();
 
   @override
   Widget build(BuildContext context) {
@@ -143,9 +145,12 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                           width: 1,
                           color: Colors.white,
                           onPressed: (){
-                            Navigator.pushReplacement(context, MaterialPageRoute(
-                              builder: (_) => Home(),
-                            ));
+                            // Navigator.pushReplacement(context, MaterialPageRoute(
+                            //   builder: (_) => Home(),
+                            // ));
+                            toast.overLay = false;
+                            toast.showOverLay("Coming Soon!", Colors.white, Colors.black54, context);
+
                           },radius: 25,
                           icon: Image.asset('images/outlook.png',height: 20,width: 20),),
                       ),
