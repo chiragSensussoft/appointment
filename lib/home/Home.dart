@@ -81,35 +81,39 @@ class HomeState extends State<Home>{
             automaticallyImplyLeading: false,
             title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+
                     Expanded(
                       child: Row(
                         children: [
                           url != null ?CircleAvatar(
-                            backgroundImage: NetworkImage(url,),
-                          ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 32),
+                            backgroundImage: NetworkImage(url),
+                          ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 30),
 
-                          Container(
-                            margin: EdgeInsets.only(left: 10,right: 10),
-                            child:Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                    child: Text(userName!=''?userName : "Default User", style: TextStyle(fontSize: 17))
-                                ),
-                                Container(
-                                    child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12))
-                                ),
-                              ],
+                          Expanded(
+                            child: Container(
+                              margin: EdgeInsets.only(left: 10,right: 10),
+                              child:Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                      child: Text(userName!=''?userName : "Default User", style: TextStyle(fontSize: 15))
+                                  ),
+                                  Container(
+                                      child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12))
+                                  ),
+                                ],
+                              ),
                             ),
                           )
                         ],
                       ),
                     ),
 
-
                     GestureDetector(
                       child: Container(
+                        padding: EdgeInsets.zero,
                         // child: Icon(Icons.settings, size: 30),
                         child: DropdownButton(
                             underline: Container(height: 0),
@@ -164,6 +168,7 @@ class HomeState extends State<Home>{
       ),
     );
   }
+
   SharedPreferences _sharedPreferences;
   Future<void> languageCode({String code})async{
     _sharedPreferences = await SharedPreferences.getInstance();

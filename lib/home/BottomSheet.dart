@@ -259,6 +259,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                         child: TextFormField(
                           controller: desc,
                           focusNode: _discFocus,
+                          maxLength: 100,
                           decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(width: 0, color: Colors.transparent)),

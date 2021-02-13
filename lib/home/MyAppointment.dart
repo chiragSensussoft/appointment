@@ -88,10 +88,11 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     _query();
 
     _isVisible = true;
+
     widget.controller.addListener(() {
       if (widget.controller.position.userScrollDirection == ScrollDirection.reverse) {
         setState(() {
-          _isVisible = false;
+            _isVisible = false;
         });
       }
       if (widget.controller.position.userScrollDirection == ScrollDirection.forward) {
@@ -401,18 +402,21 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                             fontSize: 14, fontFamily: "poppins_regular")),
                   ),
                   SizedBox(height: 15),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    child: ReadMoreText(
-                      description,
-                      trimLines: 3,
-                      colorClickableText: Colors.pink,
-                      trimMode: TrimMode.Line,
-                      trimCollapsedText: Resources.from(context, Constant.languageCode).strings.showMore,
-                      trimExpandedText: Resources.from(context, Constant.languageCode).strings.showLess,
-                      style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
-                    ),
+                  Visibility(
+                    visible: description!=null,
+                    child: Container(
+                      alignment: Alignment.centerLeft,
+                      child: ReadMoreText(
+                        description,
+                        trimLines: 3,
+                        colorClickableText: Colors.pink,
+                        trimMode: TrimMode.Line,
+                        trimCollapsedText: Resources.from(context, Constant.languageCode).strings.showMore,
+                        trimExpandedText: Resources.from(context, Constant.languageCode).strings.showLess,
+                        style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
+                      ),
 
+                    ),
                   ),
                   SizedBox(height: 15),
                   Container(
