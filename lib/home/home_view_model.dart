@@ -1,12 +1,11 @@
+import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/MyAppointment.dart';
-import 'package:appointment/textdemo.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
 import 'package:shimmer/shimmer.dart';
-import '../utils/DescriptionTextWidget.dart';
 import '../utils/slide_menu.dart';
 import '../utils/values/Constant.dart';
 import 'event_calendar.dart';
@@ -83,8 +82,6 @@ class HomeViewModel implements IsCreatedOrUpdate {
         child: GestureDetector(
           onTap: () async {
             detailSheet(state.eventItem[index].start.dateTime);
-
-            print('getStart:::::${Constant.getFullDateFormat(state.eventItem[index].start.dateTime)}');
 
             state.dynamicLink = await state.createDynamicLink(
                 title: state.eventItem[index].summary,
@@ -181,8 +178,15 @@ class HomeViewModel implements IsCreatedOrUpdate {
                       visible: state.eventItem[index].description!= null,
                       child: Container(
                         padding: EdgeInsets.only(left: 15, right: 15, top: 10),
-                        child: DescriptionTextWidget(text: state.eventItem[index].description),
-                        // child: ExpandableText(state.eventItem[index].description, trimLines: 3,key: ,),
+                        child: ReadMoreText(
+                          state.eventItem[index].description,
+                          trimLines: 3,
+                          colorClickableText: Colors.pink,
+                          trimMode: TrimMode.Line,
+                          trimCollapsedText: '...Show more',
+                          trimExpandedText: ' show less',
+                          style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
+                        ),
                       ),
                     ),
 

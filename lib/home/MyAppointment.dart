@@ -5,11 +5,9 @@ import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
-import 'package:appointment/utils/DescriptionTextWidget.dart';
-import 'package:appointment/utils/app_bar/ScrollAppBar.dart';
 import 'package:appointment/utils/Toast.dart';
+import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/utils/values/Constant.dart';
-import 'package:appointment/utils/values/Palette.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -23,6 +21,7 @@ import 'package:sliding_sheet/sliding_sheet.dart';
 import 'package:sqflite/sqflite.dart';
 import 'LoadMore.dart';
 import 'OnHomeView.dart';
+
 
 class MyAppointment extends StatefulWidget {
   ScrollController controller = ScrollController();
@@ -448,7 +447,16 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                   SizedBox(height: 15),
                   Container(
                     alignment: Alignment.centerLeft,
-                    child: DescriptionTextWidget(text:description)
+                    child: ReadMoreText(
+                      description,
+                    trimLines: 3,
+                    colorClickableText: Colors.pink,
+                    trimMode: TrimMode.Line,
+                    trimCollapsedText: '...Show more',
+                    trimExpandedText: ' show less',
+                    style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
+                  ),
+
                   ),
                   SizedBox(height: 15),
                   Container(
