@@ -383,8 +383,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         } else {
           print("Enter in Else");
           // refreshToken();
-          eventItem.clear();
-          showAsBottomSheet(senderName, senderPhoto, senderEmail,
+          showSharedAppointment(senderName, senderPhoto, senderEmail,
               startDate, endDate, summary, description, timeZone);
           // sheetController.collapse();
         }
@@ -392,27 +391,21 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     }
   }
 
-  SheetController sheetController = SheetController();
-  void showAsBottomSheet(String senderName, senderPhoto, senderEmail, startDate,
-      endDate, summary, description, timeZone) async {
+  showSharedAppointment(String senderName, senderPhoto, senderEmail, startDate,
+      endDate, summary, description, timeZone){
     print('image:::$senderPhoto');
     String sDate = startDate.replaceAll("T"," ");
     String eDate = endDate.replaceAll("T"," ");
-    return await showSlidingBottomSheet(context, builder: (context) {
-      return SlidingSheetDialog(
-        elevation: 8,
-        cornerRadius: 20,
-        // snapSpec: const SnapSpec(
-        //   snap: false,
-        //   positioning: SnapPositioning.relativeToAvailableSpace,
-        // ),
+    return showModalBottomSheet(
+      context: context,
 
-        controller: sheetController,
-        duration: Duration(milliseconds: 200),
-        builder: (context, state) {
-          return Material(
-            child: Container(
-              padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 15),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(20),topLeft: Radius.circular(20))),
+        builder: (_){
+        return Material(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(20),topLeft: Radius.circular(20))),
+          child: Container(
+            padding: EdgeInsets.only(left: 20, right: 20, top: 20),
+            child: SingleChildScrollView(
               child: Column(
                 children: [
                   Container(
@@ -449,13 +442,13 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                     alignment: Alignment.centerLeft,
                     child: ReadMoreText(
                       description,
-                    trimLines: 3,
-                    colorClickableText: Colors.pink,
-                    trimMode: TrimMode.Line,
-                    trimCollapsedText: '...Show more',
-                    trimExpandedText: ' show less',
-                    style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
-                  ),
+                      trimLines: 3,
+                      colorClickableText: Colors.pink,
+                      trimMode: TrimMode.Line,
+                      trimCollapsedText: '...Show more',
+                      trimExpandedText: ' show less',
+                      style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
+                    ),
 
                   ),
                   SizedBox(height: 15),
@@ -529,100 +522,103 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
                   SizedBox(height: 20),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTap: (){
-                          presenter.setAppointment(
-                              summary: summary,
-                              endDate: endDate,
-                              startDate: startDate,
-                              description: description,
-                              timeZone: timeZone);
-                          setState(() {
-                            isShareAppointment = true;
-                          });
-                          sheetController.collapse();
-                        },
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 15),
-                            height: 40,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(30),
-                                color: Colors.green),
+                  Container(
+                    padding: EdgeInsets.only(bottom: 15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        GestureDetector(
+                          onTap: (){
+                            eventItem.clear();
+                            presenter.setAppointment(
+                                summary: summary,
+                                endDate: endDate,
+                                startDate: startDate,
+                                description: description,
+                                timeZone: timeZone);
+                            setState(() {
+                              isShareAppointment = true;
+                            });
+                          },
+                          child: Container(
+                              margin: EdgeInsets.only(bottom: 15),
+                              height: 40,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(30),
+                                  color: Colors.green),
 
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Padding(
-                                    child: Text("Accept",
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                            fontFamily: "poppins_regular")),
-                                    padding: EdgeInsets.only(left: 10)),
-                                IconButton(
-                                  iconSize: 20,
-                                  onPressed: () {},
-                                  color: Colors.white,
-                                  icon: Icon(Icons.done),
-                                )
-                              ],
-                            )),
-                      ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                      child: Text("Accept",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontFamily: "poppins_regular")),
+                                      padding: EdgeInsets.only(left: 10)),
+                                  IconButton(
+                                    iconSize: 20,
+                                    onPressed: () {},
+                                    color: Colors.white,
+                                    icon: Icon(Icons.done),
+                                  )
+                                ],
+                              )),
+                        ),
 
-                      GestureDetector(
-                        onTap: (){
-                          Navigator.pop(context);
-                        },
-                        child: Container(
-                            margin: EdgeInsets.only(bottom: 15),
-                            height: 40,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(30),
-                                color: Colors.red),
+                        GestureDetector(
+                          onTap: (){
+                            Navigator.pop(context);
+                            // sheetController.collapse();
+                          },
+                          child: Container(
+                              margin: EdgeInsets.only(bottom: 15),
+                              height: 40,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(30),
+                                  color: Colors.red),
 
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.start,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.start,
 
-                              children: [
-                                Padding(
-                                  child: Text("Cancel",
+                                children: [
+                                  Padding(
+                                    child: Text("Cancel",
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 14,
                                           fontFamily: "poppins_regular"),),
-                                  padding: EdgeInsets.only(left: 10),
-                                ),
+                                    padding: EdgeInsets.only(left: 10),
+                                  ),
 
-                                IconButton(
-                                  iconSize: 20,
-                                  padding: EdgeInsets.zero,
-                                  onPressed: () {},
-                                  color: Colors.white,
-                                  icon: Icon(Icons.close_rounded),
-                                )
-                              ],
-                            )),
-                      )
-                    ],
+                                  IconButton(
+                                    iconSize: 20,
+                                    padding: EdgeInsets.zero,
+                                    onPressed: () {},
+                                    color: Colors.white,
+                                    icon: Icon(Icons.close_rounded),
+                                  )
+                                ],
+                              )),
+                        )
+                      ],
+                    ),
                   ),
 
                   SizedBox(height: 10),
                 ],
               ),
             ),
-          );
-        },
-      );
-    });
+          ),
+        );
+      }
+    );
   }
-
 
   @override
   onShowLoader() {
