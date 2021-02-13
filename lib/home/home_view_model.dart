@@ -180,12 +180,12 @@ class HomeViewModel implements IsCreatedOrUpdate {
                       child: Container(
                         padding: EdgeInsets.only(left: 15, right: 15, top: 10),
                         child: ReadMoreText(
-                          state.eventItem[index].description,
+                          state.eventItem[index].description??" ",
                           trimLines: 3,
                           colorClickableText: Colors.pink,
                           trimMode: TrimMode.Line,
-                          trimCollapsedText: '...Show more',
-                          trimExpandedText: ' show less',
+                          trimCollapsedText: Resources.from(state.context, Constant.languageCode).strings.showMore,
+                          trimExpandedText: Resources.from(state.context, Constant.languageCode).strings.showLess,
                           style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
                         ),
                       ),
