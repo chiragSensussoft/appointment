@@ -34,7 +34,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   }
 
   var _value;
-  Toast toast = Toast();
+  // Toast toast = Toast();
 
   @override
   Widget build(BuildContext context) {
@@ -148,8 +148,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                             // Navigator.pushReplacement(context, MaterialPageRoute(
                             //   builder: (_) => Home(),
                             // ));
-                            toast.overLay = false;
-                            toast.showOverLay("Coming Soon!", Colors.white, Colors.black54, context);
+                            // toast.overLay = false;
+                            // toast.showOverLay("Coming Soon!", Colors.white, Colors.black54, context);
 
                           },radius: 25,
                           icon: Image.asset('images/outlook.png',height: 20,width: 20),),

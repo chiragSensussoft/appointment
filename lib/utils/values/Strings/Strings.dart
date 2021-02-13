@@ -82,6 +82,10 @@ abstract class Strings {
   //delete
   //हटाए
   //કા .ી નાખો
+  String get defaultUser;
+  //डिफॉल्ट उपयोगकर्ता
+  //ડિફॉलલ્ટ વપરાશકર્તા
+  //Default User
 }
 
 class Resources {

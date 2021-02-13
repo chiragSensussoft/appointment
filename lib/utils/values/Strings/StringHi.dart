@@ -122,4 +122,8 @@ class StringsHindi extends Strings {
   // TODO: implement delete
   String get delete => "हटाए";
 
+  @override
+  // TODO: implement defaultUser
+  String get defaultUser => "िफॉल्ट उपयोगकर्ता";
+
 }

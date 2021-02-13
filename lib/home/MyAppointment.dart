@@ -6,18 +6,17 @@ import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsAcceptAppointment.dart';
 import 'package:appointment/progressbar.dart';
 import 'package:appointment/utils/DBProvider.dart';
-import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sqflite/sqflite.dart';
@@ -305,7 +304,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         });
   }
 
-  Toast toast = Toast();
+  // Toast toast = Toast();
 
   void handleLinkData(PendingDynamicLinkData data) {
     final Uri uri = data?.link;
@@ -323,10 +322,11 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
         if (summary.isEmpty || description.isEmpty || startDate.isEmpty || endDate.isEmpty || senderName.isEmpty || senderPhoto.isEmpty
             || senderEmail.isEmpty) {
-          toast.overLay = false;
-          toast.showOverLay(
-              Resources.from(context, Constant.languageCode).strings.invalidData, Colors.white, Colors.black54, context,
-              seconds: 3);
+          // toast.overLay = false;
+          // toast.showOverLay(
+          //     Resources.from(context, Constant.languageCode).strings.invalidData, Colors.white, Colors.black54, context,
+          //     seconds: 3);
+          Constant.showToast(Resources.from(context, Constant.languageCode).strings.invalidData, Toast.LENGTH_LONG);
         } else {
           print("Enter in Else");
           // refreshToken();
@@ -678,11 +678,12 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   @override
   onErrorHandler(String message) {
-    Toast toast = Toast();
-    toast.overLay = false;
-    loader = true;
-    toast.showOverLay(message, Colors.white, Colors.black54, context,
-        seconds: 3);
+    // Toast toast = Toast();
+    // toast.overLay = false;
+    // loader = true;
+    // toast.showOverLay(message, Colors.white, Colors.black54, context,
+    //     seconds: 3);
+    Constant.showToast(message, Toast.LENGTH_LONG);
     setState(() {
       isVisible = false;
     });
@@ -754,16 +755,17 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   onCreateEvent(response) {
     print('onSucess:::$response');
     Navigator.pop(context);
-    toast.overLay = false;
-    toast.showOverLay(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Colors.white, Colors.black54, context);
+    // toast.overLay = false;
+    // toast.showOverLay(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Colors.white, Colors.black54, context);
+    Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Toast.LENGTH_SHORT);
     if(isShareAppointment = true){
       presenter.getCalendarEvent(maxResult: 10,isPageToken: false,currentTime: DateTime.now().toUtc());
     }
   }
-
   @override
   onUpdateEvent(response) {
     print('update:::;$response');
+    Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventUpdateMsg, Toast.LENGTH_SHORT);
   }
 
   @override

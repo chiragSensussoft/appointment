@@ -122,4 +122,8 @@ class StringsGujarati extends Strings {
   // TODO: implement delete
   String get delete => "કા .ી નાખો";
 
+  @override
+  // TODO: implement defaultUser
+  String get defaultUser => "િફॉलલ્ટ વપરાશકર્તા";
+
 }

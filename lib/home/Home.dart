@@ -2,6 +2,7 @@ import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/values/Constant.dart';
+import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -98,7 +99,7 @@ class HomeState extends State<Home>{
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                      child: Text(userName!=''?userName : "Default User", style: TextStyle(fontSize: 15))
+                                      child: Text(userName!=''?userName : Resources(context, Constant.languageCode).strings.defaultUser, style: TextStyle(fontSize: 17))
                                   ),
                                   Container(
                                       child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12))

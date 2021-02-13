@@ -124,4 +124,8 @@ class StringsEnglish extends Strings {
   // TODO: implement delete
   String get delete => "Delete";
 
+  @override
+  // TODO: implement defaultUser
+  String get defaultUser => "Default User";
+
 }

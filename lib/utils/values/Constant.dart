@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 class Constant{
@@ -32,4 +34,20 @@ class Constant{
     String finalStr = strDate.replaceAll(" ", "T");
     return finalStr;
   }
+
+  static int CURRENT_STEP = 0;
+
+
+  static showToast(String message,length){
+    Fluttertoast.showToast(
+        fontSize: 14,
+        msg: message,
+        toastLength: length,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.black,
+        textColor: Colors.white
+    );
+  }
+
 }

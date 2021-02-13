@@ -10,6 +10,7 @@ import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'OnHomeView.dart';
 
@@ -393,8 +394,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                                 createAppointment();
 
                               }else{
-                                toast.overLay = false;
-                                toast.showOverLay(Resources.from(context, Constant.languageCode).strings.selectCalendar, Colors.white, Colors.black54, context);
+                                Constant.showToast(Resources.from(context, Constant.languageCode).strings.selectCalendar, Toast.LENGTH_SHORT);
+                                // toast.overLay = false;
+                                // toast.showOverLay(Resources.from(context, Constant.languageCode).strings.selectCalendar, Colors.white, Colors.black54, context);
                               }
                             }
                           },
@@ -446,7 +448,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
             description: desc.text);
   }
 
-  Toast toast = Toast();
+  // Toast toast = Toast();
 
   ///Start Date
   String startDate;
@@ -640,8 +642,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     setState(() {
       loader = true;
     });
-    toast.overLay = false;
-    toast.showOverLay(message, Colors.white, Colors.black54, context);
+    // toast.overLay = false;
+    // toast.showOverLay(message, Colors.white, Colors.black54, context);
+    Constant.showToast(message, Toast.LENGTH_LONG);
   }
 
   @override
@@ -653,8 +656,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   @override
   onCreateEvent(response) {
     Navigator.pop(context);
-    toast.overLay = false;
-    toast.showOverLay(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Colors.white, Colors.black54, context);
+    Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventCreateMsg,Toast.LENGTH_SHORT);
     widget.isCreatedOrUpdate.onCreateUpdate(true);
   }
 
@@ -662,8 +664,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   onUpdateEvent(response) {
     print('onUpdate:::$response');
     Navigator.pop(context);
-    toast.overLay = false;
-    toast.showOverLay(Resources.from(context, Constant.languageCode).strings.eventUpdateMsg, Colors.white, Colors.black54, context);
+    Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventUpdateMsg,Toast.LENGTH_SHORT);
     widget.isCreatedOrUpdate.onCreateUpdate(true);
   }
 

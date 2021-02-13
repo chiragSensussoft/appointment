@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-class Toast {
+class Toast1 {
   OverlayEntry overlayEntry;
   bool overLay = true;
   showOverLay(String msg,Color txtClr,Color bgClr,BuildContext context,{int seconds = 1,double top,double bottom,double left,double right}) async{
