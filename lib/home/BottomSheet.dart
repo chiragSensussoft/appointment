@@ -1,8 +1,8 @@
-import 'dart:developer';
-import 'dart:math';
-
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
+import 'package:appointment/interface/IsAcceptAppointment.dart';
+import 'package:appointment/interface/IsCreatedOrUpdate.dart';
+import 'package:appointment/progressbar.dart';
 import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
@@ -12,10 +12,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'OnHomeView.dart';
-
-abstract class IsCreatedOrUpdate{
-  onCreateUpdate(bool bool);
-}
 
 class MyBottomSheet extends StatefulWidget {
   final String token;
@@ -46,7 +42,7 @@ class MyBottomSheet extends StatefulWidget {
   _MyBottomSheetState createState() => _MyBottomSheetState();
 }
 
-class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView {
+class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, IsAcceptAppointment {
   DateTime _startDateTime;
   HomePresenter _presenter;
   TextEditingController title = TextEditingController();
@@ -402,7 +398,23 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView {
                             }
                           },
                           color: Palette.colorPrimary,
-                        )),
+                        )
+                    ),
+
+                    // ProgressButton(isAccept: this, text: widget.isEdit ? 'Update' : 'save',
+                    //   onTap: (){
+                    //   if (_formKey.currentState.validate()) {
+                    //     if(isVisible){
+                    //       createAppointment();
+                    //
+                    //     }else{
+                    //       toast.overLay = false;
+                    //       toast.showOverLay("Select current calender", Colors.white, Colors.black54, context);
+                    //     }
+                    //   }},
+                    //
+                    // ),
+
                   ],
                 ),
               ),
@@ -656,4 +668,10 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView {
 
   @override
   onDelete(delete) {}
+
+  @override
+  void isAccept() {
+    print('called::::');
+
+  }
 }
