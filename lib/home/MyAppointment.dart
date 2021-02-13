@@ -9,6 +9,8 @@ import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/Toast.dart';
 import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/utils/values/Constant.dart';
+import 'package:appointment/utils/values/Strings/Strings.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -149,76 +151,76 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     model = HomeViewModel(this);
 
     return Scaffold(
-      key: _scaffoldKey,
-      body: RefreshIndicator(
-          child: Stack(
-            children: [
-              Container(
-                  color: Colors.grey[200],
-                  child: isVisible == false
-                      ? eventItem.length != 0
-                      ? FutureBuilder(
-                    future: initialLoad,
-                    builder: (context, snapshot) {
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.waiting:
-                          return Center(child: CircularProgressIndicator());
-                        case ConnectionState.done:
-                          return IncrementallyLoadingListView(
-                            hasMore: () => hasMoreItems,
-                            itemCount: () => eventItem.length,
-                            loadMore: () async {
-                              await _loadMoreItems();
-                            },
-                            onLoadMore: () {
-                              setState(() {
-                                loadingMore = true;
-                              });
-                            },
-                            onLoadMoreFinished: () {
-                              setState(() {
-                                loadingMore = false;
-                              });
-                            },
-                            controller: widget.controller,
-                            loadMoreOffsetFromBottom: 2,
-                            shrinkWrap: false,
-                            physics: AlwaysScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              lastIndex = index;
-                              if ((loadingMore ?? false) && index == eventItem.length-1) {
-                                return Column(
-                                  children: <Widget>[
-                                    model.slideMenu(index),
-                                    PlaceholderItemCard(index: index,)
-                                  ],
-                                );
-                              }
-                              return model.slideMenu(index);
-                            },
-                          );
-                        default:
-                          return Text('Something went wrong');
-                      }
-                    },
-                  )
-                      : Center(child: Text("No Event Created"))
-                      :  ListView.builder(
-                    itemCount: 40,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemBuilder: (_,index){
-                      return PlaceholderItemCard(index: index);
-                    },
-                  )
+        key: _scaffoldKey,
+        body: RefreshIndicator(
+              child: Stack(
+                children: [
+                  Container(
+                      color: Colors.grey[200],
+                      child: isVisible == false
+                          ? eventItem.length != 0
+                          ? FutureBuilder(
+                        future: initialLoad,
+                        builder: (context, snapshot) {
+                          switch (snapshot.connectionState) {
+                            case ConnectionState.waiting:
+                              return Center(child: CircularProgressIndicator());
+                            case ConnectionState.done:
+                              return IncrementallyLoadingListView(
+                                hasMore: () => hasMoreItems,
+                                itemCount: () => eventItem.length,
+                                loadMore: () async {
+                                  await _loadMoreItems();
+                                },
+                                onLoadMore: () {
+                                  setState(() {
+                                    loadingMore = true;
+                                  });
+                                },
+                                onLoadMoreFinished: () {
+                                  setState(() {
+                                    loadingMore = false;
+                                  });
+                                },
+                                controller: widget.controller,
+                                loadMoreOffsetFromBottom: 2,
+                                shrinkWrap: false,
+                                physics: AlwaysScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  lastIndex = index;
+                                  if ((loadingMore ?? false) && index == eventItem.length-1) {
+                                    return Column(
+                                      children: <Widget>[
+                                        model.slideMenu(index),
+                                        PlaceholderItemCard(index: index,)
+                                      ],
+                                    );
+                                  }
+                                  return model.slideMenu(index);
+                                },
+                              );
+                            default:
+                              return Text('Something went wrong');
+                          }
+                        },
+                      )
+                          : Center(child: Text("No Event Created"))
+                          :  ListView.builder(
+                        itemCount: 40,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (_,index){
+                          return PlaceholderItemCard(index: index);
+                        },
+                      )
+                  ),
+                ],
               ),
-            ],
-          ),
-          onRefresh: () {
-            print('onrefresh::::${access_token}');
-            eventItem.clear();
-            hasMoreItems = true;
-            return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
-          }),
+              onRefresh: () {
+                print('onrefresh::::${access_token}');
+                eventItem.clear();
+                hasMoreItems = true;
+                return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
+              }),
 
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButton: _isVisible ? FloatingActionButton(
@@ -272,67 +274,19 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Are you sure you want to $action this Event?', style: TextStyle(fontSize: 14, fontFamily: "poppins_regular"),),
+          title: Text(Resources.from(context, Constant.languageCode).strings.conformDelete, style: TextStyle(fontSize: 14, fontFamily: "poppins_regular"),),
           actions: <Widget>[
             FlatButton(
-              child: const Text('No'),
+              child: Text(Resources.from(context, Constant.languageCode).strings.no),
               onPressed: () {
                 Navigator.pop(context, false);
               },
             ),
             FlatButton(
-              child: const Text('Yes'),
+              child: Text(Resources.from(context, Constant.languageCode).strings.yes),
               onPressed: () {
                 presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
                 Navigator.pop(context, true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<bool> showShareDialog(
-      BuildContext context, String action, int index) {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Are you sure you want to $action this Event?', style: TextStyle(fontSize: 16, fontFamily: 'poppins_regular')),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('No'),
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-            ),
-            FlatButton(
-              child: const Text('Yes'),
-              onPressed: () async {
-                String startDate = eventItem[index].start.dateTime.toLocal().year.toString() + "-" + eventItem[index].start.dateTime.toLocal().month.toString() + "-" +eventItem[index].start.dateTime.toLocal().day.toString();
-                String startTime = eventItem[index].start.dateTime.toLocal().hour.toString() + ":" + eventItem[index].start.dateTime.toLocal().minute.toString() + ":" +"00";
-                print("Date ${startDate + "T" + startTime}");
-                String endDate = eventItem[index].end.dateTime.toLocal().year.toString() + "-" + eventItem[index].end.dateTime.toLocal().month.toString() + "-" + eventItem[index].end.dateTime.toLocal().day.toString();
-                String endTime = eventItem[index].end.dateTime.toLocal().hour.toString() + ":" + eventItem[index].end.dateTime.toLocal().minute.toString() + ":" + "00";
-
-                dynamicLink = await createDynamicLink(
-                    title: eventItem[index].summary,
-                    desc: eventItem[index].description,
-                    startDate: startDate + "T" + startTime,
-                    endDate: endDate + "T" + endTime,
-                    email: email,
-                    photoUrl: url,
-                    senderName: userName,
-                    timeZone: eventItem[index].start.timeZone);
-
-                print("Dynamic Link: $dynamicLink");
-
-                if (dynamicLink != "") {
-                  Share.share(dynamicLink.toString());
-                  Navigator.pop(context, false);
-                }
               },
             ),
           ],
@@ -369,13 +323,22 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         if (summary.isEmpty || description.isEmpty || startDate.isEmpty || endDate.isEmpty || senderName.isEmpty || senderPhoto.isEmpty
             || senderEmail.isEmpty) {
           toast.overLay = false;
-          toast.showOverLay("Data is not valid", Colors.white, Colors.black54, context, seconds: 3);
-
+          toast.showOverLay(
+              Resources.from(context, Constant.languageCode).strings.invalidData, Colors.white, Colors.black54, context,
+              seconds: 3);
         } else {
           print("Enter in Else");
-
-          showSharedAppointment(senderName, senderPhoto, senderEmail,
-              startDate, endDate, summary, description, timeZone);
+          // refreshToken();
+          if(senderEmail != email){
+            String sDate = startDate.replaceAll("T"," ");
+            DateTime.parse(sDate).isAfter(DateTime.now()) ?
+            showSharedAppointment(senderName, senderPhoto, senderEmail,
+                startDate, endDate, summary, description, timeZone):
+            showAlertDialog(Resources.from(context, Constant.languageCode).strings.dialogPastEvent);
+          }
+          else{
+            showAlertDialog(Resources.from(context, Constant.languageCode).strings.dialogCreateOwnEvent);
+          }
         }
       }
     }
@@ -401,127 +364,126 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         context: context,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(20),topLeft: Radius.circular(20))),
         builder: (_){
-          return Material(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(20),topLeft: Radius.circular(20))),
-            child: Container(
-              padding: EdgeInsets.only(left: 20, right: 20, top: 20),
-
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Container(
-                      alignment: Alignment.center,
-                      child: Text("Create New Event",
-                          style: TextStyle(
-                              fontSize: 16, fontFamily: "poppins_medium")),
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(height: 20),
-                        Container(
-                          child: CircleAvatar(
-                            backgroundImage: NetworkImage(senderPhoto),
-                          ),
+        return Material(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(20),topLeft: Radius.circular(20))),
+          child: Container(
+            padding: EdgeInsets.only(left: 20, right: 20, top: 20),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    alignment: Alignment.center,
+                    child: Text(Resources.from(context, Constant.languageCode).strings.createNewEvent,
+                        style: TextStyle(
+                            fontSize: 16, fontFamily: "poppins_medium")),
+                  ),
+                  Row(
+                    children: [
+                      SizedBox(height: 20),
+                      Container(
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(senderPhoto),
                         ),
-                        SizedBox(width: 15),
-                        Container(
-                          child: Text(senderName,
-                              style: TextStyle(
-                                  fontSize: 16, fontFamily: "poppins_medium")),
-                        )
-                      ],
-                    ),
-                    SizedBox(height: 15),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(summary,
-                          style: TextStyle(
-                              fontSize: 14, fontFamily: "poppins_regular")),
-                    ),
-                    SizedBox(height: 15),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: ReadMoreText(
-                        description,
-                        trimLines: 3,
-                        colorClickableText: Colors.pink,
-                        trimMode: TrimMode.Line,
-                        trimCollapsedText: '...Show more',
-                        trimExpandedText: ' show less',
-                        style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
                       ),
-
+                      SizedBox(width: 15),
+                      Container(
+                        child: Text(senderName,
+                            style: TextStyle(
+                                fontSize: 16, fontFamily: "poppins_medium")),
+                      )
+                    ],
+                  ),
+                  SizedBox(height: 15),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: Text(summary,
+                        style: TextStyle(
+                            fontSize: 14, fontFamily: "poppins_regular")),
+                  ),
+                  SizedBox(height: 15),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: ReadMoreText(
+                      description,
+                      trimLines: 3,
+                      colorClickableText: Colors.pink,
+                      trimMode: TrimMode.Line,
+                      trimCollapsedText: Resources.from(context, Constant.languageCode).strings.showMore,
+                      trimExpandedText: Resources.from(context, Constant.languageCode).strings.showLess,
+                      style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
                     ),
-                    SizedBox(height: 15),
-                    Container(
-                      margin: EdgeInsets.only(bottom: 10),
-                      child:Column(
-                        children: [
-                          Container(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        height:10,
-                                        width: 10,
-                                        decoration: BoxDecoration(
-                                            color: Colors.blue,
-                                            borderRadius: BorderRadius.circular(60)
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: EdgeInsets.only(left: 7,top: 1),
-                                        child: Text(
-                                            DateFormat('EE, d MMM, yyyy').format(DateTime.parse(sDate)),
-                                            style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Row(
+
+                  ),
+                  SizedBox(height: 15),
+                  Container(
+                    margin: EdgeInsets.only(bottom: 10),
+                    child:Column(
+                      children: [
+                        Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                child: Row(
                                   children: [
                                     Container(
-                                      margin: EdgeInsets.only(left: 4.5),
-                                      alignment: Alignment.centerLeft,
-                                      height: 20,
-                                      width: 1,
-                                      color: Colors.grey,
+                                      height:10,
+                                      width: 10,
+                                      decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          borderRadius: BorderRadius.circular(60)
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(left: 7,top: 1),
+                                      child: Text(
+                                          DateFormat('EE, d MMM, yyyy').format(DateTime.parse(sDate)),
+                                          style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black)),
                                     ),
                                   ],
                                 ),
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        height:10,
-                                        width: 10,
-                                        decoration: BoxDecoration(
-                                            color: Colors.grey,
-                                            borderRadius: BorderRadius.circular(60)
-                                        ),
-                                      ),
-
-                                      Container(
-                                          margin: EdgeInsets.only(left: 7,top: 1),
-                                          child: Text(
-                                            DateFormat('EE, d MMM, yyyy').format(DateTime.parse(eDate)),
-                                            style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.7)),
-                                          )
-                                      ),
-                                    ],
+                              ),
+                              Row(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.only(left: 4.5),
+                                    alignment: Alignment.centerLeft,
+                                    height: 20,
+                                    width: 1,
+                                    color: Colors.grey,
                                   ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
+                                ],
+                              ),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height:10,
+                                      width: 10,
+                                      decoration: BoxDecoration(
+                                          color: Colors.grey,
+                                          borderRadius: BorderRadius.circular(60)
+                                      ),
+                                    ),
 
-                    SizedBox(height: 20),
+                                    Container(
+                                        margin: EdgeInsets.only(left: 7,top: 1),
+                                        child: Text(
+                                          DateFormat('EE, d MMM, yyyy').format(DateTime.parse(eDate)),
+                                          style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.7)),
+                                        )
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
 
                     // Container(
                     //   padding: EdgeInsets.only(bottom: 15),
@@ -673,6 +635,25 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     });
   }
 
+  showAlertDialog(summary){
+    return showDialog(
+      context: context,
+      builder: (_){
+        return AlertDialog(
+          title: Text(summary,style: TextStyle(color: Colors.black,fontFamily: "poppins_medium",fontSize: 14),),
+          actions: [
+            TextButton(
+              child: Text(Resources.from(context, Constant.languageCode).strings.okay),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      }
+    );
+  }
+
   @override
   onShowLoader() {
     print("Show Loader");
@@ -770,7 +751,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     print('onSucess:::$response');
     Navigator.pop(context);
     toast.overLay = false;
-    toast.showOverLay("Appointment created successfully", Colors.white, Colors.black54, context);
+    toast.showOverLay(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Colors.white, Colors.black54, context);
     if(isShareAppointment = true){
       presenter.getCalendarEvent(maxResult: 10,isPageToken: false,currentTime: DateTime.now().toUtc());
     }
@@ -812,65 +793,65 @@ class PlaceholderItemCard extends StatelessWidget {
         child: Shimmer.fromColors(child: Padding(
           padding: EdgeInsets.only(left: 0, top: 0, right: 0, bottom:0),
           child: GestureDetector(
-            child: Container(
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.only(top: 8, bottom: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+           child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.only(top: 8, bottom: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
 
-                  children: [
-                    SizedBox(height: 5),
-                    Container(
-                      padding: EdgeInsets.only(left: 18, right: 18),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            height: 5,
-                            width: 50,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(2),
-                                color: Colors.white
+                    children: [
+                      SizedBox(height: 5),
+                      Container(
+                        padding: EdgeInsets.only(left: 18, right: 18),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              height: 5,
+                              width: 50,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(2),
+                                  color: Colors.white
+                              ),
                             ),
-                          ),
-                          Container(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                  height: 15,
-                                  width: 15,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(2),
-                                      color: Colors.white
+                            Container(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                 Container(
+                                   height: 15,
+                                   width: 15,
+                                   decoration: BoxDecoration(
+                                     borderRadius: BorderRadius.circular(2),
+                                     color: Colors.white
+                                   ),
+                                 ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 5),
+                                    height: 15,
+                                    width: 15,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.white
+                                    ),
                                   ),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 5),
-                                  height: 15,
-                                  width: 15,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(2),
-                                      color: Colors.white
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 3),
-                    Divider(
-                      color: Colors.white,
-                      thickness: 0.3,
-                      height: 0.3,
-                    ),
-                    SizedBox(height: 5),
-                    Container(
+                      SizedBox(height: 3),
+                      Divider(
+                        color: Colors.white,
+                        thickness: 0.3,
+                        height: 0.3,
+                      ),
+                      SizedBox(height: 5),
+                      Container(
                         padding: EdgeInsets.only(left: 18, right: 18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -894,83 +875,83 @@ class PlaceholderItemCard extends StatelessWidget {
                             ),
                           ],
                         )
-                    ),
-                    SizedBox(height: 5),
-
-                    Container(
-                      margin: EdgeInsets.only(left: 18,bottom: 10),
-                      child:Column(
-                        children: [
-                          Container(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        height:10,
-                                        width: 10,
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(60)
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 5,
-                                        margin: EdgeInsets.only(left: 7),
-                                        width: MediaQuery.of(context).size.width * 0.50,
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(2),
-                                            color: Colors.white
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.only(left: 4.5),
-                                      alignment: Alignment.centerLeft,
-                                      height: 20,
-                                      width: 1,
-                                      color: Colors.white,
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        height:10,
-                                        width: 10,
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(60)
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 5,
-                                        margin: EdgeInsets.only(left: 7),
-                                        width: MediaQuery.of(context).size.width * 0.50,
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(2),
-                                            color: Colors.white
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
                       ),
-                    ),
-                  ],
-                )
-            ),
+                      SizedBox(height: 5),
+
+                      Container(
+                        margin: EdgeInsets.only(left: 18,bottom: 10),
+                        child:Column(
+                          children: [
+                            Container(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          height:10,
+                                          width: 10,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(60)
+                                          ),
+                                        ),
+                                        Container(
+                                          height: 5,
+                                          margin: EdgeInsets.only(left: 7),
+                                          width: MediaQuery.of(context).size.width * 0.50,
+                                          decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(2),
+                                              color: Colors.white
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.only(left: 4.5),
+                                        alignment: Alignment.centerLeft,
+                                        height: 20,
+                                        width: 1,
+                                        color: Colors.white,
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          height:10,
+                                          width: 10,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(60)
+                                          ),
+                                        ),
+                                        Container(
+                                          height: 5,
+                                          margin: EdgeInsets.only(left: 7),
+                                          width: MediaQuery.of(context).size.width * 0.50,
+                                          decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(2),
+                                              color: Colors.white
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+              ),
           ),
         ),
           baseColor: Colors.grey[300],

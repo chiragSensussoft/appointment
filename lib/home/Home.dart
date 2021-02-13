@@ -1,8 +1,10 @@
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/values/Constant.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 
@@ -34,7 +36,7 @@ class HomeState extends State<Home>{
   String email = '';
   bool visibility = true;
   ScrollController controller = ScrollController();
-
+  var _value;
 
   void initState() {
     _query();
@@ -102,8 +104,52 @@ class HomeState extends State<Home>{
                         )
                       ],
                     ),
-                    Container(
-                      child: Icon(Icons.settings, size: 30),
+                    GestureDetector(
+                      child: Container(
+                        // child: Icon(Icons.settings, size: 30),
+                        child: DropdownButton(
+                            underline: Container(height: 0,),
+                            icon: Icon(Icons.language),
+                            value: _value,
+                            items: [
+                              DropdownMenuItem(
+                                child: Text('English',style: TextStyle(fontSize: 14),),
+                                onTap: (){
+                                  setState(() {
+                                    Constant.languageCode = 'en';
+                                    languageCode(code: Constant.languageCode);
+                                  });
+                                },
+                                value: 1,
+                              ),
+                              DropdownMenuItem(
+                                child: Text("Hindi",style: TextStyle(fontSize: 14)),
+                                onTap: (){
+                                  setState(() {
+                                    Constant.languageCode = 'hi';
+                                    languageCode(code: Constant.languageCode);
+                                  });
+                                },
+                                value: 2,
+                              ),
+                              DropdownMenuItem(
+                                  child: Text("Gujarati",style: TextStyle(fontSize: 14)),
+                                  onTap: (){
+                                    setState(() {
+                                      Constant.languageCode = 'gu';
+                                      languageCode(code: Constant.languageCode);
+                                    });
+                                  },
+                                  value: 3
+                              ),
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                _value = value;
+                              });
+                            }),
+                      ),
+
                     )
                   ],
                 )
@@ -113,5 +159,24 @@ class HomeState extends State<Home>{
         ),
       ),
     );
+  }
+  SharedPreferences _sharedPreferences;
+  Future<void> languageCode({String code})async{
+    _sharedPreferences = await SharedPreferences.getInstance();
+    _sharedPreferences.setString(Constant().languageKey, code);
+  }
+
+  setValue()async{
+    _sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      switch(_sharedPreferences.getString(Constant().languageKey)){
+        case 'gu':
+          return _value = 3;
+        case 'hi':
+          return _value = 2;
+        default:
+          return _value = 1;
+      }
+    });
   }
 }

@@ -164,7 +164,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
 
                           validator: (value) {
                             if (value.isEmpty) {
-                              return 'Please add title';
+                              return Resources.from(context, Constant.languageCode).strings.errorTitleTxt;
                             }
                             return null;
                           },
@@ -281,10 +281,10 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
 
                           validator: (value) {
                             if (value.isEmpty) {
-                              return 'Please add description';
+                              return Resources.from(context, Constant.languageCode).strings.errorDescTxt;
 
                             }else if(value.length<50){
-                              return 'Description must be 50 char long';
+                              return Resources.from(context, Constant.languageCode).strings.errorDescLength;
                             }
                             return null;
                           },
@@ -379,7 +379,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                     Container(
                         margin: EdgeInsets.only(top: Dimen().dp_20, left: 80, right: 80, bottom: 20),
                         child: FlatButton(
-                          child: Text(widget.isEdit ? 'Update' : 'save',
+                          child: Text(widget.isEdit ? Resources.from(context,Constant.languageCode).strings.update : Resources.from(context,Constant.languageCode).strings.saveBtn,
                               style: TextStyle(fontSize: 16, fontFamily: 'poppins_medium', color: Colors.white)),
                           minWidth: MediaQuery.of(context).size.width * 0.30,
                           shape: RoundedRectangleBorder(
@@ -393,7 +393,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
 
                               }else{
                                 toast.overLay = false;
-                                toast.showOverLay("Select current calender", Colors.white, Colors.black54, context);
+                                toast.showOverLay(Resources.from(context, Constant.languageCode).strings.selectCalendar, Colors.white, Colors.black54, context);
                               }
                             }
                           },
@@ -589,20 +589,20 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                dialog=="End Time"?Text('End time should be greater than Start time'):
-                dialog=="Start Time"?Text('Start time should be greater than Current time'):null,
+                dialog=="End Time"?Text(Resources.from(context, Constant.languageCode).strings.endTimeDialog):
+                dialog=="Start Time"?Text(Resources.from(context, Constant.languageCode).strings.startTimeDialog):null,
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: Text(Resources.from(context, Constant.languageCode).strings.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Okay'),
+              child: Text(Resources.from(context, Constant.languageCode).strings.okay),
               onPressed: () {
                 Navigator.of(context).pop();
                 switch(dialog){
@@ -653,7 +653,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   onCreateEvent(response) {
     Navigator.pop(context);
     toast.overLay = false;
-    toast.showOverLay("Appointment created successfully", Colors.white, Colors.black54, context);
+    toast.showOverLay(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Colors.white, Colors.black54, context);
     widget.isCreatedOrUpdate.onCreateUpdate(true);
   }
 
@@ -662,7 +662,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     print('onUpdate:::$response');
     Navigator.pop(context);
     toast.overLay = false;
-    toast.showOverLay("Appointment updated successfully", Colors.white, Colors.black54, context);
+    toast.showOverLay(Resources.from(context, Constant.languageCode).strings.eventUpdateMsg, Colors.white, Colors.black54, context);
     widget.isCreatedOrUpdate.onCreateUpdate(true);
   }
 

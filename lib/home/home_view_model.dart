@@ -2,11 +2,11 @@ import 'package:appointment/interface/IsCreatedOrUpdate.dart';
 import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/MyAppointment.dart';
+import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
-import 'package:shimmer/shimmer.dart';
 import '../utils/slide_menu.dart';
 import '../utils/values/Constant.dart';
 import 'event_calendar.dart';
@@ -293,7 +293,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                     icon: Icon(Icons.delete_forever_sharp,color: Colors.white),
                     onPressed: () {},
                   ),
-                  Flexible(child: Text("Delete", style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular', color: Colors.white)))
+                  Flexible(child: Text(Resources.from(state.context, Constant.languageCode).strings.delete, style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular', color: Colors.white)))
                 ],
               ),
             ),
@@ -309,67 +309,4 @@ class HomeViewModel implements IsCreatedOrUpdate {
     isCreateUpdate = bool;
     print('isCreateUpdtae::::$bool   $isCreateUpdate');
   }
-}
-
-class PlaceholderItemCard extends StatelessWidget {
-  const PlaceholderItemCard({Key key, @required this.item}) : super(key: key);
-
-  final ItemList item;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Shimmer.fromColors(
-          baseColor: Colors.grey[300],
-          highlightColor: Colors.grey[100],
-          child: Column(
-            children: <Widget>[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    width: 60.0,
-                    height: 60.0,
-                    color: Colors.white,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 0.0, 0.0, 0.0),
-                    child: Container(
-                      color: Colors.white,
-                      child: Text(
-                        item.name,
-                        style: TextStyle(color: Colors.transparent),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
-                child: Container(
-                  color: Colors.white,
-                  child: Text(
-                    item.message,
-                    style: TextStyle(color: Colors.transparent),
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-class ItemList {
-  final String name;
-  final String avatarUrl = 'http://via.placeholder.com/60x60';
-  final String message =
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
-
-  ItemList(this.name);
 }
