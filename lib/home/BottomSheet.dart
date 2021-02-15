@@ -150,7 +150,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                           controller: title,
                           focusNode: _titleFocus,
                           decoration: InputDecoration(
-                              contentPadding: EdgeInsets.only(top: Dimen().dp_10, bottom: Dimen().dp_10, left: 12),
+                              contentPadding: EdgeInsets.only(top: Dimen().dp_10, bottom: Dimen().dp_10, left: 12,right: 12),
 
                               enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(width: 0, color: Colors.transparent)),

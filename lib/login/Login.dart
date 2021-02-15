@@ -70,7 +70,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                   Container(
                       child: Text("हिन्दी",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center)),
                   Container(
-                      child: Text("ગુજરાતી",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center,)),
+                      child: Text("ગુજરાતી",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center,),),
                 ],
                 onChange: (index) {
                   print(index);
@@ -131,7 +131,9 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                     ],
                   ),
                 ),
+
                 SizedBox(height: 50,),
+
                 Container(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -203,11 +205,19 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     setState(() {
       switch(_sharedPreferences.getString(Constant().languageKey)){
         case 'gu':
-          return text = "ગુજરાતી";
+          setState(() {
+            text = "ગુજરાતી";
+            selectedIndex =2;
+          });
+          break;
         case 'hi':
-          return text = "हिन्दी";
+          text = "हिन्दी";
+          selectedIndex = 1;
+          break;
         default:
-          return text = "English";
+          text = "English";
+          selectedIndex = 0;
+          break;
       }
     });
   }
