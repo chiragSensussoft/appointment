@@ -12,6 +12,8 @@ class Constant{
   final event = 'events';
   final calendar = "calendarList";
   static String email;
+  static String SET_CAL_ID;
+
 
   static String ACCESS_TOKEN = 'access_token';
   static String USER_NAME = 'user_name';

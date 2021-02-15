@@ -81,8 +81,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                       Constant.languageCode = 'en';
                       languageCode(code: Constant.languageCode);
                     });
-                  }
-                  if(index == 1){
+                  }else if(index == 1){
                     setState(() {
                       text ="हिन्दी";
                       selectedIndex = index;
@@ -90,7 +89,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                       languageCode(code: Constant.languageCode);
                     });
                   }
-                  if(index == 2){
+                  else if(index == 2){
                     setState(() {
                       text ="ગુજરાતી";
                       selectedIndex = index;
@@ -101,8 +100,6 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                 },
               ),
             )
-
-
           ]
         ),
       ),

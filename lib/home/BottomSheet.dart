@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'OnHomeView.dart';
 
 class MyBottomSheet extends StatefulWidget {
@@ -24,6 +25,7 @@ class MyBottomSheet extends StatefulWidget {
   String timeZone;
   String eventID;
   IsCreatedOrUpdate isCreatedOrUpdate;
+  String isCalenderID;
 
   MyBottomSheet(
       {this.token,
@@ -36,7 +38,8 @@ class MyBottomSheet extends StatefulWidget {
       this.timeZone,
       this.isEdit,
       this.eventID,
-      this.isCreatedOrUpdate});
+      this.isCreatedOrUpdate,
+      this.isCalenderID});
 
   @override
   _MyBottomSheetState createState() => _MyBottomSheetState();
@@ -50,11 +53,12 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   FocusNode _titleFocus = FocusNode();
   FocusNode _discFocus = FocusNode();
   bool loader = false;
-  String setEmail;
+  // String setEmail;
   TimeOfDay selectedStartTime;
   TimeOfDay selectedEndTime;
   bool isVisible = false;
   final _formKey = GlobalKey<FormState>();
+  SharedPreferences _sharedPreferences;
 
   @override
   void dispose() {
@@ -62,9 +66,15 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     _discFocus.unfocus();
   }
 
+  init() async {
+    _sharedPreferences = await SharedPreferences.getInstance();
+  }
+
   @override
   void initState() {
     super.initState();
+    init();
+
     widget.isEdit
         ? _startDateTime = widget.getStartDate.toLocal()
         : _startDateTime = DateTime.now();
@@ -102,19 +112,18 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     /*set text for edit*/
     widget.isEdit ? title.text = widget.title : null;
     widget.isEdit ? desc.text = widget.description : null;
-    widget.isEdit ? setEmail = Constant.email : null;
+    Constant.SET_CAL_ID = Constant.SET_CAL_ID==null ? Constant.email : Constant.SET_CAL_ID;
 
     selectedStartTime = TimeOfDay();
     selectedEndTime = TimeOfDay();
 
-    widget.isEdit? isVisible = true: isVisible = false;
+    // widget.isEdit? isVisible = true: isVisible = false;
 
   }
 
   @override
   Widget build(BuildContext context) {
     return Form(
-      autovalidateMode: AutovalidateMode.always,
       key: _formKey,
       child: Container(
           padding: EdgeInsets.only(left: Dimen().dp_20, right: Dimen().dp_20),
@@ -149,8 +158,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                               focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(width: 0, color: Colors.transparent)),
 
-                              errorBorder: OutlineInputBorder(borderSide: BorderSide(
-                                  width: 1, color: Colors.red)),
+                              errorBorder: OutlineInputBorder(borderSide: BorderSide(width: 1, color: Colors.red)),
 
                               fillColor: Colors.grey[200],
                               filled: true,
@@ -193,14 +201,20 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                                     textAlign: TextAlign.end,
                                   ),
 
-                                  Visibility(
-                                    visible: isVisible,
-                                    child: Text(
-                                      setEmail ?? "",
-                                      style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular'),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  )
+                                  Text(
+                                    Constant.SET_CAL_ID ?? "",
+                                    style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular'),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+
+                                  // Visibility(
+                                  //   visible: isVisible,
+                                  //   child: Text(
+                                  //     setEmail ?? "",
+                                  //     style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular'),
+                                  //     overflow: TextOverflow.ellipsis,
+                                  //   ),
+                                  // )
                                 ],
                               ),
                             ),
@@ -407,7 +421,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                     SizedBox(height: 20),
 
                     ProgressButton(isAccept: this, text: widget.isEdit ? 'Update' : 'save',
-                        formKey: _formKey, isVisible: isVisible, )
+                        formKey: _formKey, isVisible: isVisible)
                   ],
                 ),
               ),
@@ -429,7 +443,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
             summary: title.text,
             description: desc.text,
             id: widget.eventID,
-            email: setEmail)
+            email: Constant.email)
         : _presenter.setAppointment(
             endDate: startDate + "T" + _endTime,
             startDate: startDate + "T" + _startTime,
@@ -530,7 +544,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                       return GestureDetector(
                         onTap: () {
                           setState(() {
-                            setEmail = widget.itemList[index].summary;
+                            Constant.SET_CAL_ID = widget.itemList[index].summary;
                             Constant.email = widget.itemList[index].id;
                             Navigator.pop(context);
                             isVisible = true;
@@ -547,8 +561,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                                 height: 15,
                                 width: 15,
                                 child: CircleAvatar(
-                                    backgroundColor:
-                                        widget.itemList[index].id == setEmail ? Palette.colorPrimary : Colors.grey),
+                                    backgroundColor: widget.itemList[index].id == Constant.email ? Palette.colorPrimary : Colors.grey),
                               ),
                               Container(
                                 child: Expanded(

@@ -41,7 +41,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
 
 
   openBottomSheetView({String summary, String description, DateTime startDate,
-    DateTime endDate, String timeZone, bool isEdit, String eventID}){
+    DateTime endDate, String timeZone, bool isEdit, String eventID, String calenderId}){
 
     return showModalBottomSheet(
         backgroundColor: Colors.transparent,
@@ -58,7 +58,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                 return isEdit?
                 MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: true,
                 title: summary, description: description, getStartDate: startDate, getendDate: endDate,
-                  timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this):
+                  timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this,isCalenderID: null,):
 
                  MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: false,
                  isCreatedOrUpdate: this);
@@ -422,7 +422,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                                     openBottomSheetView(description: state.eventItem[index].description,
                                         summary: state.eventItem[index].summary, startDate: state.eventItem[index].start.dateTime,
                                         timeZone: state.eventItem[index].start.timeZone, endDate: state.eventItem[index].end.dateTime,
-                                        isEdit: true, eventID: state.eventItem[index].id);
+                                        isEdit: true, eventID: state.eventItem[index].id, calenderId: null);
                                   },
                                 ),
                                 GestureDetector(
