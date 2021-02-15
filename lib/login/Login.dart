@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:appointment/home/Home.dart';
+import 'package:appointment/utils/CuastomDropDown.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
-import 'package:appointment/utils/Toast.dart';
+import 'package:appointment/utils/drop_down.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
@@ -29,64 +30,80 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   void initState() {
     // checkIfLogin();
     super.initState();
-
-    setState(() {
       setValue();
-    });
   }
-
+  String dropdownValue1 = 'One';
+  String dropdownValue2 = 'Two';
   var _value;
   // Toast toast = Toast();
+  Color warna = Colors.red;
 
+  void _aksiPilihan(Menu menu){
+    setState(() {
+      warna=menu.warna;
+    });
+  }
+  String text;
+  int selectedIndex;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(40),
-        child:  Container(
-          margin: EdgeInsets.only(right: Dimen().dp_20,top: 35),
-          alignment: Alignment.topRight,
-          child: DropdownButton(
-              underline: Container(height: 0,),
-              icon: Icon(Icons.language),
-              value: _value,
-              items: [
-                DropdownMenuItem(
-                  child: Text('English',style: TextStyle(fontSize: 14),),
-                  onTap: (){
+        child:  Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children:[
+            /// DD1
+            Container(
+              color: Colors.transparent,
+              margin: EdgeInsets.only(right: Dimen().dp_20,top: 35),
+              alignment: Alignment.topRight,
+              child: SimpleAccountMenu(
+                text: text,
+                selectedIndex: selectedIndex,
+                borderRadius: BorderRadius.circular(10),
+                backgroundColor: Colors.white,
+                icons: [
+                  Container(
+                    // height:40,
+                      child: Text("English",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center)),
+                  Container(
+                      child: Text("हिन्दी",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center)),
+                  Container(
+                      child: Text("ગુજરાતી",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center,)),
+                ],
+                onChange: (index) {
+                  print(index);
+                  if(index == 0){
                     setState(() {
+                      text ="English";
+                      selectedIndex = index;
                       Constant.languageCode = 'en';
                       languageCode(code: Constant.languageCode);
                     });
-                  },
-                  value: 1,
-                ),
-                DropdownMenuItem(
-                  child: Text("Hindi",style: TextStyle(fontSize: 14)),
-                  onTap: (){
+                  }
+                  if(index == 1){
                     setState(() {
+                      text ="हिन्दी";
+                      selectedIndex = index;
                       Constant.languageCode = 'hi';
                       languageCode(code: Constant.languageCode);
                     });
-                  },
-                  value: 2,
-                ),
-                DropdownMenuItem(
-                    child: Text("Gujarati",style: TextStyle(fontSize: 14)),
-                    onTap: (){
-                      setState(() {
-                        Constant.languageCode = 'gu';
-                        languageCode(code: Constant.languageCode);
-                      });
-                    },
-                    value: 3
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _value = value;
-                });
-              }),
+                  }
+                  if(index == 2){
+                    setState(() {
+                      text ="ગુજરાતી";
+                      selectedIndex = index;
+                      Constant.languageCode = 'gu';
+                      languageCode(code: Constant.languageCode);
+                    });
+                  }
+                },
+              ),
+            )
+
+
+          ]
         ),
       ),
       body: Container(
@@ -189,11 +206,11 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     setState(() {
       switch(_sharedPreferences.getString(Constant().languageKey)){
         case 'gu':
-          return _value = 3;
+          return text = "ગુજરાતી";
         case 'hi':
-          return _value = 2;
+          return text = "हिन्दी";
         default:
-          return _value = 1;
+          return text = "English";
       }
     });
   }
@@ -317,3 +334,14 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   }
 
 }
+class Menu{
+  const Menu({this.teks, this.warna});
+  final String teks;
+  final Color warna;
+}
+
+List<Menu> listMenu = const <Menu>[
+  const Menu (teks:"Merah", warna: Colors.red ),
+  const Menu (teks:"Biru", warna: Colors.blue ),
+  const Menu (teks:"Hijau", warna: Colors.green ),
+];

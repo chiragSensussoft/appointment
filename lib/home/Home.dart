@@ -1,7 +1,9 @@
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/drop_down.dart';
 import 'package:appointment/utils/values/Constant.dart';
+import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -68,7 +70,8 @@ class HomeState extends State<Home>{
       email = result[0]['email'];
     });
   }
-
+  String text = "English";
+  int selectedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -161,19 +164,19 @@ class HomeState extends State<Home>{
                     // ),
 
                     
-                    GestureDetector(
-                      onTap: (){
-
-
-                      },
-                      child: Row(
-                        children: [
-                          Text('English', style: TextStyle(fontSize: 10, color:Colors.white)),
-                          SizedBox(width: 5),
-                          Icon(Icons.language),
-                        ],
-                      ),
-                    ),
+                    // GestureDetector(
+                    //   onTap: (){
+                    //
+                    //
+                    //   },
+                    //   child: Row(
+                    //     children: [
+                    //       Text('English', style: TextStyle(fontSize: 10, color:Colors.white)),
+                    //       SizedBox(width: 5),
+                    //       Icon(Icons.language),
+                    //     ],
+                    //   ),
+                    // ),
 
                     // Expanded(
                     //   flex: 1,
@@ -183,6 +186,53 @@ class HomeState extends State<Home>{
                     //     icon: Icon(Icons.settings, color: Colors.white),
                     //   ),
                     // )
+
+                    Container(
+                      // margin: EdgeInsets.only(right: Dimen().dp_20,top: 35),
+                      alignment: Alignment.topRight,
+                      child: SimpleAccountMenu(
+                        text: text,
+                        selectedIndex: selectedIndex,
+                        borderRadius: BorderRadius.circular(10),
+                        backgroundColor: Colors.white,
+                        icons: [
+                          Container(
+                            // height:40,
+                              child: Text("English",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center)),
+                          Container(
+                              child: Text("हिन्दी",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center)),
+                          Container(
+                              child: Text("ગુજરાતી",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center,)),
+                        ],
+                        onChange: (index) {
+                          print(index);
+                          if(index == 0){
+                            setState(() {
+                              text ="English";
+                              selectedIndex = index;
+                              Constant.languageCode = 'en';
+                              languageCode(code: Constant.languageCode);
+                            });
+                          }
+                          if(index == 1){
+                            setState(() {
+                              text ="हिन्दी";
+                              selectedIndex = index;
+                              Constant.languageCode = 'hi';
+                              languageCode(code: Constant.languageCode);
+                            });
+                          }
+                          if(index == 2){
+                            setState(() {
+                              text ="ગુજરાતી";
+                              selectedIndex = index;
+                              Constant.languageCode = 'gu';
+                              languageCode(code: Constant.languageCode);
+                            });
+                          }
+                        },
+                      ),
+                    )
                   ],
                 )
           ),
@@ -204,16 +254,13 @@ class HomeState extends State<Home>{
     setState(() {
       switch(_sharedPreferences.getString(Constant().languageKey)){
         case 'gu':
-          return _value = 3;
+          return text = "ગુજરાતી";
         case 'hi':
-          return _value = 2;
+          return text = "हिन्दी";
         default:
-          return _value = 1;
+          return text = "English";
       }
     });
   }
 
-  openBottomsheet(){
-    return
-  }
 }

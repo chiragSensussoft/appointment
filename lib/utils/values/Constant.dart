@@ -46,7 +46,7 @@ class Constant{
         msg: message,
         toastLength: length,
         gravity: ToastGravity.BOTTOM,
-        timeInSecForIos: 1,
+        timeInSecForIosWeb: 1,
         backgroundColor: Colors.black,
         textColor: Colors.white,
     );
