@@ -58,12 +58,15 @@ class _ProgressButtonState extends State<ProgressButton>
             onPressed: () {
               setState(() {
                 if (_state == 0) {
-                  if(widget.formKey!=null && widget.formKey.currentState.validate()) {
+                  if(widget.formKey!=null) {
+                    if(widget.formKey.currentState.validate()){
                       if (widget.isVisible) {
-                          animateButton();
+                        animateButton();
                       } else {
                         Constant.showToast(Resources.from(context, Constant.languageCode).strings.selectCalendar, Toast.LENGTH_SHORT);
                       }
+                    }
+
                   }else{
                     animateButton();
                   }

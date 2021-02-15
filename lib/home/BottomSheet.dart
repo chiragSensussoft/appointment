@@ -406,7 +406,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
 
                     SizedBox(height: 20),
 
-                    ProgressButton(isAccept: this, text: widget.isEdit ? 'Update' : 'save', formKey: _formKey, isVisible: isVisible)
+                    ProgressButton(isAccept: this, text: widget.isEdit ? 'Update' : 'save',
+                        formKey: _formKey, isVisible: isVisible, )
                   ],
                 ),
               ),
