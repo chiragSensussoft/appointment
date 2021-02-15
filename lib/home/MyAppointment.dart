@@ -4,7 +4,7 @@ import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsAcceptAppointment.dart';
-import 'package:appointment/progressbar.dart';
+import 'package:appointment/utils/progressbar.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/utils/values/Constant.dart';
@@ -496,7 +496,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
                   SizedBox(height: 20),
 
-                    // Container(
+                  // Container(
                     //   padding: EdgeInsets.only(bottom: 15),
                     //
                     //   child: Row(
@@ -587,7 +587,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                     //
                     // ),
 
-                  ProgressButton(isAccept: this, text: Resources.from(context, Constant.languageCode).strings.saveBtn),
+                  ProgressButton(isAccept: this, text: Resources.from(context,
+                      Constant.languageCode).strings.accept, formKey:  null, isVisible: true),
 
                   SizedBox(height: 10),
                   ],

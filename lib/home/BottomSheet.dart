@@ -2,8 +2,7 @@ import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsAcceptAppointment.dart';
 import 'package:appointment/interface/IsCreatedOrUpdate.dart';
-import 'package:appointment/progressbar.dart';
-import 'package:appointment/utils/Toast.dart';
+import 'package:appointment/utils/progressbar.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Palette.dart';
@@ -115,6 +114,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   @override
   Widget build(BuildContext context) {
     return Form(
+      autovalidateMode: AutovalidateMode.always,
       key: _formKey,
       child: Container(
           padding: EdgeInsets.only(left: Dimen().dp_20, right: Dimen().dp_20),
@@ -378,46 +378,35 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                       ),
                     ),
 
-                    Container(
-                        margin: EdgeInsets.only(top: Dimen().dp_20, left: 80, right: 80, bottom: 20),
-                        child: FlatButton(
-                          child: Text(widget.isEdit ? Resources.from(context,Constant.languageCode).strings.update : Resources.from(context,Constant.languageCode).strings.saveBtn,
-                              style: TextStyle(fontSize: 16, fontFamily: 'poppins_medium', color: Colors.white)),
-                          minWidth: MediaQuery.of(context).size.width * 0.30,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-
-                          onPressed: () {
-                            if (_formKey.currentState.validate()) {
-                              if(isVisible){
-                                createAppointment();
-
-                              }else{
-                                Constant.showToast(Resources.from(context, Constant.languageCode).strings.selectCalendar, Toast.LENGTH_SHORT);
-                                // toast.overLay = false;
-                                // toast.showOverLay(Resources.from(context, Constant.languageCode).strings.selectCalendar, Colors.white, Colors.black54, context);
-                              }
-                            }
-                          },
-                          color: Palette.colorPrimary,
-                        )
-                    ),
-
-                    // ProgressButton(isAccept: this, text: widget.isEdit ? 'Update' : 'save',
-                    //   onTap: (){
-                    //   if (_formKey.currentState.validate()) {
-                    //     if(isVisible){
-                    //       createAppointment();
+                    // Container(
+                    //     margin: EdgeInsets.only(top: Dimen().dp_20, left: 80, right: 80, bottom: 20),
+                    //     child: FlatButton(
+                    //       child: Text(widget.isEdit ? Resources.from(context,Constant.languageCode).strings.update : Resources.from(context,Constant.languageCode).strings.saveBtn,
+                    //           style: TextStyle(fontSize: 16, fontFamily: 'poppins_medium', color: Colors.white)),
+                    //       minWidth: MediaQuery.of(context).size.width * 0.30,
+                    //       shape: RoundedRectangleBorder(
+                    //         borderRadius: BorderRadius.circular(30),
+                    //       ),
                     //
-                    //     }else{
-                    //       toast.overLay = false;
-                    //       toast.showOverLay("Select current calender", Colors.white, Colors.black54, context);
-                    //     }
-                    //   }},
+                    //       onPressed: () {
+                    //         if (_formKey.currentState.validate()) {
+                    //           if(isVisible){
+                    //             createAppointment();
                     //
+                    //           }else{
+                    //             Constant.showToast(Resources.from(context, Constant.languageCode).strings.selectCalendar, Toast.LENGTH_SHORT);
+                    //             // toast.overLay = false;
+                    //             // toast.showOverLay(Resources.from(context, Constant.languageCode).strings.selectCalendar, Colors.white, Colors.black54, context);
+                    //           }
+                    //         }
+                    //       },
+                    //       color: Palette.colorPrimary,
+                    //     )
                     // ),
 
+                    SizedBox(height: 20),
+
+                    ProgressButton(isAccept: this, text: widget.isEdit ? 'Update' : 'save', formKey: _formKey, isVisible: isVisible)
                   ],
                 ),
               ),
@@ -491,10 +480,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
         start = DateTime(_startDateTime.year, _startDateTime.month, _startDateTime.day, int.parse(_startHour), int.parse(_startMinute));
 
         if(start.isAfter(DateTime.now())){
-          print('AFTER:::::');
           _startTime = _startHour +":"+ _startMinute +":" +"00";
         }else{
-          print('BEFORE:::::');
           messageDialog("Start Time");
         }
 
@@ -542,10 +529,11 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                       return GestureDetector(
                         onTap: () {
                           setState(() {
-                            setEmail = widget.itemList[index].id;
-                            Constant.email = setEmail;
+                            setEmail = widget.itemList[index].summary;
+                            Constant.email = widget.itemList[index].id;
                             Navigator.pop(context);
                             isVisible = true;
+                            FocusScope.of(context).requestFocus(new FocusNode());
                           });
                         },
                         child: Container(
@@ -559,9 +547,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                                 width: 15,
                                 child: CircleAvatar(
                                     backgroundColor:
-                                        widget.itemList[index].id == setEmail
-                                            ? Palette.colorPrimary
-                                            : Colors.grey),
+                                        widget.itemList[index].id == setEmail ? Palette.colorPrimary : Colors.grey),
                               ),
                               Container(
                                 child: Expanded(
@@ -671,9 +657,10 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   @override
   onDelete(delete) {}
 
+
   @override
   void isAccept() {
     print('called::::');
-
+    createAppointment();
   }
 }

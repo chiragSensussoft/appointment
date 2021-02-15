@@ -1,17 +1,21 @@
 import 'dart:async';
 
+import 'package:appointment/utils/values/Constant.dart';
+import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-import 'interface/IsAcceptAppointment.dart';
+import '../interface/IsAcceptAppointment.dart';
 
 
 class ProgressButton extends StatefulWidget {
   IsAcceptAppointment isAccept;
   String text;
   Function onTap;
-  
-  // ProgressButton({this.isAccept, this.text, this.onTap});
-  ProgressButton({this.isAccept, this.text});
+  var formKey = GlobalKey<FormState>();
+  bool isVisible;
+
+  ProgressButton({this.isAccept, this.text, this.formKey , this.isVisible});
 
   @override
   _ProgressButtonState createState() => _ProgressButtonState();
@@ -54,8 +58,15 @@ class _ProgressButtonState extends State<ProgressButton>
             onPressed: () {
               setState(() {
                 if (_state == 0) {
-                  // widget.onTap();
-                  animateButton();
+                  if(widget.formKey!=null && widget.formKey.currentState.validate()) {
+                      if (widget.isVisible) {
+                          animateButton();
+                      } else {
+                        Constant.showToast(Resources.from(context, Constant.languageCode).strings.selectCalendar, Toast.LENGTH_SHORT);
+                      }
+                  }else{
+                    animateButton();
+                  }
                 }
               });
             },
