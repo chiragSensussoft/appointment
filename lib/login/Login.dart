@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:appointment/home/Home.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
@@ -9,6 +10,7 @@ import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -130,7 +132,18 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                         child: Container(
                             width: 200,
                             height: 40,
-                            child:RoundShapeButton(onPressed: signInWithGoogle,
+                            child:RoundShapeButton(
+                              onPressed: () async {
+                                try {
+                                  final result = await InternetAddress.lookup('google.com');
+                                  if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+                                    signInWithGoogle();
+                                  }
+                                } on SocketException catch (_) {
+                                  Constant.showToast(Resources.from(context, Constant.languageCode).strings.checkInternet, Toast.LENGTH_SHORT);
+                                }
+
+                              },
                               width: 1,
                               color: Colors.white,
                               text: Resources.from(context,Constant.languageCode).strings.googleBtnText,radius: 25,

@@ -262,8 +262,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     final link = await parameters.buildUrl();
     final ShortDynamicLink shortenedLink =
     await DynamicLinkParameters.shortenUrl(link,
-      DynamicLinkParametersOptions(
-          shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
+      DynamicLinkParametersOptions(shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
     );
     return shortenedLink.shortUrl;
   }
@@ -279,7 +278,10 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
             FlatButton(
               child: Text(Resources.from(context, Constant.languageCode).strings.no),
               onPressed: () {
-                Navigator.pop(context, false);
+                // setState(() {
+                //     eventItem.insert(index, eventItem[index]);
+                // });
+                Navigator.of(context).pop();
               },
             ),
             FlatButton(
@@ -320,6 +322,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         String senderName = queryParams['senderName'];
         String timeZone = queryParams['timeZone'];
 
+        print('startDate::::$startDate');
+
         if (summary.isEmpty || description.isEmpty || startDate.isEmpty || endDate.isEmpty || senderName.isEmpty || senderPhoto.isEmpty
             || senderEmail.isEmpty) {
           // toast.overLay = false;
@@ -327,14 +331,17 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
           //     Resources.from(context, Constant.languageCode).strings.invalidData, Colors.white, Colors.black54, context,
           //     seconds: 3);
           Constant.showToast(Resources.from(context, Constant.languageCode).strings.invalidData, Toast.LENGTH_LONG);
+
         } else {
-          print("Enter in Else");
           // refreshToken();
           if(senderEmail != email){
             String sDate = startDate.replaceAll("T"," ");
+
+            print("Enter in Else  $sDate   ${DateTime.now()}");
+
             DateTime.parse(sDate).isAfter(DateTime.now()) ?
-            showSharedAppointment(senderName, senderPhoto, senderEmail,
-                startDate, endDate, summary, description, timeZone):
+            showSharedAppointment(senderName, senderPhoto, senderEmail, startDate, endDate,
+                summary, description, timeZone):
             showAlertDialog(Resources.from(context, Constant.languageCode).strings.dialogPastEvent);
           }
           else{
@@ -714,6 +721,12 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       List<dynamic> data = response;
       eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
     });
+
+    if(eventItem.length<2){
+      setState(() {
+        hasMoreItems = false;
+      });
+    }
     print("Length${eventItem.length}");
   }
 
@@ -762,6 +775,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       presenter.getCalendarEvent(maxResult: 10,isPageToken: false,currentTime: DateTime.now().toUtc());
     }
   }
+
   @override
   onUpdateEvent(response) {
     print('update:::;$response');
@@ -771,6 +785,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   @override
   onDelete(delete) {
     eventItem.removeWhere((element) => element.id == delete);
+    _isVisible = true;
   }
 
   @override

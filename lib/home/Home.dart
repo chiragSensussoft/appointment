@@ -112,54 +112,77 @@ class HomeState extends State<Home>{
                       ),
                     ),
 
-                    GestureDetector(
-                      child: Container(
-                        padding: EdgeInsets.zero,
-                        // child: Icon(Icons.settings, size: 30),
-                        child: DropdownButton(
-                            underline: Container(height: 0),
-                            icon: Icon(Icons.language),
-                            value: _value,
-                            items: [
-                              DropdownMenuItem(
-                                child: Text('English',style: TextStyle(fontSize: 14),),
-                                onTap: (){
-                                  setState(() {
-                                    Constant.languageCode = 'en';
-                                    languageCode(code: Constant.languageCode);
-                                  });
-                                },
-                                value: 1,
-                              ),
-                              DropdownMenuItem(
-                                child: Text("Hindi",style: TextStyle(fontSize: 14)),
-                                onTap: (){
-                                  setState(() {
-                                    Constant.languageCode = 'hi';
-                                    languageCode(code: Constant.languageCode);
-                                  });
-                                },
-                                value: 2,
-                              ),
-                              DropdownMenuItem(
-                                  child: Text("Gujarati",style: TextStyle(fontSize: 14)),
-                                  onTap: (){
-                                    setState(() {
-                                      Constant.languageCode = 'gu';
-                                      languageCode(code: Constant.languageCode);
-                                    });
-                                  },
-                                  value: 3
-                              ),
-                            ],
-                            onChanged: (value) {
-                              setState(() {
-                                _value = value;
-                              });
-                            }),
-                      ),
+                    // GestureDetector(
+                    //   child: Container(
+                    //     padding: EdgeInsets.zero,
+                    //     child: DropdownButton(
+                    //         underline: Container(height: 0),
+                    //         icon: Icon(Icons.language),
+                    //         value: _value,
+                    //         items: [
+                    //           DropdownMenuItem(
+                    //             child: Text('English',style: TextStyle(fontSize: 12),),
+                    //             onTap: (){
+                    //               setState(() {
+                    //                 Constant.languageCode = 'en';
+                    //                 languageCode(code: Constant.languageCode);
+                    //               });
+                    //             },
+                    //             value: 1,
+                    //           ),
+                    //           DropdownMenuItem(
+                    //             child: Text("Hindi",style: TextStyle(fontSize: 12)),
+                    //             onTap: (){
+                    //               setState(() {
+                    //                 Constant.languageCode = 'hi';
+                    //                 languageCode(code: Constant.languageCode);
+                    //               });
+                    //             },
+                    //             value: 2,
+                    //           ),
+                    //           DropdownMenuItem(
+                    //               child: Text("Gujarati",style: TextStyle(fontSize: 12)),
+                    //               onTap: (){
+                    //                 setState(() {
+                    //                   Constant.languageCode = 'gu';
+                    //                   languageCode(code: Constant.languageCode);
+                    //                 });
+                    //               },
+                    //               value: 3
+                    //           ),
+                    //         ],
+                    //         onChanged: (value) {
+                    //           setState(() {
+                    //             _value = value;
+                    //           });
+                    //         }),
+                    //   ),
+                    //
+                    // ),
 
-                    )
+                    
+                    GestureDetector(
+                      onTap: (){
+
+
+                      },
+                      child: Row(
+                        children: [
+                          Text('English', style: TextStyle(fontSize: 10, color:Colors.white)),
+                          SizedBox(width: 5),
+                          Icon(Icons.language),
+                        ],
+                      ),
+                    ),
+
+                    // Expanded(
+                    //   flex: 1,
+                    //   child: IconButton(
+                    //     padding: EdgeInsets.zero,
+                    //     onPressed: (){},
+                    //     icon: Icon(Icons.settings, color: Colors.white),
+                    //   ),
+                    // )
                   ],
                 )
           ),
@@ -188,5 +211,9 @@ class HomeState extends State<Home>{
           return _value = 1;
       }
     });
+  }
+
+  openBottomsheet(){
+    return
   }
 }

@@ -128,4 +128,6 @@ class StringsEnglish extends Strings {
   // TODO: implement defaultUser
   String get defaultUser => "Default User";
 
+  String get checkInternet => "No Internet connection available";
+
 }

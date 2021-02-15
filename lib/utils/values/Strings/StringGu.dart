@@ -126,4 +126,7 @@ class StringsGujarati extends Strings {
   // TODO: implement defaultUser
   String get defaultUser => "િફॉलલ્ટ વપરાશકર્તા";
 
+  @override
+  String get checkInternet => "ઇન્ટરનેટ કનેક્શન ઉપલબ્ધ નથી";
+
 }

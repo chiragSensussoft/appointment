@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -46,8 +48,22 @@ class Constant{
         gravity: ToastGravity.BOTTOM,
         timeInSecForIos: 1,
         backgroundColor: Colors.black,
-        textColor: Colors.white
+        textColor: Colors.white,
     );
+  }
+
+
+  static Future<bool> checkInternetConnection() async {
+    bool isconnected;
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        isconnected = true;
+      }
+    } on SocketException catch (_) {
+      isconnected = false;
+    }
+    return isconnected;
   }
 
 }

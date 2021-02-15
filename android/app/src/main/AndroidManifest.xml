@@ -6,7 +6,7 @@
 
 
     <application
-        android:label="appointment"
+        android:label="Appointment"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

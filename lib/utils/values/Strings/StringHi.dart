@@ -126,4 +126,7 @@ class StringsHindi extends Strings {
   // TODO: implement defaultUser
   String get defaultUser => "िफॉल्ट उपयोगकर्ता";
 
+  @override
+  String get checkInternet => "कोई इंटरनेट कनेक्शन उपलब्ध नहीं है";
+
 }
