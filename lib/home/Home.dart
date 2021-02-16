@@ -1,9 +1,7 @@
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/utils/DBProvider.dart';
-import 'package:appointment/utils/drop_down.dart';
 import 'package:appointment/utils/values/Constant.dart';
-import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +42,7 @@ class HomeState extends State<Home>{
     _query();
     super.initState();
     setValue();
+
   }
 
   _query() async {
@@ -72,6 +71,7 @@ class HomeState extends State<Home>{
   }
   String text = "English";
   int selectedIndex;
+
 
   @override
   Widget build(BuildContext context) {
@@ -164,75 +164,76 @@ class HomeState extends State<Home>{
                       //
                       // ),
 
-
-                      // GestureDetector(
-                      //   onTap: (){
-                      //
-                      //
-                      //   },
-                      //   child: Row(
-                      //     children: [
-                      //       Text('English', style: TextStyle(fontSize: 10, color:Colors.white)),
-                      //       SizedBox(width: 5),
-                      //       Icon(Icons.language),
+                      // Container(
+                      //   alignment: Alignment.topRight,
+                      //   child: SimpleAccountMenu(
+                      //     text: text,
+                      //     selectedIndex: selectedIndex,
+                      //     borderRadius: BorderRadius.circular(10),
+                      //     backgroundColor: Colors.white,
+                      //     icons: [
+                      //       Container(
+                      //         // height:40,
+                      //           child: Text("English",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center)),
+                      //       Container(
+                      //           child: Text("हिन्दी",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center)),
+                      //       Container(
+                      //           child: Text("ગુજરાતી",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center,)),
                       //     ],
+                      //     onChange: (index) {
+                      //       print(index);
+                      //       if(index == 0){
+                      //         setState(() {
+                      //           text ="English";
+                      //           selectedIndex = index;
+                      //           Constant.languageCode = 'en';
+                      //           languageCode(code: Constant.languageCode);
+                      //         });
+                      //       }
+                      //       if(index == 1){
+                      //         setState(() {
+                      //           text ="हिन्दी";
+                      //           selectedIndex = index;
+                      //           Constant.languageCode = 'hi';
+                      //           languageCode(code: Constant.languageCode);
+                      //         });
+                      //       }
+                      //       if(index == 2){
+                      //         setState(() {
+                      //           text ="ગુજરાતી";
+                      //           selectedIndex = index;
+                      //           Constant.languageCode = 'gu';
+                      //           languageCode(code: Constant.languageCode);
+                      //         });
+                      //       }
+                      //     },
                       //   ),
                       // ),
 
-                      // Expanded(
-                      //   flex: 1,
-                      //   child: IconButton(
-                      //     padding: EdgeInsets.zero,
-                      //     onPressed: (){},
-                      //     icon: Icon(Icons.settings, color: Colors.white),
-                      //   ),
-                      // )
-
-                      Container(
-                        alignment: Alignment.topRight,
-                        child: SimpleAccountMenu(
-                          text: text,
-                          selectedIndex: selectedIndex,
-                          borderRadius: BorderRadius.circular(10),
-                          backgroundColor: Colors.white,
-                          icons: [
-                            Container(
-                              // height:40,
-                                child: Text("English",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center)),
-                            Container(
-                                child: Text("हिन्दी",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center)),
-                            Container(
-                                child: Text("ગુજરાતી",style: TextStyle(color: Colors.black,fontSize: 14),textAlign: TextAlign.center,)),
-                          ],
-                          onChange: (index) {
-                            print(index);
-                            if(index == 0){
-                              setState(() {
-                                text ="English";
-                                selectedIndex = index;
-                                Constant.languageCode = 'en';
-                                languageCode(code: Constant.languageCode);
-                              });
-                            }
-                            if(index == 1){
-                              setState(() {
-                                text ="हिन्दी";
-                                selectedIndex = index;
-                                Constant.languageCode = 'hi';
-                                languageCode(code: Constant.languageCode);
-                              });
-                            }
-                            if(index == 2){
-                              setState(() {
-                                text ="ગુજરાતી";
-                                selectedIndex = index;
-                                Constant.languageCode = 'gu';
-                                languageCode(code: Constant.languageCode);
-                              });
-                            }
-                          },
+                      GestureDetector(
+                        child: Container(
+                          width: 100,
+                          // height: 40,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Container(
+                                // alignment: Alignment.center,
+                                child: Text(text,textAlign: TextAlign.center,style: TextStyle(fontSize: 16),),
+                              ),
+                              Container(
+                                child: Icon(Icons.language),
+                              ),
+                            ],
+                          ),
+                          // color: Colors.white,
                         ),
+                        onTap: () {
+                          _showPopupMenu(context);
+                        },
                       )
+
                     ],
                   ),
             )
@@ -243,6 +244,65 @@ class HomeState extends State<Home>{
       ),
     );
   }
+
+  _showPopupMenu(BuildContext context) async {
+    await showMenu(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10)
+      ),
+      position: RelativeRect.fromLTRB(MediaQuery.of(context).size.width, 45, 0, 00),
+      items: [
+        PopupMenuItem(
+          value: 0,
+          child: Container(
+            alignment: Alignment.center,
+              child: Text('English',style: TextStyle(fontSize: 12),),
+          ),
+          // enabled: enable1,
+        ),
+        PopupMenuItem(
+          value: 1,
+          child: Container(
+              alignment: Alignment.center,
+              child: Text("Hindi",style: TextStyle(fontSize: 12))),
+          // enabled: enable2,
+        ),
+        PopupMenuItem(
+          value: 2,
+          child: Container(
+              alignment: Alignment.center,
+              child: Text("Gujarati",style: TextStyle(fontSize: 12))),
+          // enabled: enable3,
+        ),
+      ],
+      elevation: 8.0,
+    ).then((value){
+      if(value!=null)
+        if(value == 0){
+          setState(() {
+            text = "English";
+            Constant.languageCode = 'en';
+            languageCode(code: Constant.languageCode);
+          });
+        }
+      if(value == 1){
+        setState(() {
+          text = "हिन्दी";
+          Constant.languageCode = 'hi';
+          languageCode(code: Constant.languageCode);
+        });
+      }
+      if(value == 2){
+        setState(() {
+          text = "ગુજરાતી";
+          Constant.languageCode = 'gu';
+          languageCode(code: Constant.languageCode);
+        });
+      }
+    });
+  }
+
 
   SharedPreferences _sharedPreferences;
   Future<void> languageCode({String code})async{
@@ -255,19 +315,22 @@ class HomeState extends State<Home>{
     setState(() {
       switch(_sharedPreferences.getString(Constant().languageKey)){
         case 'gu':
-         setState(() {
-           text = "ગુજરાતી";
-           selectedIndex =2;
-         });
-          break;
+         // setState(() {
+         //   text = "ગુજરાતી";
+         //   selectedIndex =2;
+         // });
+         //  break;
+          return text = "ગુજરાતી";
         case 'hi':
-          text = "हिन्दी";
-          selectedIndex = 1;
-          break;
+          // text = "हिन्दी";
+          // selectedIndex = 1;
+          // break;
+          return text = "हिन्दी";
         default:
-          text = "English";
-          selectedIndex = 0;
-          break;
+          // text = "English";
+          // selectedIndex = 0;
+          // break;
+          return text = "English";
       }
     });
   }

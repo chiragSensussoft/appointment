@@ -114,6 +114,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     widget.isEdit ? desc.text = widget.description : null;
     Constant.SET_CAL_ID = Constant.SET_CAL_ID==null ? Constant.email : Constant.SET_CAL_ID;
 
+    Constant.email = widget.itemList[0].id;
+
     selectedStartTime = TimeOfDay();
     selectedEndTime = TimeOfDay();
 
@@ -274,7 +276,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                         child: TextFormField(
                           controller: desc,
                           focusNode: _discFocus,
-                          maxLength: 100,
+                          maxLength: 500,
                           decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(width: 0, color: Colors.transparent)),
@@ -421,7 +423,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                     SizedBox(height: 20),
 
                     ProgressButton(isAccept: this, text: widget.isEdit ? 'Update' : 'save',
-                        formKey: _formKey, isVisible: isVisible)
+                        formKey: _formKey, isVisible: true)
                   ],
                 ),
               ),
@@ -548,7 +550,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                             Constant.email = widget.itemList[index].id;
                             Navigator.pop(context);
                             isVisible = true;
-                            FocusScope.of(context).requestFocus(new FocusNode());
+                            FocusScope.of(context).requestFocus(FocusNode());
                           });
                         },
                         child: Container(

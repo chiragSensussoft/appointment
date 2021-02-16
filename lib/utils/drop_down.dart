@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'arrow_clipper.dart';
 
 class SimpleAccountMenu extends StatefulWidget {
   final List<Widget> icons;

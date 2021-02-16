@@ -362,7 +362,6 @@ class HomeViewModel implements IsCreatedOrUpdate {
             SizedBox(width: 10),
             Text('Delete', style: TextStyle(fontSize: 14, color: Colors.white))
           ],
-
         ),
       ),
 

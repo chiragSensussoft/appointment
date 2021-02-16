@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
+import 'package:appointment/home/model/Menu.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsAcceptAppointment.dart';
 import 'package:appointment/utils/progressbar.dart';
@@ -10,6 +11,7 @@ import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,6 +40,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   List<Item> list = List.empty(growable: true);
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> eventItem = List.empty(growable: true);
+  List<EventItem> searchEventList = List.empty(growable: true);
   HomeViewModel model;
   HomePresenter presenter;
   SharedPreferences _sharedPreferences;
@@ -64,12 +67,16 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   bool isLoading = false;
   bool isShareAppointment = false;
   bool _isVisible = true;
+  var dynamicLink;
 
   int _state = 0;
   Animation _animation;
   AnimationController _controller;
   GlobalKey _globalKey = GlobalKey();
   double _width = double.maxFinite;
+  bool _isSearch = true;
+  String _searchText = "";
+  TextEditingController search = TextEditingController();
 
 
   @override
@@ -162,62 +169,150 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                           ? FutureBuilder(
                         future: initialLoad,
                         builder: (context, snapshot) {
+                          // print("Text ${search.text}");
                           switch (snapshot.connectionState) {
                             case ConnectionState.waiting:
                               return Center(child: CircularProgressIndicator());
                             case ConnectionState.done:
-                              return IncrementallyLoadingListView(
-                                hasMore: () => hasMoreItems,
-                                itemCount: () => eventItem.length,
-                                loadMore: () async {
-                                  await _loadMoreItems();
-                                },
-                                onLoadMore: () {
-                                  setState(() {
-                                    loadingMore = true;
-                                  });
-                                },
-                                onLoadMoreFinished: () {
-                                  setState(() {
-                                    loadingMore = false;
-                                  });
-                                },
-                                controller: widget.controller,
-                                loadMoreOffsetFromBottom: 2,
-                                shrinkWrap: false,
-                                physics: AlwaysScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  lastIndex = index;
-                                  if ((loadingMore ?? false) && index == eventItem.length-1) {
-                                    return Column(
-                                      children: <Widget>[
-                                        model.slideMenu(index),
-                                        PlaceholderItemCard(index: index,)
-                                      ],
-                                    );
-                                  }
-                                  return model.slideMenu(index);
-                                },
+                              return Container(
+                                margin: EdgeInsets.only(top: 40),
+                                padding: EdgeInsets.only(top: 20),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
+                                ),
+                                child: IncrementallyLoadingListView(
+                                  hasMore: () => hasMoreItems,
+                                  itemCount: () => eventItem.length,
+                                  loadMore: () async {
+                                    await _loadMoreItems();
+                                  },
+                                  onLoadMore: () {
+                                    setState(() {
+                                      loadingMore = true;
+                                    });
+                                  },
+                                  onLoadMoreFinished: () {
+                                    setState(() {
+                                      loadingMore = false;
+                                    });
+                                  },
+                                  controller: widget.controller,
+                                  loadMoreOffsetFromBottom: 2,
+                                  shrinkWrap: false,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    lastIndex = index;
+                                    if ((loadingMore ?? false) && index == eventItem.length-1) {
+                                      return Column(
+                                        children: <Widget>[
+                                          model.slideMenu(index),
+                                          PlaceholderItemCard(index: index,)
+                                        ],
+                                      );
+                                    }
+                                    return model.slideMenu(index);
+                                  },
+                                ),
                               );
                             default:
                               return Text('Something went wrong');
                           }
                         },
+
                       )
                           : Center(child: Text("No Event Created"))
-                          :  ListView.builder(
+                          :  Container(
+                        margin: EdgeInsets.only(top: 60),
+                            child: ListView.builder(
                         itemCount: 40,
                         physics: NeverScrollableScrollPhysics(),
                         itemBuilder: (_,index){
-                          return PlaceholderItemCard(index: index);
+                            return PlaceholderItemCard(index: index);
                         },
+                      ),
                       )
                   ),
+                  Container(
+                    margin: EdgeInsets.only(top: 10, left: 10, right: 10),
+                    height: 45,
+                    child: Row(
+                      children: [
+                        Container(
+                          child: Expanded(
+                            child:Material(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)
+                              ),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                        padding: EdgeInsets.only(left: 15, top: 5),
+                                        child: Icon(Icons.search)),
+                                    Expanded(
+                                      child: TextFormField(
+                                        cursorColor: Colors.blue,
+                                        controller: search,
+                                        decoration: InputDecoration(
+                                          contentPadding: EdgeInsets.only(left: 5),
+                                          border: InputBorder.none,
+                                          hintText: "Search event here...",
+                                          hintStyle:TextStyle(color: Color(0xff707070),
+                                            fontSize: 12,
+                                            fontFamily: "poppins_medium",),),
+                                        style: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 12,
+                                            fontFamily: "poppins_regular"),
+                                        onChanged: (val){
+                                          setState(() {
+                                             eventItem = eventItem.where((element) => element.summary.contains(_searchText) || element.description.contains(_searchText)).toList();
+                                          });
+                                        },
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          child: Container(
+                            margin: EdgeInsets.only(left: 10),
+                            child: Material(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)
+                              ),
+                              child: Container(
+                                height: 45,
+                                width: 45,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: EdgeInsets.all(7),
+                                child: SvgPicture.asset("images/filter.svg",height: 30,width: 20,),
+                              ),
+                            ),
+                          ),
+                          onTap: (){
+                            _showPopupMenu(context);
+                          },
+                        )
+                      ],
+                    ),
+                  )
                 ],
               ),
+
               onRefresh: () {
                 print('onrefresh::::${access_token}');
                 eventItem.clear();
+                searchEventList.clear();
                 hasMoreItems = true;
                 return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
               }),
@@ -234,7 +329,91 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     );
   }
 
-  var dynamicLink;
+  MyAppointmentState() {
+    search.addListener(() {
+      if (search.text.isEmpty) {
+        setState(() {
+          // searchEventList.clear();
+          // searchEventList = eventItem;
+          _isSearch = true;
+          _searchText = "";
+        });
+      } else {
+        setState(() {
+          _isSearch = false;
+          _searchText = search.text;
+          // eventItem.clear();
+          eventItem = searchEventList;
+          print("Text $_searchText");
+        });
+      }
+    });
+  }
+
+  _showPopupMenu(BuildContext context) async {
+    await showMenu(
+      context: context,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10)
+      ),
+      // semanticLabel: selected,
+      position: RelativeRect.fromLTRB(MediaQuery.of(context).size.width, 118, 0, 00),
+      items: sortList.map((e) {
+        return PopupMenuItem<String>(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Visibility(
+                child: Container(
+                  child: Icon(Icons.done,size: 20,),
+                ),
+                visible: false,
+              ),
+              Container(
+                width: 100,
+                 height: 20,
+                  alignment: Alignment.center,
+                  child: Text(e,textAlign: TextAlign.left,)
+              )
+            ],
+          ),
+          value: e,
+        );
+      }).toList(),
+      elevation: 8.0,
+    ).then((value){
+
+      setState(() {
+        selected = value;
+      });
+
+      if(value!=null){
+        print("Date ${eventItem.map((e) => e.start.dateTime).toString()}");
+        selected = value;
+        if(sortList[0]==value){
+          print(sortList[0]);
+          setState(() {
+            eventItem.sort((a,b)=> a.start.dateTime.compareTo(b.start.dateTime));
+            print("Sorted Date ${eventItem.map((e) => e.start.dateTime).toString()}");
+          });
+        }
+        else if(sortList[1]==value){
+          setState(() {
+            eventItem.sort((a,b)=> b.start.dateTime.compareTo(a.start.dateTime));
+          });
+        }
+        else{
+
+        }
+      }
+    });
+  }
+
+  String selected = "Start Date";
+  final List<String> sortList = <String>["Asc","Desc","Between"];
+  final List<SortMenu> sortMenu = [];
+
+
 
   Future<Uri> createDynamicLink(
       {@required title,
@@ -465,6 +644,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                                   ),
                                 ],
                               ),
+
                               Container(
                                 child: Row(
                                   children: [
@@ -721,9 +901,11 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       map = calendarResponse;
       List<dynamic> data = response;
       eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+      searchEventList.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+      // MyAppointmentState();
     });
 
-    if(eventItem.length<2){
+    if(eventItem.length<=3){
       setState(() {
         hasMoreItems = false;
       });

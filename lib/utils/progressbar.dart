@@ -30,11 +30,11 @@ class _ProgressButtonState extends State<ProgressButton>
   double _width = double.maxFinite;
   
 
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   _controller.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +62,10 @@ class _ProgressButtonState extends State<ProgressButton>
                     if(widget.formKey.currentState.validate()){
                       if (widget.isVisible) {
                         animateButton();
-                      } else {
-                        Constant.showToast(Resources.from(context, Constant.languageCode).strings.selectCalendar, Toast.LENGTH_SHORT);
                       }
+                      // else {
+                      //   Constant.showToast(Resources.from(context, Constant.languageCode).strings.selectCalendar, Toast.LENGTH_SHORT);
+                      // }
                     }
 
                   }else{
