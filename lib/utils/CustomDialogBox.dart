@@ -135,6 +135,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
       });
     print('S::::${_startDateTime.isUtc}');
     passFromDate = _startDateTime.toUtc();
+    print('passformt::::$passFromDate');
     return picked;
   }
 
@@ -153,6 +154,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
       });
 
     passToDate = _startDateTime.toUtc();
+    print('passToformt::::$passToDate');
     return picked;
   }
 

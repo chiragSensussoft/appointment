@@ -57,7 +57,8 @@ class APIClient extends BasePresenter<OnHomeView>{
               case "events":
                 try {
                   String time = timeMin.replaceAll(" ", "T");
-                  print("Max Time --->$timeMax");
+                  String max = timeMax.replaceAll(" ", "T");
+                  print("Max Time --->$max");
 
                   if(timeMax==null){
                     isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"
@@ -67,10 +68,10 @@ class APIClient extends BasePresenter<OnHomeView>{
 
                   }else{
                     isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"
-                        +"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"timeMin="+timeMax+"&"+"pageToken="+pageToken)
+                        +"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"timeMin="+max+"&"+"pageToken="+pageToken)
 
                         :response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="
-                        +maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"timeMax="+timeMax);
+                        +maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"timeMax="+max);
                   }
                   responseJson = _returnResponse(response);
                   print('response:::$response');
