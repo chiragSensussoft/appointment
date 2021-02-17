@@ -57,8 +57,6 @@ class APIClient extends BasePresenter<OnHomeView>{
               case "events":
                 try {
                   String time = timeMin.replaceAll(" ", "T");
-                  String max = timeMax.replaceAll(" ", "T");
-                  print("Max Time --->$max");
 
                   if(timeMax==null){
                     isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"
@@ -67,6 +65,7 @@ class APIClient extends BasePresenter<OnHomeView>{
                         +maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time);
 
                   }else{
+                    String max = timeMax.replaceAll(" ", "T");
                     isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"
                         +"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"timeMin="+max+"&"+"pageToken="+pageToken)
 

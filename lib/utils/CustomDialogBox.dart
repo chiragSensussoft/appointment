@@ -21,6 +21,13 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
   DateTime passFromDate;
   DateTime passToDate;
 
+  @override
+  void initState() {
+    passFromDate = _startDateTime.toUtc();
+    passToDate = _startDateTime.toUtc();
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
