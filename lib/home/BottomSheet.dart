@@ -114,7 +114,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     widget.isEdit ? desc.text = widget.description : null;
     Constant.SET_CAL_ID = Constant.SET_CAL_ID==null ? Constant.email : Constant.SET_CAL_ID;
 
-    Constant.email = widget.itemList[0].id;
+    // Constant.email = widget.itemList[0].id;
 
     selectedStartTime = TimeOfDay();
     selectedEndTime = TimeOfDay();

@@ -1,7 +1,9 @@
 import 'dart:ui';
+import 'package:appointment/utils/values/Constant.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class CustomDialogBox extends StatefulWidget {
@@ -9,25 +11,51 @@ class CustomDialogBox extends StatefulWidget {
 
   CustomDialogBox({this.onTap});
 
-
   @override
   _CustomDialogBoxState createState() => _CustomDialogBoxState();
 }
 
 class _CustomDialogBoxState extends State<CustomDialogBox> {
-  DateTime _startDateTime = DateTime.now();
-  var fromDate = DateFormat('EE, d MMM, yyyy HH:mm:ss').format(DateTime.now().toLocal());
-  var toDate = DateFormat('EE, d MMM, yyyy HH:mm:ss').format(DateTime.now().toLocal());
+  DateTime _startDateTime;
+  DateTime _endDateTime;
+  var fromDate;
+  var toDate;
   DateTime passFromDate;
   DateTime passToDate;
+  SharedPreferences _sharedPreferences;
+
 
   @override
   void initState() {
-    passFromDate = _startDateTime.toUtc();
-    passToDate = _startDateTime.toUtc();
+    init();
     super.initState();
   }
 
+  init() async {
+    _sharedPreferences = await SharedPreferences.getInstance();
+
+    setState(() {
+
+
+    if(_sharedPreferences.getString(Constant.FROM_DATE)==null|| _sharedPreferences.getString(Constant.TO_DATE)==null){
+      _startDateTime = DateTime.now();
+      _endDateTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day+1, DateTime.now().hour, DateTime.now().minute, DateTime.now().second);
+    }else{
+      _startDateTime = DateTime.parse(_sharedPreferences.getString(Constant.FROM_DATE));
+      _endDateTime = DateTime.parse(_sharedPreferences.getString(Constant.TO_DATE));
+
+    }
+
+    passFromDate = _startDateTime.toUtc();
+    passToDate = _endDateTime.toUtc();
+
+    fromDate = DateFormat('EE, d MMM, yyyy HH:mm:ss').format(_startDateTime.toLocal());
+    toDate = DateFormat('EE, d MMM, yyyy HH:mm:ss').format(_endDateTime.toLocal());
+
+    print('local:::$passFromDate    $passToDate');});
+  }
+
+  // flutter: local:::2021-02-17 15:22:31.624463    2021-02-18 00:00:00.000
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +99,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
                         child: Text('From', style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.black))),
 
                     Padding(padding: EdgeInsets.only(left: 10),
-                        child: Text(fromDate,
+                        child: Text(fromDate!=null?fromDate:"",
                         style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.black))),
                   ],
                 ),
@@ -88,8 +116,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
                   children: [
                     Padding(padding: EdgeInsets.only(left: 10), child: Text('To', style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.black))),
                     Padding(padding: EdgeInsets.only(left: 10), child:
-                    Text(toDate,
-                        style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.black))),
+                    Text(toDate!=null?toDate:"", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.black))),
                   ],
                 ),
 
@@ -101,14 +128,16 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
               SizedBox(height: 15),
 
               Align(
-                alignment: Alignment.center,
+                alignment: Alignment.centerRight,
                 child: RaisedButton(
-                  elevation: 3,
-                  color: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Text('Okay', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 14)),
+                  elevation: 0,
+                  color: Colors.transparent,
+                  // shape: RoundedRectangleBorder(
+                  //   borderRadius: BorderRadius.circular(5),
+                  // ),
+                  child: Padding(
+                    padding: EdgeInsets.all(5),
+                      child: Text('Okay', textAlign: TextAlign.center, style: TextStyle(color: Colors.blue, fontSize: 14))),
 
                   onPressed: (){
                     Navigator.pop(context);
@@ -125,8 +154,6 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
     );
   }
 
-  _CustomDialogBoxState();
-
 
   _fromDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
@@ -135,33 +162,36 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
       firstDate: DateTime.now(),
       lastDate: DateTime(_startDateTime.year + 25),
     );
+
     if(picked != null && picked != _startDateTime)
       setState(() {
         _startDateTime = picked;
         fromDate = selectedDateTime(_startDateTime.toLocal());
       });
-    print('S::::${_startDateTime.isUtc}');
+
     passFromDate = _startDateTime.toUtc();
     print('passformt::::$passFromDate');
+    _sharedPreferences.setString(Constant.FROM_DATE, _startDateTime.toString());
     return picked;
   }
 
   _toDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
       context: context,
-      initialDate: _startDateTime,
+      initialDate: _endDateTime,
       firstDate: DateTime.now(),
-      lastDate: DateTime(_startDateTime.year + 25),
+      lastDate: DateTime(_endDateTime.year + 25),
     );
 
-    if(picked != null && picked != _startDateTime)
+    if(picked != null && picked != _endDateTime)
       setState(() {
-        _startDateTime = picked;
-        toDate = selectedDateTime(_startDateTime.toLocal());
+        _endDateTime = picked;
+        toDate = selectedDateTime(_endDateTime.toLocal());
       });
 
-    passToDate = _startDateTime.toUtc();
+    passToDate = _endDateTime.toUtc();
     print('passToformt::::$passToDate');
+    _sharedPreferences.setString(Constant.TO_DATE, _endDateTime.toString());
     return picked;
   }
 
@@ -172,12 +202,4 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
     return dateTime;
   }
 
-  formated_pass_date(DateTime getdate){
-    String utcdate;
-    var date = getdate.toString().split(" ");
-    var date_1 = date[1].split(".");
-    utcdate = date[0]+"T"+date_1[0];
-    print('split:::::$utcdate');
-    return utcdate;
-  }
 }

@@ -50,11 +50,11 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: [
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly',
-      "https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/calendar.events",
-      "https://www.googleapis.com/auth/calendar"
+    'email',
+    'https://www.googleapis.com/auth/contacts.readonly',
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/calendar"
     ],
     clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
   );
@@ -319,6 +319,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                 print('onrefresh::::${access_token}');
                 // refreshToken();
                 eventItem.clear();
+                itemList.clear();
+
                 searchEventList.clear();
                 // hasMoreItems = true;
                 isVisible = true;
@@ -951,8 +953,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     await _auth.signInWithCredential(credential);
     print("Access token 1 ==> ${googleSignInAuthentication.accessToken}");
 
-    _sharedPreferences.setString(
-        Constant.ACCESS_TOKEN, googleSignInAuthentication.accessToken);
+    _sharedPreferences.setString(Constant.ACCESS_TOKEN, googleSignInAuthentication.accessToken);
     access_token = googleSignInAuthentication.accessToken;
     print("Id token 1 ==> $access_token");
 
@@ -973,9 +974,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   onCreateEvent(response) {
     print('onSucess:::$response');
     Navigator.pop(context);
-    // toast.overLay = false;
-    // toast.showOverLay(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Colors.white, Colors.black54, context);
     Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Toast.LENGTH_SHORT);
+
     if(isShareAppointment = true){
       presenter.getCalendarEvent(maxResult: 10,isPageToken: false,minTime: DateTime.now().toUtc());
     }
@@ -1002,8 +1002,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       isShareAppointment = true;
     });
   }
-
-
 }
 
 class PlaceholderItemCard extends StatelessWidget {

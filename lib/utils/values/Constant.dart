@@ -17,6 +17,8 @@ class Constant{
 
   static String ACCESS_TOKEN = 'access_token';
   static String USER_NAME = 'user_name';
+  static String FROM_DATE = 'from_date';
+  static String TO_DATE = 'to_date';
   static String token;
 
 
