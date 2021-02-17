@@ -100,6 +100,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     menu.add(SortMenu(title: "Asc",isVisible: true));
     menu.add(SortMenu(title: "Desc",isVisible: false));
     menu.add(SortMenu(isVisible: false,title: "Between"));
+    menu.add(SortMenu(isVisible: false,title: "Clear"));
 
     widget.controller.addListener(() {
       if (widget.controller.position.userScrollDirection == ScrollDirection.reverse) {
@@ -368,20 +369,20 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Visibility(
-                child: Container(
-                  alignment: Alignment.centerLeft,
-                  child: Icon(Icons.done),
-                ),
-                visible: e.isVisible,
-                maintainState: true,
-                maintainAnimation: true,
-                maintainSize: true,
-              ),
+              // Visibility(
+              //   child: Container(
+              //     alignment: Alignment.centerLeft,
+              //     child: Icon(Icons.done),
+              //   ),
+              //   visible: e.isVisible,
+              //   maintainState: true,
+              //   maintainAnimation: true,
+              //   maintainSize: true,
+              // ),
               Container(
-                  padding: EdgeInsets.only(left: 30),
-                  alignment: Alignment.centerLeft,
-                  child: Text(e.title)
+                  alignment: Alignment.center,
+                  child: e.isVisible ? Text(e.title,style: TextStyle(color:Colors.blue)):
+                      Text(e.title,)
               )
             ],
           ),
@@ -396,7 +397,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       if(value!=null){
         selected = value;
         if(menu[0].title==value){
-          print(sortList[0]);
           setState(() {
             eventItem.sort((a,b)=> a.start.dateTime.compareTo(b.start.dateTime));
             menu.where((element) => element.isVisible != element.isVisible);
@@ -412,7 +412,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
             menu[1].isVisible = true;
           });
         }
-        else{
+        else if (menu[2].title==value){
           menu.forEach((element) => element.isVisible = false);
           menu[2].isVisible = true;
           showDialog(context: context, builder: (BuildContext context){
@@ -428,6 +428,20 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
             },);
           }
           );
+        }
+        else{
+         setState(() {
+           eventItem.clear();
+           itemList.clear();
+           searchEventList.clear();
+           isVisible = true;
+           refreshToken();
+           menu.forEach((element) {
+             setState(() {
+               element.isVisible = false;
+             });
+           });
+         });
         }
       }
     });

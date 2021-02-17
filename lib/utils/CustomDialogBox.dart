@@ -179,7 +179,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
     final DateTime picked = await showDatePicker(
       context: context,
       initialDate: _endDateTime,
-      firstDate: DateTime.now(),
+      firstDate: DateTime(_startDateTime.year,_startDateTime.month,_startDateTime.day+1),
       lastDate: DateTime(_endDateTime.year + 25),
     );
 
