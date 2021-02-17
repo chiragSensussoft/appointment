@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:appointment/home/Home.dart';
-import 'package:appointment/utils/CuastomDropDown.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/RoundShapeButton.dart';
-import 'package:appointment/utils/drop_down.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Dimen.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
@@ -32,17 +30,11 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     super.initState();
       setValue();
   }
+
   String dropdownValue1 = 'One';
   String dropdownValue2 = 'Two';
   var _value;
-  // Toast toast = Toast();
   Color warna = Colors.red;
-
-  void _aksiPilihan(Menu menu){
-    setState(() {
-      warna=menu.warna;
-    });
-  }
   String text;
   int selectedIndex;
   @override
@@ -382,14 +374,3 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
   }
 
 }
-class Menu{
-  const Menu({this.teks, this.warna});
-  final String teks;
-  final Color warna;
-}
-
-List<Menu> listMenu = const <Menu>[
-  const Menu (teks:"Merah", warna: Colors.red ),
-  const Menu (teks:"Biru", warna: Colors.blue ),
-  const Menu (teks:"Hijau", warna: Colors.green ),
-];

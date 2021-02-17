@@ -42,6 +42,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> eventItem = List.empty(growable: true);
   List<EventItem> searchEventList = List.empty(growable: true);
+  List<SortMenu> menu = List<SortMenu>.empty(growable: true);
+
   HomeViewModel model;
   HomePresenter presenter;
   SharedPreferences _sharedPreferences;
@@ -95,6 +97,9 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     _query();
 
     _isVisible = true;
+    menu.add(SortMenu(title: "Asc",isVisible: true));
+    menu.add(SortMenu(title: "Desc",isVisible: false));
+    menu.add(SortMenu(isVisible: false,title: "Between"));
 
     widget.controller.addListener(() {
       if (widget.controller.position.userScrollDirection == ScrollDirection.reverse) {
@@ -171,13 +176,12 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                           ? FutureBuilder(
                         future: initialLoad,
                         builder: (context, snapshot) {
-                          // print("Text ${search.text}");
                           switch (snapshot.connectionState) {
                             case ConnectionState.waiting:
                               return Center(child: CircularProgressIndicator());
                             case ConnectionState.done:
                               return Container(
-                                margin: EdgeInsets.only(top: 40),
+                                margin: EdgeInsets.only(top: 35),
                                 padding: EdgeInsets.only(top: 20),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
@@ -224,7 +228,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                       )
                           : Center(child: Text("No Event Created"))
                           :  Container(
-                        margin: EdgeInsets.only(top: 60),
+                        margin: EdgeInsets.only(top: 55),
                             child: ListView.builder(
                         itemCount: 40,
                         physics: NeverScrollableScrollPhysics(),
@@ -236,7 +240,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                   ),
                   Container(
                     margin: EdgeInsets.only(top: 10, left: 10, right: 10),
-                    height: 45,
+                    height: 40,
                     child: Row(
                       children: [
                         Container(
@@ -291,13 +295,13 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                                   borderRadius: BorderRadius.circular(10)
                               ),
                               child: Container(
-                                height: 45,
-                                width: 45,
+                                height: 40,
+                                width: 40,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 padding: EdgeInsets.all(7),
-                                child: SvgPicture.asset("images/filter.svg", height: 30, width: 20),
+                                child: SvgPicture.asset("images/filter.svg",height: 30,width: 20,),
                               ),
                             ),
                           ),
@@ -307,17 +311,18 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                         )
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
 
               onRefresh: () {
                 print('onrefresh::::${access_token}');
+                // refreshToken();
                 eventItem.clear();
                 searchEventList.clear();
-                hasMoreItems = true;
-                return presenter.getCalendarEvent(pageToken: map['nextPageToken'],
-                    maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+                // hasMoreItems = true;
+                isVisible = true;
+                return refreshToken();
               }),
 
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
@@ -336,8 +341,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     search.addListener(() {
       if (search.text.isEmpty) {
         setState(() {
-          // searchEventList.clear();
-          // searchEventList = eventItem;
           _isSearch = true;
           _searchText = "";
         });
@@ -345,7 +348,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         setState(() {
           _isSearch = false;
           _searchText = search.text;
-          // eventItem.clear();
           eventItem = searchEventList;
           print("Text $_searchText");
         });
@@ -359,66 +361,72 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10)
       ),
-      // semanticLabel: selected,
       position: RelativeRect.fromLTRB(MediaQuery.of(context).size.width, 118, 0, 00),
-      items: sortList.map((e) {
+      items: menu.map((e) {
         return PopupMenuItem<String>(
+          height: 30,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Visibility(
                 child: Container(
-                  child: Icon(Icons.done,size: 20,),
+                  alignment: Alignment.centerLeft,
+                  child: Icon(Icons.done),
                 ),
-                visible: false,
+                visible: e.isVisible,
+                maintainState: true,
+                maintainAnimation: true,
+                maintainSize: true,
               ),
               Container(
-                width: 100,
-                 height: 20,
-                  alignment: Alignment.center,
-                  child: Text(e,textAlign: TextAlign.left,)
+                  padding: EdgeInsets.only(left: 30),
+                  alignment: Alignment.centerLeft,
+                  child: Text(e.title)
               )
             ],
           ),
-          value: e,
+          value: e.title,
         );
       }).toList(),
       elevation: 8.0,
     ).then((value){
-
       setState(() {
         selected = value;
       });
-
       if(value!=null){
-        print("Date ${eventItem.map((e) => e.start.dateTime).toString()}");
         selected = value;
-        if(sortList[0]==value){
+        if(menu[0].title==value){
           print(sortList[0]);
           setState(() {
             eventItem.sort((a,b)=> a.start.dateTime.compareTo(b.start.dateTime));
-            print("Sorted Date ${eventItem.map((e) => e.start.dateTime).toString()}");
+            menu.where((element) => element.isVisible != element.isVisible);
+            menu.forEach((element) => element.isVisible = false);
+            menu[0].isVisible = true;
           });
         }
-        else if(sortList[1]==value){
+        else if(menu[1].title==value){
           setState(() {
             eventItem.sort((a,b)=> b.start.dateTime.compareTo(a.start.dateTime));
+            menu.where((element) => element.isVisible != element.isVisible);
+            menu.forEach((element) => element.isVisible = false);
+            menu[1].isVisible = true;
           });
         }
         else{
-          print('open_between::::');
+          menu.forEach((element) => element.isVisible = false);
+          menu[2].isVisible = true;
           showDialog(context: context, builder: (BuildContext context){
-                return CustomDialogBox(onTap: (fromDate, toDate){
-                   print('form:::::${fromDate.isUtc}');
-                   print('to:::::${toDate.isUtc}');
+            return CustomDialogBox(onTap: (fromDate, toDate){
+              print('form:::::${fromDate.isUtc}');
+              print('to:::::${toDate.isUtc}');
 
-                   eventItem.clear();
-                   searchEventList.clear();
-                   hasMoreItems = true;
-                   return presenter.getCalendarEvent(pageToken: map['nextPageToken'],
-                       maxResult: 10, minTime: fromDate, maxTime: toDate, isPageToken: false);
-                },);
-              }
+              eventItem.clear();
+              searchEventList.clear();
+              hasMoreItems = true;
+              return presenter.getCalendarEvent(pageToken: map['nextPageToken'],
+                  maxResult: 10, minTime: fromDate, maxTime: toDate, isPageToken: false);
+            },);
+          }
           );
         }
       }
@@ -428,7 +436,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   String selected = "Start Date";
   final List<String> sortList = <String>["Asc","Desc","Between"];
-  final List<SortMenu> sortMenu = [];
+
 
   Future<Uri> createDynamicLink(
       {@required title,
@@ -952,7 +960,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     user = authResult.user;
     Constant.email = user.email;
     Constant.token = googleSignInAuthentication.accessToken;
-
     presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     presenter.attachView(this);
     presenter.getCalendar(googleSignInAuthentication.accessToken);

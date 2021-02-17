@@ -120,8 +120,11 @@ class HomeViewModel implements IsCreatedOrUpdate {
       },
 
       background: Container(
-        color: Colors.red,
-        padding: EdgeInsets.symmetric(horizontal: 20),
+        margin: EdgeInsets.only(top: 5,bottom: 5,left: 10,right: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.red,
+        ),
         alignment: AlignmentDirectional.centerStart,
         child: Row(
           children: [
