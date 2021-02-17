@@ -91,6 +91,9 @@ abstract class Strings {
   // ઇન્ટરનેટ કનેક્શન ઉપલબ્ધ નથી
   //कोई इंटरनेट कनेक्शन उपलब्ध नहीं है
   //No Internet connection available!
+
+  String get apply;
+
 }
 
 class Resources {

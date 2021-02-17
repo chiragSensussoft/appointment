@@ -130,4 +130,6 @@ class StringsEnglish extends Strings {
 
   String get checkInternet => "No Internet connection available";
 
+  String get apply => "Apply";
+
 }

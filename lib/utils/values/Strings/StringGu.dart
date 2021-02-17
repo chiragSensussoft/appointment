@@ -129,4 +129,10 @@ class StringsGujarati extends Strings {
   @override
   String get checkInternet => "ઇન્ટરનેટ કનેક્શન ઉપલબ્ધ નથી";
 
+  @override
+  // TODO: implement apply
+  String get apply => "લાગુ કરો";
+
+
+
 }

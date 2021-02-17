@@ -129,4 +129,9 @@ class StringsHindi extends Strings {
   @override
   String get checkInternet => "कोई इंटरनेट कनेक्शन उपलब्ध नहीं है";
 
+  @override
+  String get apply => "लागू";
+
+
+
 }
