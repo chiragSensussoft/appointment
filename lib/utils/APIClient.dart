@@ -18,7 +18,7 @@ class APIClient extends BasePresenter<OnHomeView>{
   APIClient(this.view);
 
   Future<dynamic> api({String apiName, method, dynamic body, String token,String endPoint,
-    String user,String pageToken,String maxResult,String currentTime,bool isPageToken}) async{
+    String user,String pageToken,String maxResult,String timeMin, bool isPageToken, String timeMax}) async{
     var response;
     var responseJson;
 
@@ -55,17 +55,23 @@ class APIClient extends BasePresenter<OnHomeView>{
                 break;
 
               case "events":
-                print('events:::::$apiName');
-                print('events:::::$BASEURL');
-                print('events:::::${Constant.email}');
-                /* calendar Event List*/
                 try {
-                  String time = currentTime.replaceAll(" ", "T");
-                  print("Formatted Time --->$time ----> 2011-06-03T10:00:00-07:00");
-                  isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"
-                      +"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"pageToken="+pageToken)
-                      :response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="
-                      +maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time);
+                  String time = timeMin.replaceAll(" ", "T");
+                  print("Max Time --->$timeMax");
+
+                  if(timeMax==null){
+                    isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"
+                        +"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"pageToken="+pageToken)
+                        :response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="
+                        +maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time);
+
+                  }else{
+                    isPageToken == true? response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"
+                        +"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"timeMin="+timeMax+"&"+"pageToken="+pageToken)
+
+                        :response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="
+                        +maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"timeMax="+timeMax);
+                  }
                   responseJson = _returnResponse(response);
                   print('response:::$response');
 

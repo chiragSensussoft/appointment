@@ -5,6 +5,7 @@ import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/model/Menu.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsAcceptAppointment.dart';
+import 'package:appointment/utils/CustomDialogBox.dart';
 import 'package:appointment/utils/progressbar.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/expand_text.dart';
@@ -145,7 +146,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   int lastIndex;
   Future _loadMoreItems() async {
     if(widget.controller.position.pixels == widget.controller.position.maxScrollExtent){
-      await presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: true,pageToken: map['nextPageToken']);
+      await presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),
+          isPageToken: true,pageToken: map['nextPageToken']);
     }
     else{
       hasMoreItems = false;
@@ -295,7 +297,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 padding: EdgeInsets.all(7),
-                                child: SvgPicture.asset("images/filter.svg",height: 30,width: 20,),
+                                child: SvgPicture.asset("images/filter.svg", height: 30, width: 20),
                               ),
                             ),
                           ),
@@ -314,7 +316,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                 eventItem.clear();
                 searchEventList.clear();
                 hasMoreItems = true;
-                return presenter.getCalendarEvent(pageToken: map['nextPageToken'],maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
+                return presenter.getCalendarEvent(pageToken: map['nextPageToken'],
+                    maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
               }),
 
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
@@ -403,17 +406,29 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
           });
         }
         else{
+          print('open_between::::');
+          showDialog(context: context, builder: (BuildContext context){
+                return CustomDialogBox(onTap: (fromDate, toDate){
+                   print('form:::::${fromDate.isUtc}');
+                   print('to:::::${toDate.isUtc}');
 
+                   eventItem.clear();
+                   searchEventList.clear();
+                   hasMoreItems = true;
+                   return presenter.getCalendarEvent(pageToken: map['nextPageToken'],
+                       maxResult: 10, minTime: fromDate, maxTime: toDate, isPageToken: false);
+                },);
+              }
+          );
         }
       }
     });
   }
 
+
   String selected = "Start Date";
   final List<String> sortList = <String>["Asc","Desc","Between"];
   final List<SortMenu> sortMenu = [];
-
-
 
   Future<Uri> createDynamicLink(
       {@required title,
@@ -941,7 +956,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     presenter.attachView(this);
     presenter.getCalendar(googleSignInAuthentication.accessToken);
-    initialLoad = presenter.getCalendarEvent(maxResult: 10,currentTime: DateTime.now().toUtc(),isPageToken: false);
+    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
     hasMoreItems = true;
 
     return googleSignInAuthentication.accessToken;
@@ -955,7 +970,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     // toast.showOverLay(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Colors.white, Colors.black54, context);
     Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Toast.LENGTH_SHORT);
     if(isShareAppointment = true){
-      presenter.getCalendarEvent(maxResult: 10,isPageToken: false,currentTime: DateTime.now().toUtc());
+      presenter.getCalendarEvent(maxResult: 10,isPageToken: false,minTime: DateTime.now().toUtc());
     }
   }
 
@@ -980,6 +995,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       isShareAppointment = true;
     });
   }
+
+
 }
 
 class PlaceholderItemCard extends StatelessWidget {

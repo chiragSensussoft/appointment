@@ -59,13 +59,14 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
       view.onHideLoader();
     }
   }
-
-  // Future getCalendarEvent({pageToken,maxResult,currentTime}) async{
-  Future getCalendarEvent({pageToken,maxResult,currentTime,bool isPageToken}) async{
+  
+  
+  Future getCalendarEvent({pageToken, maxResult, minTime, bool isPageToken, maxTime}) async{
     isPageToken == false?view.onShowLoader():null;
     print('get_list:1::${Constant().event}');
     Response getCalendarEventList = await apiHelper.api(token: token, method: Method.GET,isPageToken: isPageToken,
-        apiName: Constant().event, endPoint: Constant().event,pageToken: pageToken,maxResult: maxResult.toString(),currentTime: currentTime.toString());
+        apiName: Constant().event, endPoint: Constant().event,pageToken: pageToken,
+        maxResult: maxResult.toString(),timeMin: minTime.toString(), timeMax: maxTime);
 
     print('statusCode::::${getCalendarEventList.statusCode}');
 
