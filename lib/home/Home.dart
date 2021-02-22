@@ -1,6 +1,9 @@
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/utils/DBProvider.dart';
+import 'package:appointment/utils/bottom_navigation/fab_bottom_app_bar.dart';
+import 'package:appointment/utils/bottom_navigation/fab_with_icons.dart';
+import 'package:appointment/utils/bottom_navigation/layout.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
@@ -41,7 +44,6 @@ class HomeState extends State<Home>{
     _query();
     super.initState();
     setValue();
-
   }
 
   _query() async {
@@ -70,6 +72,20 @@ class HomeState extends State<Home>{
   }
   String text = "English";
   int selectedIndex;
+
+  String _lastSelected = 'TAB: 0';
+
+  void _selectedTab(int index) {
+    setState(() {
+      _lastSelected = 'TAB: $index';
+    });
+  }
+
+  void _selectedFab(int index) {
+    setState(() {
+      _lastSelected = 'FAB: $index';
+    });
+  }
 
 
   @override
@@ -241,7 +257,29 @@ class HomeState extends State<Home>{
               ),
             )
           ),
-          body: MyAppointment(controller),
+
+          // body: MyAppointment(controller),
+
+          body: Center(
+            child: Text(
+              _lastSelected,
+              style: TextStyle(fontSize: 32.0),
+            ),
+          ),
+
+          bottomNavigationBar: FABBottomAppBar(
+            color: Colors.grey,
+            selectedColor: Colors.blue,
+            notchedShape: CircularNotchedRectangle(),
+            onTabSelected: _selectedTab,
+            items: [
+              FABBottomAppBarItem(iconData: Icons.home_outlined, text: 'Home'),
+              FABBottomAppBarItem(iconData: Icons.map, text: 'Map'),
+              FABBottomAppBarItem(iconData: Icons.more_vert, text: 'More'),
+            ],
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          floatingActionButton: _buildFab(context),
         ),
       ),
     );
@@ -335,6 +373,28 @@ class HomeState extends State<Home>{
           return text = "English";
       }
     });
+  }
+
+  Widget _buildFab(BuildContext context) {
+    final icons = [ Icons.sms, Icons.mail, Icons.phone];
+    return AnchoredOverlay(
+      showOverlay: true,
+      overlayBuilder: (context, offset) {
+        return CenterAbout(
+          position: Offset(offset.dx, offset.dy - icons.length * 35.0),
+          child: FabWithIcons(
+            icons: icons,
+            onIconTapped: _selectedFab,
+          ),
+        );
+      },
+      child: FloatingActionButton(
+        onPressed: () { },
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+        elevation: 2.0,
+      ),
+    );
   }
 
 }
