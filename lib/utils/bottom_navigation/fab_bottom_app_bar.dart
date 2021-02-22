@@ -56,6 +56,7 @@ class FABBottomAppBarState extends State<FABBottomAppBar> {
     items.insert(items.length >> 1, _buildMiddleTabItem());
 
     return BottomAppBar(
+      notchMargin: 5,
       shape: widget.notchedShape,
       child: Row(
         mainAxisSize: MainAxisSize.max,
@@ -68,6 +69,7 @@ class FABBottomAppBarState extends State<FABBottomAppBar> {
 
   Widget _buildMiddleTabItem() {
     return Container(
+      color: Colors.transparent,
       child: SizedBox(
         height: widget.height,
         child: Column(

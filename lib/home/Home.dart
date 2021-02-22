@@ -1,14 +1,19 @@
 import 'package:appointment/home/MyAppointment.dart';
+import 'package:appointment/home/OnHomeView.dart';
 import 'package:appointment/home/home_view_model.dart';
+import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
 import 'package:appointment/utils/bottom_navigation/fab_bottom_app_bar.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'model/CalendarList.dart';
 
 
 void main() => runApp(MyApp());
@@ -23,14 +28,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class Home extends StatefulWidget {
+class Home extends StatefulWidget  {
 
   @override
   HomeState createState() => HomeState();
 }
 
 
-class HomeState extends State<Home>{
+class HomeState extends State<Home> implements OnHomeView{
   final dbHelper = DatabaseHelper.instance;
   var data;
   String url;
@@ -38,9 +43,57 @@ class HomeState extends State<Home>{
   String email = '';
   bool visibility = true;
   ScrollController controller;
+  HomeViewModel model;
+  String access_token = '';
+  FirebaseUser user;
+  HomePresenter presenter;
+  List<Item> itemList = List.empty(growable: true);
+
+  GoogleSignIn googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+      'https://www.googleapis.com/auth/contacts.readonly',
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/calendar"
+    ],
+    clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
+  );
+
+  Future<String> refreshToken() async {
+    final GoogleSignInAccount googleSignInAccount =
+    await googleSignIn.signInSilently();
+    final GoogleSignInAuthentication googleSignInAuthentication =
+    await googleSignInAccount.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    await _auth.signInWithCredential(credential);
+    print("Access token 1 ==> ${googleSignInAuthentication.accessToken}");
+
+    _sharedPreferences.setString(Constant.ACCESS_TOKEN, googleSignInAuthentication.accessToken);
+    access_token = googleSignInAuthentication.accessToken;
+    print("Id token 1 ==> $access_token");
+
+    AuthResult authResult = await _auth.signInWithCredential(credential);
+    user = authResult.user;
+    Constant.email = user.email;
+    Constant.token = googleSignInAuthentication.accessToken;
+    presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
+    presenter.attachView(this);
+    presenter.getCalendar(googleSignInAuthentication.accessToken);
+
+    return googleSignInAuthentication.accessToken;
+  }
+
 
   void initState() {
     _query();
+    refreshToken();
     controller = ScrollController();
     super.initState();
     setValue();
@@ -83,13 +136,14 @@ class HomeState extends State<Home>{
 
   @override
   Widget build(BuildContext context) {
-    // model = HomeViewModel(state1: this);
+    model = HomeViewModel(state1: this);
 
     return Container(
       color: Colors.blue,
       child: SafeArea(
         top: true,
         child: Scaffold(
+          extendBody: true,
           appBar: PreferredSize(
             preferredSize: Size.fromHeight(60),
             child: Container(
@@ -137,7 +191,6 @@ class HomeState extends State<Home>{
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  // alignment: Alignment.center,
                                   margin: EdgeInsets.only(right: 5),
                                   child: Text(text,textAlign: TextAlign.center,style: TextStyle(fontSize: 16,color: Colors.white),),
                                 ),
@@ -146,7 +199,6 @@ class HomeState extends State<Home>{
                                 ),
                               ],
                             ),
-                            // color: Colors.white,
                           ),
                           onTap: () {
                             _showPopupMenu(context);
@@ -176,7 +228,8 @@ class HomeState extends State<Home>{
           floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
             onPressed: (){
-              // model.openBottomSheetView(isEdit: false);
+              print('CALLED:::');
+              model.openBottomSheetView(isEdit: false);
             },
           ),
         ),
@@ -223,7 +276,8 @@ class HomeState extends State<Home>{
           value: 1,
           child: Container(
               alignment: Alignment.center,
-              child: Text("हिन्दी",style: TextStyle(fontSize: 12,color: text =="हिन्दी"?Colors.blue:Colors.black))),
+              child: Text("हिन्दी",style: TextStyle(fontSize: 12,color: text =="हिन्दी"?Colors.blue:Colors.black))
+          ),
           // enabled: enable2,
         ),
         PopupMenuItem(
@@ -292,4 +346,52 @@ class HomeState extends State<Home>{
     });
   }
 
+
+  @override
+  onCreateEvent(response) {
+
+  }
+
+  @override
+  onDelete(delete) {
+
+  }
+
+  @override
+  onErrorHandler(String error) {
+
+  }
+
+  @override
+  onEventSuccess(response, calendarResponse) {
+
+  }
+
+  @override
+  onHideLoader() {
+
+  }
+
+  @override
+  onShowLoader() {
+
+  }
+
+  @override
+  onSuccessRes(response) {
+    itemList.clear();
+    setState(() {
+      List<dynamic> data = response;
+      for (int i = 0; i < data.length; i++) {
+        if (data[i]['accessRole'] == "owner") {
+          itemList.add(Item.fromJson(data[i]));
+        }
+      }
+    });
+  }
+
+  @override
+  onUpdateEvent(response) {
+
+  }
 }

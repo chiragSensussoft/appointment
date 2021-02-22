@@ -149,6 +149,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   bool hasMoreItems;
   Future initialLoad;
   int lastIndex;
+
   Future _loadMoreItems() async {
     if(widget.controller.position.pixels == widget.controller.position.maxScrollExtent){
       await presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),
@@ -162,7 +163,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    model = HomeViewModel(this);
+    model = HomeViewModel(state: this);
 
     return Scaffold(
         key: _scaffoldKey,
@@ -323,15 +324,15 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                 return refreshToken();
               }),
 
-      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      floatingActionButton: _isVisible ? FloatingActionButton(
-        backgroundColor: Colors.grey[100],
-        child: Icon(Icons.add,color: Colors.black,),
-        elevation: 12,
-        onPressed: () {
-          model.openBottomSheetView(isEdit: false);
-        },
-      ) : null,
+      // floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
+      // floatingActionButton: _isVisible ? FloatingActionButton(
+      //   backgroundColor: Colors.grey[100],
+      //   child: Icon(Icons.add,color: Colors.black,),
+      //   elevation: 12,
+      //   onPressed: () {
+      //     model.openBottomSheetView(isEdit: false);
+      //   },
+      // ) : null,
     );
   }
   int selectedIndex;
@@ -699,97 +700,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                   ),
 
                   SizedBox(height: 20),
-
-                  // Container(
-                    //   padding: EdgeInsets.only(bottom: 15),
-                    //
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //     children: [
-                    //       GestureDetector(
-                    //         onTap: (){
-                    //           eventItem.clear();
-                    //           presenter.setAppointment(
-                    //               summary: summary,
-                    //               endDate: endDate,
-                    //               startDate: startDate,
-                    //               description: description,
-                    //               timeZone: timeZone);
-                    //           setState(() {
-                    //             isShareAppointment = true;
-                    //           });
-                    //         },
-                    //         child: Container(
-                    //             margin: EdgeInsets.only(bottom: 15),
-                    //             height: 40,
-                    //             decoration: BoxDecoration(
-                    //                 borderRadius: BorderRadius.circular(30),
-                    //                 color: Colors.green),
-                    //
-                    //             child: Row(
-                    //               mainAxisSize: MainAxisSize.min,
-                    //               crossAxisAlignment: CrossAxisAlignment.center,
-                    //               mainAxisAlignment: MainAxisAlignment.start,
-                    //               children: [
-                    //                 Padding(
-                    //                     child: Text("Accept",
-                    //                         style: TextStyle(
-                    //                             color: Colors.white,
-                    //                             fontSize: 14,
-                    //                             fontFamily: "poppins_regular")),
-                    //                     padding: EdgeInsets.only(left: 10)),
-                    //                 IconButton(
-                    //                   iconSize: 20,
-                    //                   onPressed: () {},
-                    //                   color: Colors.white,
-                    //                   icon: Icon(Icons.done),
-                    //                 )
-                    //               ],
-                    //             )),
-                    //       ),
-                    //
-                    //       GestureDetector(
-                    //         onTap: (){
-                    //           Navigator.pop(context);
-                    //           // sheetController.collapse();
-                    //         },
-                    //         child: Container(
-                    //             margin: EdgeInsets.only(bottom: 15),
-                    //             height: 40,
-                    //             decoration: BoxDecoration(
-                    //                 borderRadius: BorderRadius.circular(30),
-                    //                 color: Colors.red),
-                    //
-                    //             child: Row(
-                    //               mainAxisSize: MainAxisSize.min,
-                    //               crossAxisAlignment: CrossAxisAlignment.center,
-                    //               mainAxisAlignment: MainAxisAlignment.start,
-                    //
-                    //               children: [
-                    //                 Padding(
-                    //                   child: Text("Cancel",
-                    //                     style: TextStyle(
-                    //                         color: Colors.white,
-                    //                         fontSize: 14,
-                    //                         fontFamily: "poppins_regular"),),
-                    //                   padding: EdgeInsets.only(left: 10),
-                    //                 ),
-                    //
-                    //                 IconButton(
-                    //                   iconSize: 20,
-                    //                   padding: EdgeInsets.zero,
-                    //                   onPressed: () {},
-                    //                   color: Colors.white,
-                    //                   icon: Icon(Icons.close_rounded),
-                    //                 )
-                    //               ],
-                    //             )),
-                    //       )
-                    //     ],
-                    //   ),
-                    //
-                    //
-                    // ),
 
                   ProgressButton(isAccept: this, text: Resources.from(context,
                       Constant.languageCode).strings.accept, formKey:  null, isVisible: true),

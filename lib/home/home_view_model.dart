@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
 import '../utils/values/Constant.dart';
+import 'Home.dart';
 import 'event_calendar.dart';
 
 
@@ -16,7 +17,9 @@ class HomeViewModel implements IsCreatedOrUpdate {
 
   MyAppointmentState state;
 
-  HomeViewModel(this.state);
+  HomeState state1;
+
+  HomeViewModel({this.state, this.state1});
   bool isVisible;
 
 
@@ -32,7 +35,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
             margin: EdgeInsets.only(top: 20),
-            child:  EventCalendar(eventItem: state.eventItem,dateTime: index,),
+            child:  EventCalendar(eventItem: state.eventItem, dateTime: index),
       );
     }
     );
@@ -44,7 +47,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
 
     return showModalBottomSheet(
         backgroundColor: Colors.transparent,
-        context: state.context,
+        context: state1.context,
         isScrollControlled: true,
         isDismissible: true,
 
@@ -55,11 +58,11 @@ class HomeViewModel implements IsCreatedOrUpdate {
 
               builder: (context, scrollController) {
                 return isEdit?
-                MyBottomSheet(token: state.access_token, itemList: state.itemList, isEdit: true,
+                MyBottomSheet(token: state1.access_token, itemList: state1.itemList, isEdit: true,
                 title: summary, description: description, getStartDate: startDate, getendDate: endDate,
                   timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this,isCalenderID: null,):
 
-                 MyBottomSheet(token: state.access_token, itemList: state.itemList, isEdit: false,
+                 MyBottomSheet(token: state1.access_token, itemList: state1.itemList, isEdit: false,
                  isCreatedOrUpdate: this);
               });
         })
@@ -67,7 +70,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
        /*add condition*/
        if(isCreateUpdate){
          state.eventItem.clear(),
-         state.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false,pageToken: state.map['nextPageToken']),
+         state.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false,
+             pageToken: state.map['nextPageToken']),
          state.setState(() {
            state.hasMoreItems = true;
          }),
