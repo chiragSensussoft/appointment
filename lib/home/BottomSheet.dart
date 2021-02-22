@@ -16,7 +16,6 @@ import 'OnHomeView.dart';
 
 class MyBottomSheet extends StatefulWidget {
   final String token;
-  final List<Item> list;
   final List<Item> itemList;
   String title, description;
   bool isEdit;
@@ -29,7 +28,6 @@ class MyBottomSheet extends StatefulWidget {
 
   MyBottomSheet(
       {this.token,
-      this.list,
       this.itemList,
       this.title,
       this.description,

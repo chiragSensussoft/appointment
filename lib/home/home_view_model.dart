@@ -55,11 +55,11 @@ class HomeViewModel implements IsCreatedOrUpdate {
 
               builder: (context, scrollController) {
                 return isEdit?
-                MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: true,
+                MyBottomSheet(token: state.access_token, itemList: state.itemList, isEdit: true,
                 title: summary, description: description, getStartDate: startDate, getendDate: endDate,
                   timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this,isCalenderID: null,):
 
-                 MyBottomSheet(token: state.access_token, list: state.list, itemList: state.itemList, isEdit: false,
+                 MyBottomSheet(token: state.access_token, itemList: state.itemList, isEdit: false,
                  isCreatedOrUpdate: this);
               });
         })
@@ -127,13 +127,15 @@ class HomeViewModel implements IsCreatedOrUpdate {
         ),
         alignment: AlignmentDirectional.centerStart,
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.delete,
               color: Colors.white,
             ),
             SizedBox(width: 10),
-            Text('Delete', style: TextStyle(fontSize: 14, color: Colors.white))
+            Text('Delete', style: TextStyle(fontSize: 14, color: Colors.white)),
+            // SizedBox(width: 30),
           ],
         ),
       ),
@@ -144,16 +146,16 @@ class HomeViewModel implements IsCreatedOrUpdate {
           onTap: () async {
             detailSheet(state.eventItem[index].start.dateTime);
 
-            state.dynamicLink = await state.createDynamicLink(
-                title: state.eventItem[index].summary,
-                desc: state.eventItem[index].description,
-                startDate: Constant.getFullDateFormat(state.eventItem[index].start.dateTime),
-                endDate: Constant.getFullDateFormat(state.eventItem[index].end.dateTime),
-                email: state.email,
-                photoUrl: state.url,
-                senderName: state.userName,
-                timeZone: state.eventItem[index].start.timeZone);
-            print("Dynamic Link: $state.dynamicLink");
+            // state.dynamicLink = await state.createDynamicLink(
+            //     title: state.eventItem[index].summary,
+            //     desc: state.eventItem[index].description,
+            //     startDate: Constant.getFullDateFormat(state.eventItem[index].start.dateTime),
+            //     endDate: Constant.getFullDateFormat(state.eventItem[index].end.dateTime),
+            //     email: state.email,
+            //     photoUrl: state.url,
+            //     senderName: state.userName,
+            //     timeZone: state.eventItem[index].start.timeZone);
+            // print("Dynamic Link: $state.dynamicLink");
           },
 
           child: Material(

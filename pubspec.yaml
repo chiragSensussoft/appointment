@@ -55,7 +55,7 @@ dependencies:
   # Calendar
   syncfusion_flutter_calendar: ^18.4.39
 
-  # deap linking
+  # deep linking
   firebase_dynamic_links:
 
   # share
@@ -65,6 +65,9 @@ dependencies:
 
   # toast
   fluttertoast: ^7.1.6
+
+  #GeoFence
+  flutter_background_geolocation: ^1.11.1
 
 dev_dependencies:
   flutter_test:

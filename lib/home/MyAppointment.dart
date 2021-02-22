@@ -38,7 +38,7 @@ class MyAppointment extends StatefulWidget {
 
 class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMixin implements OnHomeView, IsAcceptAppointment {
   bool isVisible;
-  List<Item> list = List.empty(growable: true);
+  // List<Item> list = List.empty(growable: true);
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> eventItem = List.empty(growable: true);
   List<EventItem> searchEventList = List.empty(growable: true);
@@ -77,7 +77,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   AnimationController _controller;
   GlobalKey _globalKey = GlobalKey();
   double _width = double.maxFinite;
-  bool _isSearch = true;
+  // bool _isSearch = true;
   String _searchText = "";
   TextEditingController search = TextEditingController();
 
@@ -265,7 +265,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                                         cursorColor: Colors.blue,
                                         controller: search,
                                         decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.only(left: 5),
+                                          contentPadding: EdgeInsets.only(left: 5,right: 20,bottom: 5),
                                           border: InputBorder.none,
                                           hintText: "Search event here...",
                                           hintStyle:TextStyle(color: Color(0xff707070),
@@ -321,15 +321,15 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                 // refreshToken();
                 eventItem.clear();
                 searchEventList.clear();
-                // hasMoreItems = true;
+                itemList.clear();
                 isVisible = true;
                 return refreshToken();
               }),
 
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButton: _isVisible ? FloatingActionButton(
-        backgroundColor: Colors.blue,
-        child: Icon(Icons.add),
+        backgroundColor: Colors.grey[100],
+        child: Icon(Icons.add,color: Colors.black,),
         elevation: 12,
         onPressed: () {
           model.openBottomSheetView(isEdit: false);
@@ -337,19 +337,20 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       ) : null,
     );
   }
+  int selectedIndex;
 
   MyAppointmentState() {
     search.addListener(() {
       if (search.text.isEmpty) {
         setState(() {
-          _isSearch = true;
+          // _isSearch = true;
           _searchText = "";
+          eventItem = searchEventList;
         });
       } else {
         setState(() {
-          _isSearch = false;
+          // _isSearch = false;
           _searchText = search.text;
-          eventItem = searchEventList;
           print("Text $_searchText");
         });
       }
@@ -369,16 +370,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // Visibility(
-              //   child: Container(
-              //     alignment: Alignment.centerLeft,
-              //     child: Icon(Icons.done),
-              //   ),
-              //   visible: e.isVisible,
-              //   maintainState: true,
-              //   maintainAnimation: true,
-              //   maintainSize: true,
-              // ),
               Container(
                   alignment: Alignment.center,
                   child: e.isVisible ? Text(e.title,style: TextStyle(color:Colors.blue)):
@@ -918,8 +909,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   onSuccessRes(response) {
     setState(() {
       List<dynamic> data = response;
-      list.addAll(data.map((i) => Item.fromJson(i)).toList());
-
       for (int i = 0; i < data.length; i++) {
         if (data[i]['accessRole'] == "owner") {
           itemList.add(Item.fromJson(data[i]));

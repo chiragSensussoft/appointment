@@ -30,11 +30,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     super.initState();
       setValue();
   }
-
-  String dropdownValue1 = 'One';
-  String dropdownValue2 = 'Two';
   var _value;
-  Color warna = Colors.red;
   String text;
   int selectedIndex;
   @override
@@ -42,36 +38,31 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(40),
-        child:  Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children:[
-            /// DD1
-            Container(
-              color: Colors.transparent,
-              margin: EdgeInsets.only(right: Dimen().dp_20,top: 35),
-              alignment: Alignment.topRight,
-              child:  GestureDetector(
-                child: Container(
-                  width: 100,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Container(
-                        child: Text(text??"",textAlign: TextAlign.center,style: TextStyle(fontSize: 16),),
-                      ),
-                      Container(
-                        child: Icon(Icons.language),
-                      ),
-                    ],
+        child:  Container(
+          color: Colors.transparent,
+          margin: EdgeInsets.only(right:19,top: 35),
+          alignment: Alignment.topRight,
+          child:  GestureDetector(
+            child: Container(
+              width: 80,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(right: 5),
+                    child: Text(text??"",textAlign: TextAlign.center,style: TextStyle(fontSize: 16),),
                   ),
-                ),
-                onTap: () {
-                  _showPopupMenu(context);
-                },
+                  Container(
+                    child: Icon(Icons.language,color: Colors.black.withOpacity(0.7),),
+                  ),
+                ],
               ),
-            )
-          ]
+            ),
+            onTap: () {
+              _showPopupMenu(context);
+            },
+          ),
         ),
       ),
       body: Container(
@@ -178,7 +169,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
           value: 0,
           child: Container(
             alignment: Alignment.center,
-            child: Text('English',style: TextStyle(fontSize: 12),),
+            child: Text('English',style: TextStyle(fontSize: 12,color: text =="English"?Colors.blue:Colors.black),),
           ),
           // enabled: enable1,
         ),
@@ -186,14 +177,14 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
           value: 1,
           child: Container(
               alignment: Alignment.center,
-              child: Text("Hindi",style: TextStyle(fontSize: 12))),
+              child: Text("हिन्दी",style: TextStyle(fontSize: 12,color: text =="हिन्दी"?Colors.blue:Colors.black))),
           // enabled: enable2,
         ),
         PopupMenuItem(
           value: 2,
           child: Container(
               alignment: Alignment.center,
-              child: Text("Gujarati",style: TextStyle(fontSize: 12))),
+              child: Text("ગુજરાતી",style: TextStyle(fontSize: 12,color: text =="ગુજરાતી"?Colors.blue:Colors.black))),
           // enabled: enable3,
         ),
       ],
