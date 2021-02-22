@@ -38,7 +38,6 @@ class MyAppointment extends StatefulWidget {
 
 class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMixin implements OnHomeView, IsAcceptAppointment {
   bool isVisible;
-  // List<Item> list = List.empty(growable: true);
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> eventItem = List.empty(growable: true);
   List<EventItem> searchEventList = List.empty(growable: true);

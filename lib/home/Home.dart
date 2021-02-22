@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'BottomSheet.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -102,11 +104,11 @@ class HomeState extends State<Home>{
               padding: EdgeInsets.only(left: 10,right: 10),
               child: GestureDetector(
                 child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
 
-                        Expanded(
+                    Expanded(
                           child: Row(
                             children: [
                               url != null ?CircleAvatar(
@@ -134,7 +136,7 @@ class HomeState extends State<Home>{
                           ),
                         ),
 
-                        // GestureDetector(
+                    // GestureDetector(
                         //   child: Container(
                         //     padding: EdgeInsets.zero,
                         //     child: DropdownButton(
@@ -228,7 +230,7 @@ class HomeState extends State<Home>{
                         //   ),
                         // ),
 
-                        GestureDetector(
+                    GestureDetector(
                           child: Container(
                             // width: 80,
                             child: Row(
@@ -251,7 +253,6 @@ class HomeState extends State<Home>{
                             _showPopupMenu(context);
                           },
                         )
-
                       ],
                     ),
               ),
@@ -278,8 +279,14 @@ class HomeState extends State<Home>{
               FABBottomAppBarItem(iconData: Icons.more_vert, text: 'More'),
             ],
           ),
+
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          floatingActionButton: _buildFab(context),
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: (){
+              MyAppointment(controller);
+            },
+          ),
         ),
       ),
     );
@@ -376,24 +383,34 @@ class HomeState extends State<Home>{
   }
 
   Widget _buildFab(BuildContext context) {
-    final icons = [ Icons.sms, Icons.mail, Icons.phone];
-    return AnchoredOverlay(
-      showOverlay: true,
-      overlayBuilder: (context, offset) {
-        return CenterAbout(
-          position: Offset(offset.dx, offset.dy - icons.length * 35.0),
-          child: FabWithIcons(
-            icons: icons,
-            onIconTapped: _selectedFab,
-          ),
-        );
+    // final icons = [ Icons.sms, Icons.mail, Icons.phone];
+    // return AnchoredOverlay(
+    //   showOverlay: true,
+    //   overlayBuilder: (context, offset) {
+    //     return CenterAbout(
+    //       position: Offset(offset.dx, offset.dy - icons.length * 35.0),
+    //       child: FabWithIcons(
+    //         icons: icons,
+    //         onIconTapped: _selectedFab,
+    //       ),
+    //     );
+    //   },
+    //   child: FloatingActionButton(
+    //     onPressed: () {
+    //
+    //     },
+    //     tooltip: 'Increment',
+    //     child: Icon(Icons.add),
+    //     elevation: 2.0,
+    //   ),
+    // );
+
+    return FloatingActionButton(
+      onPressed: (){
+        MyBottomSheet(isEdit: false);
       },
-      child: FloatingActionButton(
-        onPressed: () { },
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-        elevation: 2.0,
-      ),
+      child: Icon(Icons.add),
+      elevation: 2.0,
     );
   }
 

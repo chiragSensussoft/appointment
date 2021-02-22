@@ -64,6 +64,10 @@ PODS:
   - flutter_background_geolocation (1.11.1):
     - CocoaLumberjack (~> 3.6.0)
     - Flutter
+  - flutter_geofence (0.1.1):
+    - Flutter
+  - flutter_local_notifications (0.0.1):
+    - Flutter
   - flutter_microsoft_authentication (0.0.3):
     - Flutter
     - MSAL (~> 1.0.3)
@@ -142,6 +146,8 @@ DEPENDENCIES:
   - firebase_dynamic_links (from `.symlinks/plugins/firebase_dynamic_links/ios`)
   - Flutter (from `Flutter`)
   - flutter_background_geolocation (from `.symlinks/plugins/flutter_background_geolocation/ios`)
+  - flutter_geofence (from `.symlinks/plugins/flutter_geofence/ios`)
+  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_microsoft_authentication (from `.symlinks/plugins/flutter_microsoft_authentication/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
@@ -186,6 +192,10 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_background_geolocation:
     :path: ".symlinks/plugins/flutter_background_geolocation/ios"
+  flutter_geofence:
+    :path: ".symlinks/plugins/flutter_geofence/ios"
+  flutter_local_notifications:
+    :path: ".symlinks/plugins/flutter_local_notifications/ios"
   flutter_microsoft_authentication:
     :path: ".symlinks/plugins/flutter_microsoft_authentication/ios"
   fluttertoast:
@@ -217,6 +227,8 @@ SPEC CHECKSUMS:
   FirebaseInstallations: 466c7b4d1f58fe16707693091da253726a731ed2
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_background_geolocation: 35f598f4e5eca84a4a1da764a75b6fb28ebfdcc0
+  flutter_geofence: 08e5427c56c540ffac97425b8e10dd598912fb3d
+  flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
   flutter_microsoft_authentication: 121074a9b2f1babd8a335043111eb05820f1b6ac
   fluttertoast: 6122fa75143e992b1d3470f61000f591a798cc58
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
