@@ -28,7 +28,7 @@ import 'OnHomeView.dart';
 
 
 class MyAppointment extends StatefulWidget {
-  ScrollController controller = ScrollController();
+  ScrollController controller;
 
   MyAppointment(this.controller);
 
@@ -36,7 +36,8 @@ class MyAppointment extends StatefulWidget {
   MyAppointmentState createState() => MyAppointmentState();
 }
 
-class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMixin implements OnHomeView, IsAcceptAppointment {
+class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMixin
+    implements OnHomeView, IsAcceptAppointment {
   bool isVisible;
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> eventItem = List.empty(growable: true);
@@ -76,7 +77,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   AnimationController _controller;
   GlobalKey _globalKey = GlobalKey();
   double _width = double.maxFinite;
-  // bool _isSearch = true;
   String _searchText = "";
   TextEditingController search = TextEditingController();
 
@@ -171,8 +171,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                 children: [
                   Container(
                       color: Colors.grey[200],
-                      child: isVisible == false
-                          ? eventItem.length != 0
+                      child: isVisible == false ? eventItem.length != 0
                           ? FutureBuilder(
                         future: initialLoad,
                         builder: (context, snapshot) {
@@ -229,7 +228,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                           : Center(child: Text("No Event Created"))
                           :  Container(
                         margin: EdgeInsets.only(top: 55),
-                            child: ListView.builder(
+                        child: ListView.builder(
                         itemCount: 40,
                         physics: NeverScrollableScrollPhysics(),
                         itemBuilder: (_,index){
