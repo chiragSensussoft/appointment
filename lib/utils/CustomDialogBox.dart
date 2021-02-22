@@ -115,7 +115,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
                   children: [
                     Padding(padding: EdgeInsets.only(left: 10), child: Text('To', style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.black))),
                     Padding(padding: EdgeInsets.only(left: 10), child:
-                    Text(toDate!=null?toDate:"", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.black))),
+                    Text(toDate??"", style: TextStyle(fontSize: 14, fontFamily: 'poppins_regular', color: Colors.black))),
                   ],
                 ),
 
@@ -170,6 +170,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
       });
 
     passFromDate = _startDateTime.toUtc();
+    toDate = selectedDateTime(DateTime(_startDateTime.year,_startDateTime.month,_startDateTime.day+1,_startDateTime.hour,_startDateTime.minute,_startDateTime.second));
     print('passformt::::$passFromDate');
     // _sharedPreferences.setString(Constant.FROM_DATE, _startDateTime.toString());
     return picked;
@@ -178,8 +179,8 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
   _toDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
       context: context,
-      initialDate: _endDateTime,
-      firstDate: DateTime(_startDateTime.year,_startDateTime.month,_startDateTime.day+1),
+      initialDate: DateTime(_startDateTime.year,_startDateTime.month,_startDateTime.day+1,_startDateTime.hour,_startDateTime.minute,_startDateTime.second),
+      firstDate: DateTime(_startDateTime.year,_startDateTime.month,_startDateTime.day+1,_startDateTime.hour,_startDateTime.minute,_startDateTime.second),
       lastDate: DateTime(_endDateTime.year + 25),
     );
 

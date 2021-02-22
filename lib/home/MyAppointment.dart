@@ -317,8 +317,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
               ),
 
               onRefresh: () {
-                print('onrefresh::::${access_token}');
-                // refreshToken();
+                print('onRefresh --> ${access_token}');
                 eventItem.clear();
                 searchEventList.clear();
                 itemList.clear();
@@ -410,7 +409,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
             return CustomDialogBox(onTap: (fromDate, toDate){
               print('form:::::${fromDate.isUtc}');
               print('to:::::${toDate.isUtc}');
-
               eventItem.clear();
               searchEventList.clear();
               hasMoreItems = true;
