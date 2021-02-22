@@ -133,6 +133,16 @@ class StringsGujarati extends Strings {
   // TODO: implement apply
   String get apply => "લાગુ કરો";
 
+  @override
+  // TODO: implement home
+  String get home => "હોમ";
 
+  @override
+  // TODO: implement map
+  String get map => "નકશો";
+
+  @override
+  // TODO: implement more
+  String get more => "વધુ";
 
 }

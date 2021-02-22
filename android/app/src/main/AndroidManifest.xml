@@ -12,6 +12,8 @@
         android:label="Appointment"
         tools:replace="android:label"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBrbbvsPxxzuv9NuJMc_sbnNK7oTx-ZOjE"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

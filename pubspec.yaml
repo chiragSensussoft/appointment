@@ -66,10 +66,10 @@ dependencies:
   # toast
   fluttertoast: ^7.1.6
 
-  #GeoFence
+  #Geofence
   flutter_background_geolocation: ^1.11.1
-
-  # geo fence
+  flutter_map: ^0.10.1
+  background_fetch: ^0.6.0
   flutter_geofence: ^0.4.0
 
   # local notification

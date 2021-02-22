@@ -132,4 +132,16 @@ class StringsEnglish extends Strings {
 
   String get apply => "Apply";
 
+  @override
+  // TODO: implement home
+  String get home => "Home";
+
+  @override
+  // TODO: implement map
+  String get map => "Map";
+
+  @override
+  // TODO: implement more
+  String get more => "More";
+
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class FABBottomAppBarItem {
   FABBottomAppBarItem({this.iconData, this.text});
-  IconData iconData;
+  Widget iconData;
   String text;
 }
 
@@ -89,40 +89,33 @@ class FABBottomAppBarState extends State<FABBottomAppBar> {
 
   Widget _buildTabItem({FABBottomAppBarItem item, int index, ValueChanged<int> onPressed}) {
     Color color = _selectedIndex == index ? widget.selectedColor : widget.color;
-    return item.text!='More'?
+    return item.text!='More' ?
     Container(
       margin: EdgeInsets.only(left: 30),
       height: widget.height,
       child: Material(
         type: MaterialType.transparency,
         child: InkWell(
+          highlightColor: Colors.transparent,
+          splashColor: Colors.transparent,
           onTap: () => onPressed(index),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(item.iconData, color: color, size: widget.iconSize),
-            ],
-          ),
+          child: item.iconData,
         ),
       ),
-    )
-        :
+    ) :
 
     Expanded(
       child: Container(
-        padding: EdgeInsets.only(right: 20),
+        padding: EdgeInsets.only(right: 30),
         alignment: Alignment.centerRight,
         height: widget.height,
         child: Material(
           type: MaterialType.transparency,
           child: InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
             onTap: () => onPressed(index),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Icon(item.iconData, color: color, size: widget.iconSize),
-              ],
-            ),
+            child: item.iconData,
           ),
         ),
       ),

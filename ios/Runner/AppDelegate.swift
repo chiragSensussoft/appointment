@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
 import MSAL
+import GoogleMaps
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -13,6 +14,7 @@ import MSAL
 
   override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] =
    [:]) -> Bool {
+    GMSServices.provideAPIKey("AIzaSyCuAkVVciCZDS4dPHPw-slMiEEBrGCvaSM")
     return MSALPublicClientApplication.handleMSALResponse(url,
     sourceApplication: options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String)
   }

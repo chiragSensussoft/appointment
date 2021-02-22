@@ -86,14 +86,23 @@ abstract class Strings {
   //डिफॉल्ट उपयोगकर्ता
   //ડિફॉलલ્ટ વપરાશકર્તા
   //Default User
-
   String get checkInternet;
   // ઇન્ટરનેટ કનેક્શન ઉપલબ્ધ નથી
   //कोई इंटरनेट कनेक्शन उपलब्ध नहीं है
   //No Internet connection available!
-
   String get apply;
-
+  String get home;
+  //હોમ
+  //Home
+  //होम
+  String get map;
+  //नक्शा
+  //નકશો
+  //Map
+  String get more;
+  //More
+  //વધુ
+  //अधिक
 }
 
 class Resources {

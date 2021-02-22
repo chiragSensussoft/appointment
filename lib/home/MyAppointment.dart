@@ -29,6 +29,9 @@ import 'OnHomeView.dart';
 
 class MyAppointment extends StatefulWidget {
   ScrollController controller;
+  List<EventItem> eventItem;
+  List<Item> itemList = List.empty(growable: true);
+  List<EventItem> searchEventList;
 
   MyAppointment(this.controller);
 
@@ -81,11 +84,11 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   TextEditingController search = TextEditingController();
 
 
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   _controller.dispose();
+  // }
 
   @override
   void initState() {
@@ -510,8 +513,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         });
   }
 
-  // Toast toast = Toast();
-
   void handleLinkData(PendingDynamicLinkData data) {
     final Uri uri = data?.link;
     if (uri != null) {
@@ -530,10 +531,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
         if (summary.isEmpty || description.isEmpty || startDate.isEmpty || endDate.isEmpty || senderName.isEmpty || senderPhoto.isEmpty
             || senderEmail.isEmpty) {
-          // toast.overLay = false;
-          // toast.showOverLay(
-          //     Resources.from(context, Constant.languageCode).strings.invalidData, Colors.white, Colors.black54, context,
-          //     seconds: 3);
           Constant.showToast(Resources.from(context, Constant.languageCode).strings.invalidData, Toast.LENGTH_LONG);
 
         } else {

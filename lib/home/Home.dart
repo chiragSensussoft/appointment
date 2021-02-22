@@ -1,5 +1,6 @@
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/OnHomeView.dart';
+import 'package:appointment/home/geofence/geofence.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
@@ -10,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -124,7 +126,7 @@ class HomeState extends State<Home> implements OnHomeView{
     });
   }
   String text = "English";
-  int selectedIndex = 0;
+  int selectedIndex = 1;
 
 
   void _selectedTab(int index) {
@@ -216,11 +218,16 @@ class HomeState extends State<Home> implements OnHomeView{
             color: Colors.grey,
             selectedColor: Colors.blue,
             notchedShape: CircularNotchedRectangle(),
-            onTabSelected: _selectedTab,
+            onTabSelected: (index){
+              _selectedTab(index);
+              setState(() {
+                selectedIndex = index;
+              });
+            },
             items: [
-              FABBottomAppBarItem(iconData: Icons.home_outlined, text: 'Home'),
-              FABBottomAppBarItem(iconData: Icons.map, text: 'Map'),
-              FABBottomAppBarItem(iconData: Icons.more_vert, text: 'More'),
+              FABBottomAppBarItem(iconData: Icon(Icons.calendar_today,size:25,color: selectedIndex == 0 ? Colors.blue : Colors.black.withOpacity(0.7),), text: 'Home'),
+              FABBottomAppBarItem(iconData: SvgPicture.asset("images/mapAppoint.svg",height: 22,width: 22,color: selectedIndex == 1 ? Colors.blue : Colors.black.withOpacity(0.7),), text: 'Home'),
+              FABBottomAppBarItem(iconData: Icon(Icons.more_vert,size: 25,color: selectedIndex == 2 ? Colors.blue : Colors.black.withOpacity(0.7)), text: 'More'),
             ],
           ),
 
@@ -247,7 +254,7 @@ class HomeState extends State<Home> implements OnHomeView{
 
       case 1:
         return Container(
-          child: Text("HEllo"),
+          child: GeoFence(),
         );
         break;
 
