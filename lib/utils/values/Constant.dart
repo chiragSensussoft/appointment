@@ -2,11 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 class Constant{
   String languageKey = "code";
   static String languageCode;
+
 
   /// Api end points
   final event = 'events';
@@ -19,6 +23,7 @@ class Constant{
   static String USER_NAME = 'user_name';
   static String FROM_DATE = 'from_date';
   static String TO_DATE = 'to_date';
+  static String CURRENT_LOCATION = 'current_location';
   static String token;
 
 
@@ -68,6 +73,35 @@ class Constant{
       isconnected = false;
     }
     return isconnected;
+  }
+
+
+  static getCurrentLocation({State state}) async {
+    LatLng _lng;
+    try {
+      Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
+      Position position = await Geolocator().getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+
+      state.setState(() async {
+         _lng = LatLng(position.latitude, position.longitude);
+        _getLocation(_lng);
+      });
+      return _lng;
+
+    } catch (err) {
+      print(err.message);
+    }
+  }
+
+  static void _getLocation(LatLng latLng) async {
+    print("getLocation:::${latLng.latitude}   ${latLng.longitude}");
+    final coordinates = new Coordinates(latLng.latitude, latLng.longitude);
+    var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+
+    var first = addresses.first;
+    print("CALLED::::${first.featureName} : ${first.addressLine}");
   }
 
 }

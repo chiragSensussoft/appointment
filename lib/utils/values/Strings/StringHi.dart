@@ -118,6 +118,10 @@ class StringsHindi extends Strings {
   @override
   String get more => "अधिक";
 
+  @override
+  // TODO: implement Location
+  String get location => "स्थान";
+
 
 
 }

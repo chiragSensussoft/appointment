@@ -11,6 +11,7 @@ abstract class Strings {
   String get signInText;
   String get saveBtn;
   String get date;
+  String get location;
   String get start;
   String get bottomSheetTfTitle;
   String get bottomSheetTfDesc;

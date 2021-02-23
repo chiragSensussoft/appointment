@@ -138,7 +138,8 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
             "timeZone": timeZone
           },
           "summary": summary,
-          "description": description
+          "description": description,
+          "location": "Surat"
         }
         )
     );

@@ -44,7 +44,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
           alignment: Alignment.topRight,
           child:  GestureDetector(
             child: Container(
-              width: 80,
+              // width: 80,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -143,7 +143,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                             // toast.showOverLay("Coming Soon!", Colors.white, Colors.black54, context);
 
                           },radius: 25,
-                          icon: Image.asset('images/outlook.png',height: 20,width: 20),),
+                          icon: Image.asset('images/outlook.png',height: 20,width: 20)),
                       ),
                     ],
                   ),

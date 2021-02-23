@@ -12,13 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'geofence_view.dart';
 import 'geospatial.dart';
 
-void main() {
-  runApp(MyApp());
-  /// Register BackgroundGeolocation headless-task.
-  bg.BackgroundGeolocation.registerHeadlessTask(
-      backgroundGeolocationHeadlessTask);
+void main() {runApp(MyApp());
+  bg.BackgroundGeolocation.registerHeadlessTask(backgroundGeolocationHeadlessTask);
 
-  /// Register BackgroundFetch headless-task.
   BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
 }
 

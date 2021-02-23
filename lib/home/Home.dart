@@ -1,3 +1,4 @@
+import 'package:appointment/google_map/GeoFenceMap.dart';
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/OnHomeView.dart';
 import 'package:appointment/home/geofence/geofence.dart';
@@ -10,6 +11,7 @@ import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -102,6 +104,11 @@ class HomeState extends State<Home> implements OnHomeView{
   }
 
   _query() async {
+    final query = "28, S Zone Road, Chandanvan Society, Surat 395007, Gujarat Chandanvan Society Surat India";
+    var addresses = await Geocoder.local.findAddressesFromQuery(query);
+    var first = addresses.first;
+    print("HELLO POOJA::::::${first.featureName} : ${first.coordinates}");
+
     print('isCalled:::');
     Database db = await DatabaseHelper.instance.database;
     List<String> columnsToSelect = [
@@ -254,7 +261,7 @@ class HomeState extends State<Home> implements OnHomeView{
 
       case 1:
         return Container(
-          child: GeoFence(),
+          child: GeoFenceMap(),
         );
         break;
 

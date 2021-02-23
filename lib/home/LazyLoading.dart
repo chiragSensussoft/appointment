@@ -116,10 +116,7 @@ class _MyHomePageState extends State<MyHomePage>{
 }
 
 class ItemCard extends StatelessWidget {
-  const ItemCard({
-    Key key,
-    @required this.item,
-  }) : super(key: key);
+  const ItemCard({Key key, @required this.item}) : super(key: key);
 
   final ItemList item;
 

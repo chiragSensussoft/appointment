@@ -144,4 +144,8 @@ class StringsEnglish extends Strings {
   // TODO: implement more
   String get more => "More";
 
+  @override
+  // TODO: implement Location
+  String get location => "Location";
+
 }

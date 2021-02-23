@@ -45,7 +45,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
   openBottomSheetView({String summary, String description, DateTime startDate,
     DateTime endDate, String timeZone, bool isEdit, String eventID, String calenderId}){
 
-    return showModalBottomSheet(
+    return !isEdit?
+    showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: state1.context,
         isScrollControlled: true,
@@ -76,6 +77,42 @@ class HomeViewModel implements IsCreatedOrUpdate {
            state.hasMoreItems = true;
          }),
        }
+    })
+        :
+
+    showModalBottomSheet(
+        backgroundColor: Colors.transparent,
+        context: state.context,
+        isScrollControlled: true,
+        isDismissible: true,
+
+        builder: (context) {
+          return DraggableScrollableSheet(
+              initialChildSize: 0.80,
+              expand: true,
+
+              builder: (context, scrollController) {
+                return isEdit?
+                MyBottomSheet(token: state.access_token, itemList: state.itemList, isEdit: true,
+                  title: summary, description: description, getStartDate: startDate, getendDate: endDate,
+                  timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this,isCalenderID: null):
+
+                MyBottomSheet(token: state.access_token, itemList: state.itemList, isEdit: false,
+                    isCreatedOrUpdate: this);
+              });
+        })
+
+        .whenComplete(() => {
+      /*add condition*/
+      if(isCreateUpdate){
+        state.eventItem.clear(),
+        state.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false,
+            pageToken: state.map['nextPageToken']),
+
+        state.setState(() {
+          state.hasMoreItems = true;
+        }),
+      }
     });
   }
 
@@ -258,6 +295,25 @@ class HomeViewModel implements IsCreatedOrUpdate {
                       ),
                     ),
 
+
+                    Visibility(
+                      visible: state.eventItem[index].location!= null,
+                      child: Container(
+                        // margin: EdgeInsets.only(),
+                        padding: EdgeInsets.only(left: 10, top: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(Icons.location_on_outlined, size: 18, color: Colors.grey),
+                            SizedBox(width: 3),
+                            Expanded(child: Text(state.eventItem[index].location??" ",
+                                style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5))))
+                          ],
+                        ),
+                      ),
+                    ),
+
                     SizedBox(height: 10),
 
                     Container(
@@ -274,10 +330,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                                       Container(
                                         height:10,
                                         width: 10,
-                                        decoration: BoxDecoration(
-                                            color: Colors.blue,
-                                            borderRadius: BorderRadius.circular(60)
-                                        ),
+                                        decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(60)),
                                       ),
                                       Container(
                                         margin: EdgeInsets.only(left: 7,top: 1),

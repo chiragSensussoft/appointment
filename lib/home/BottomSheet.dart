@@ -9,10 +9,16 @@ import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'OnHomeView.dart';
+import 'package:flutter_geofence/geofence.dart';
+
 
 class MyBottomSheet extends StatefulWidget {
   final String token;
@@ -48,6 +54,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   HomePresenter _presenter;
   TextEditingController title = TextEditingController();
   TextEditingController desc = TextEditingController();
+  TextEditingController location = TextEditingController();
   FocusNode _titleFocus = FocusNode();
   FocusNode _discFocus = FocusNode();
   bool loader = false;
@@ -57,6 +64,11 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   bool isVisible = false;
   final _formKey = GlobalKey<FormState>();
   SharedPreferences _sharedPreferences;
+  String address = "";
+
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  new FlutterLocalNotificationsPlugin();
+
 
   @override
   void dispose() {
@@ -71,6 +83,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   @override
   void initState() {
     super.initState();
+    getCurrentLocation();
+
     init();
 
     widget.isEdit
@@ -118,7 +132,71 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     selectedEndTime = TimeOfDay();
 
     // widget.isEdit? isVisible = true: isVisible = false;
+    initPlatformState();
 
+    var initializationSettingsAndroid = new AndroidInitializationSettings('@mipmap/ic_launcher.png');
+    var initializationSettingsIOS = IOSInitializationSettings(onDidReceiveLocalNotification: null);
+    var initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: null);
+
+  }
+
+  Future<void> initPlatformState() async {
+    if (!mounted) return;
+    Geofence.initialize();
+    Geofence.startListening(GeolocationEvent.entry, (entry) {
+      scheduleNotification("Entry of a georegion", "Welcome to: ${entry.id}");
+    });
+
+    Geofence.startListening(GeolocationEvent.exit, (entry) {
+      scheduleNotification("Exit of a georegion", "Byebye to: ${entry.id}");
+    });
+
+    setState(() {});
+  }
+
+  void scheduleNotification(String title, String subtitle) {
+    print("scheduling one with $title and $subtitle");
+    Future.delayed(Duration(seconds: 5)).then((result) async {
+      var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+          'your channel id', 'your channel name', 'your channel description',
+          importance: Importance.max,
+          priority: Priority.high,
+          ticker: 'ticker');
+      var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+      var platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics, iOS: iOSPlatformChannelSpecifics);
+      await flutterLocalNotificationsPlugin.show(0, title, subtitle, platformChannelSpecifics, payload: 'item x');
+    });
+  }
+
+  LatLng latLng;
+  Future<void> getCurrentLocation() async {
+    try {
+      Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
+      Position position = await Geolocator().getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+
+      setState(() async {
+        latLng = LatLng(position.latitude, position.longitude);
+        _getLocation(latLng);
+      });
+      return position;
+
+    } catch (err) {
+      print(err.message);
+    }
+  }
+
+
+  void _getLocation(LatLng latLng) async {
+    final coordinates = new Coordinates(latLng.latitude, latLng.longitude);
+    var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    var first = addresses.first;
+    setState(() {
+      address = first.addressLine;
+    });
+    print("CALLED::::${first.addressLine}");
   }
 
   @override
@@ -206,15 +284,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                                     style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular'),
                                     overflow: TextOverflow.ellipsis,
                                   ),
-
-                                  // Visibility(
-                                  //   visible: isVisible,
-                                  //   child: Text(
-                                  //     setEmail ?? "",
-                                  //     style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular'),
-                                  //     overflow: TextOverflow.ellipsis,
-                                  //   ),
-                                  // )
                                 ],
                               ),
                             ),
@@ -228,38 +297,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                             )
                           ],
                         ),
-
-                        // child: Column(
-                        //   children: [
-                        //     Row(
-                        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        //       children: [
-                        //           Text(
-                        //             Resources.from(context, Constant.languageCode).strings.event,
-                        //             style: TextStyle(fontSize: 15, fontFamily: 'poppins_medium'),
-                        //             textAlign: TextAlign.end),
-                        //
-                        //           Padding(
-                        //             padding: EdgeInsets.only(top: 5, bottom: 5),
-                        //             child: Icon(
-                        //               Icons.keyboard_arrow_down,
-                        //               size: 20,
-                        //             ),
-                        //           ),
-                        //       ],
-                        //     ),
-                        //
-                        //      Visibility(
-                        //        visible: isVisible,
-                        //        child: Text(
-                        //          setEmail ?? "",
-                        //          style: TextStyle(fontSize: 12, fontFamily: 'poppins_regular'),
-                        //          overflow: TextOverflow.ellipsis,
-                        //        ),
-                        //      )
-                        //   ],
-                        // ),
-
                       ),
 
                       onTap: () {
@@ -304,7 +341,30 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                             }
                             return null;
                           },
-                        )),
+                        )
+                    ),
+
+                    Container(
+                      margin: EdgeInsets.only(top: Dimen().dp_10),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        Resources.from(context, Constant.languageCode).strings.location,
+                        style: TextStyle(fontSize: 14, fontFamily: 'poppins_medium'),
+                      ),
+                    ),
+
+                    Container(
+                      margin: EdgeInsets.only(top: 10),
+                      padding: EdgeInsets.only(top: 12, bottom: 12, left: 10, right: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                      ),
+                      child: Text(
+                       address??"",
+                        style: TextStyle(fontSize: 14, fontFamily: "poppins_regular", color: Colors.black),
+
+                      ),
+                    ),
 
                     Container(
                       margin: EdgeInsets.only(top: Dimen().dp_10),
@@ -421,7 +481,9 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                     SizedBox(height: 20),
 
                     ProgressButton(isAccept: this, text: widget.isEdit ? 'Update' : 'save',
-                        formKey: _formKey, isVisible: true)
+                        formKey: _formKey, isVisible: true),
+
+                    SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -642,8 +704,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     setState(() {
       loader = true;
     });
-    // toast.overLay = false;
-    // toast.showOverLay(message, Colors.white, Colors.black54, context);
     Constant.showToast(message, Toast.LENGTH_LONG);
   }
 
