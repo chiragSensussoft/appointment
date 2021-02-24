@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsAcceptAppointment.dart';
@@ -12,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,8 +22,6 @@ import 'package:flutter_geofence/geofence.dart';
 
 
 class MyBottomSheet extends StatefulWidget {
-  final String token;
-  final List<Item> itemList;
   String title, description;
   bool isEdit;
   String summary;
@@ -31,11 +30,10 @@ class MyBottomSheet extends StatefulWidget {
   String eventID;
   IsCreatedOrUpdate isCreatedOrUpdate;
   String isCalenderID;
+  LatLng latLng;
+  String address;
 
-  MyBottomSheet(
-      {this.token,
-      this.itemList,
-      this.title,
+  MyBottomSheet({this.title,
       this.description,
       this.getStartDate,
       this.getendDate,
@@ -43,7 +41,9 @@ class MyBottomSheet extends StatefulWidget {
       this.isEdit,
       this.eventID,
       this.isCreatedOrUpdate,
-      this.isCalenderID});
+      this.isCalenderID,
+      this.latLng,
+      this.address});
 
   @override
   _MyBottomSheetState createState() => _MyBottomSheetState();
@@ -58,16 +58,16 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   FocusNode _titleFocus = FocusNode();
   FocusNode _discFocus = FocusNode();
   bool loader = false;
-  // String setEmail;
   TimeOfDay selectedStartTime;
   TimeOfDay selectedEndTime;
   bool isVisible = false;
   final _formKey = GlobalKey<FormState>();
   SharedPreferences _sharedPreferences;
   String address = "";
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  new FlutterLocalNotificationsPlugin();
+  String token;
+  List<dynamic> itemList;
 
 
   @override
@@ -78,24 +78,29 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
 
   init() async {
     _sharedPreferences = await SharedPreferences.getInstance();
+    token = _sharedPreferences.getString(Constant.ACCESS_TOKEN);
+    itemList = json.decode(_sharedPreferences.getString(Constant.ITEM_LIST));
+    print('getList:::$itemList');
   }
+
 
   @override
   void initState() {
     super.initState();
-    getCurrentLocation();
-
     init();
 
-    widget.isEdit
-        ? _startDateTime = widget.getStartDate.toLocal()
-        : _startDateTime = DateTime.now();
+    // widget.isEdit? address = widget.address: widget.latLng!= null?getLocation() : null;
 
-    startDate = _startDateTime.year.toString() +
-        "-" +
-        _startDateTime.month.toString() +
-        "-" +
-        _startDateTime.day.toString();
+    print("fmfnfhgfj::::${widget.address}");
+    if (widget.isEdit) {
+      widget.address != null ? address = widget.address : address = null;
+    } else {
+      widget.latLng != null ? getLocation() : null;
+    }
+
+    widget.isEdit ? _startDateTime = widget.getStartDate.toLocal() : _startDateTime = DateTime.now();
+
+    startDate = _startDateTime.year.toString() + "-" + _startDateTime.month.toString() + "-" + _startDateTime.day.toString();
 
     _startHour = _startDateTime.hour.toString();
     _startMinute = _startDateTime.minute.toString();
@@ -108,14 +113,12 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
       _endHour = widget.getendDate.toLocal().hour.toString();
       _endMinute = widget.getendDate.toLocal().minute.toString();
       _endTime = Constant.getTimeFormat(widget.getendDate.toLocal());
+
     } else {
       _endHour = (_startDateTime.toLocal().hour + 1).toString();
       _endMinute = _startDateTime.toLocal().minute.toString();
-      _endTime = (_startDateTime.toLocal().hour + 1).toString() +
-          ":" +
-          _startDateTime.toLocal().minute.toString() +
-          ":" +
-          _startDateTime.toLocal().second.toString();
+      _endTime = (_startDateTime.toLocal().hour + 1).toString() + ":" +
+          _startDateTime.toLocal().minute.toString() + ":" + _startDateTime.toLocal().second.toString();
     }
 
     end = DateTime(_startDateTime.year, _startDateTime.month,
@@ -126,19 +129,24 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     widget.isEdit ? desc.text = widget.description : null;
     Constant.SET_CAL_ID = Constant.SET_CAL_ID==null ? Constant.email : Constant.SET_CAL_ID;
 
-    // Constant.email = widget.itemList[0].id;
-
     selectedStartTime = TimeOfDay();
     selectedEndTime = TimeOfDay();
 
-    // widget.isEdit? isVisible = true: isVisible = false;
     initPlatformState();
 
     var initializationSettingsAndroid = new AndroidInitializationSettings('@mipmap/ic_launcher.png');
     var initializationSettingsIOS = IOSInitializationSettings(onDidReceiveLocalNotification: null);
     var initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: null);
+  }
 
+  getLocation() async {
+    final coordinates = new Coordinates(widget.latLng.latitude, widget.latLng.longitude);
+    var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    var first = addresses.first;
+    setState(() {
+      address = first.addressLine;
+    });
   }
 
   Future<void> initPlatformState() async {
@@ -169,34 +177,17 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     });
   }
 
-  LatLng latLng;
-  Future<void> getCurrentLocation() async {
-    try {
-      Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
-      Position position = await Geolocator().getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best,
-      );
 
-      setState(() async {
-        latLng = LatLng(position.latitude, position.longitude);
-        _getLocation(latLng);
-      });
-      return position;
-
-    } catch (err) {
-      print(err.message);
-    }
-  }
-
-
-  void _getLocation(LatLng latLng) async {
+ _getLocation(LatLng latLng) async {
     final coordinates = new Coordinates(latLng.latitude, latLng.longitude);
     var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
     var first = addresses.first;
     setState(() {
       address = first.addressLine;
     });
+
     print("CALLED::::${first.addressLine}");
+    return first.addressLine;
   }
 
   @override
@@ -344,27 +335,37 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                         )
                     ),
 
-                    Container(
-                      margin: EdgeInsets.only(top: Dimen().dp_10),
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        Resources.from(context, Constant.languageCode).strings.location,
-                        style: TextStyle(fontSize: 14, fontFamily: 'poppins_medium'),
+                    Visibility(
+                      visible: address!=null,
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(top: Dimen().dp_10),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              Resources.from(context, Constant.languageCode).strings.location,
+                              style: TextStyle(fontSize: 14, fontFamily: 'poppins_medium'),
+                            ),
+                          ),
+
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            margin: EdgeInsets.only(top: 10),
+                            padding: EdgeInsets.only(top: 12, bottom: 12, left: 10, right: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                            ),
+                            child: Expanded(
+                              child: Text(
+                                address??"",
+                                style: TextStyle(fontSize: 14, fontFamily: "poppins_regular", color: Colors.black),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
-                    Container(
-                      margin: EdgeInsets.only(top: 10),
-                      padding: EdgeInsets.only(top: 12, bottom: 12, left: 10, right: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                      ),
-                      child: Text(
-                       address??"",
-                        style: TextStyle(fontSize: 14, fontFamily: "poppins_regular", color: Colors.black),
-
-                      ),
-                    ),
 
                     Container(
                       margin: EdgeInsets.only(top: Dimen().dp_10),
@@ -384,8 +385,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                         color: Colors.grey[200],
                         child: Text(
                           DateFormat('EE, d MMM, yyyy').format(_startDateTime),
-                          style:
-                          TextStyle(fontSize: 14, fontFamily: 'poppins_medium'),
+                          style: TextStyle(fontSize: 14, fontFamily: 'poppins_medium'),
                         ),
                       ),
                     ),
@@ -444,7 +444,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                                   ),
                                 ),
                               ),
-
                             ],
                             crossAxisAlignment: CrossAxisAlignment.start,
                           )
@@ -494,7 +493,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   }
 
   void createAppointment() {
-    _presenter = new HomePresenter(this, token: widget.token);
+    print("pass_Adress:::::$address   $token");
+    _presenter = new HomePresenter(this, token: token);
     _presenter.attachView(this);
 
     widget.isEdit
@@ -505,16 +505,17 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
             summary: title.text,
             description: desc.text,
             id: widget.eventID,
-            email: Constant.email)
+            email: Constant.email,
+            address: address)
+
         : _presenter.setAppointment(
             endDate: startDate + "T" + _endTime,
             startDate: startDate + "T" + _startTime,
             timeZone: _startDateTime.timeZoneName,
             summary: title.text,
-            description: desc.text);
+            description: desc.text,
+            address: address);
   }
-
-  // Toast toast = Toast();
 
   ///Start Date
   String startDate;
@@ -601,13 +602,13 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                   padding: EdgeInsets.all(Dimen().dp_20),
                   height: MediaQuery.of(context).size.height * 0.30,
                   child: ListView.builder(
-                    itemCount: widget.itemList.length,
+                    itemCount: itemList.length,
                     itemBuilder: (_, index) {
                       return GestureDetector(
                         onTap: () {
                           setState(() {
-                            Constant.SET_CAL_ID = widget.itemList[index].summary;
-                            Constant.email = widget.itemList[index].id;
+                            Constant.SET_CAL_ID = itemList[index]['summary'];
+                            Constant.email = itemList[index]["id"];
                             Navigator.pop(context);
                             isVisible = true;
                             FocusScope.of(context).requestFocus(FocusNode());
@@ -623,12 +624,12 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                                 height: 15,
                                 width: 15,
                                 child: CircleAvatar(
-                                    backgroundColor: widget.itemList[index].id == Constant.email ? Palette.colorPrimary : Colors.grey),
+                                    backgroundColor: itemList[index]["id"] == Constant.email ? Palette.colorPrimary : Colors.grey),
                               ),
                               Container(
                                 child: Expanded(
                                   child: Text(
-                                    widget.itemList[index].summary,
+                                    itemList[index]['summary'],
                                     style: TextStyle(
                                         fontSize: 14,
                                         fontFamily: 'poppins_regular',

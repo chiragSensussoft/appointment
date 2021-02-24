@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:appointment/utils/APIClient.dart';
 import 'package:appointment/utils/BasePresenter.dart';
 import 'package:appointment/utils/values/Constant.dart';
+import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:dio/dio.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../OnHomeView.dart';
 
@@ -18,12 +20,15 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
   }
 
       Future setAppointment({String description, String summary,String startDate,
-        String endDate,String timeZone}) async {
+        String endDate,String timeZone, LatLng latLng, String address}) async {
+
+        print("get_address::::::$address    $token");
 
         view.onShowLoader();
 
-        Response postResponse = await apiHelper.api(apiName:Constant().event,method:  Method.POST,
-            body:jsonEncode({
+        Response postResponse = await apiHelper.api(apiName:Constant().event, method: Method.POST, token: token,
+            body: address!=""?
+            jsonEncode({
               "end": {
                 "dateTime": endDate,
                 "timeZone": timeZone
@@ -33,17 +38,31 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
                 "timeZone": timeZone
               },
               "summary": summary,
-              "description": description
-            }),token: token);
+              "description": description,
+              "location": address
+            }) :
+
+            jsonEncode({
+              "end": {
+                "dateTime": endDate,
+                "timeZone": timeZone
+              },
+              "start": {
+                "dateTime": startDate,
+                "timeZone": timeZone
+              },
+              "summary": summary,
+              "description": description,
+            }),
+
+            );
 
         if (postResponse.statusCode == 200) {
           isViewAttached ? getView().onCreateEvent(postResponse.data) : null;
           view.onHideLoader();
-
         } else {
           view.onHideLoader();
     }
-
   }
 
   Future getCalendar(String authToken)async{
@@ -108,7 +127,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
   }
 
   Future updatevent({String id, String email, String description, String summary, String startDate,
-    String endDate,String timeZone})async{
+    String endDate,String timeZone, String address})async{
 
     print("Token $token");
     print("description $description");
@@ -117,7 +136,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     print("End Date $endDate");
     print("Start Date $startDate");
     print("ID::: $id");
-    print("email::: $email");
+    print("email::: $address");
 
     if(timeZone==null){
       timeZone = "IST";
@@ -127,7 +146,9 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
 
     Response postResponse = await apiHelper.api(apiName:Constant().event, method: Method.PUT,
         endPoint: id, user: email,token: token,
-        body:jsonEncode(
+        body:
+        address!=""?
+        jsonEncode(
             {
           "end": {
             "dateTime": endDate,
@@ -139,8 +160,23 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
           },
           "summary": summary,
           "description": description,
-          "location": "Surat"
+          "location": address
         }
+        ) :
+
+        jsonEncode(
+            {
+              "end": {
+                "dateTime": endDate,
+                "timeZone": timeZone
+              },
+              "start": {
+                "dateTime": startDate,
+                "timeZone": timeZone
+              },
+              "summary": summary,
+              "description": description
+            }
         )
     );
     print('update:::${postResponse.statusCode}');

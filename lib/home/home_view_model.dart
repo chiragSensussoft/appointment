@@ -1,8 +1,10 @@
+import 'package:appointment/google_map/GeoFenceMap.dart';
 import 'package:appointment/interface/IsCreatedOrUpdate.dart';
 import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,10 +18,10 @@ class HomeViewModel implements IsCreatedOrUpdate {
   bool isCreateUpdate = false;
 
   MyAppointmentState state;
-
-  HomeState state1;
-
-  HomeViewModel({this.state, this.state1});
+  HomeState homestate;
+  GeoFenceMapState geoFenceMapState;
+  
+  HomeViewModel({this.state, this.homestate, this.geoFenceMapState});
   bool isVisible;
 
 
@@ -43,12 +45,14 @@ class HomeViewModel implements IsCreatedOrUpdate {
 
 
   openBottomSheetView({String summary, String description, DateTime startDate,
-    DateTime endDate, String timeZone, bool isEdit, String eventID, String calenderId}){
+    DateTime endDate, String timeZone, bool isEdit, String eventID, String calenderId,
+    LatLng latlng, String openfrom, String address}){
 
     return !isEdit?
+        openfrom=="Home"?
     showModalBottomSheet(
         backgroundColor: Colors.transparent,
-        context: state1.context,
+        context: homestate.context,
         isScrollControlled: true,
         isDismissible: true,
 
@@ -56,28 +60,40 @@ class HomeViewModel implements IsCreatedOrUpdate {
           return DraggableScrollableSheet(
               initialChildSize: 0.80,
               expand: true,
-
               builder: (context, scrollController) {
-                return isEdit?
-                MyBottomSheet(token: state1.access_token, itemList: state1.itemList, isEdit: true,
-                title: summary, description: description, getStartDate: startDate, getendDate: endDate,
-                  timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this,isCalenderID: null,):
-
-                 MyBottomSheet(token: state1.access_token, itemList: state1.itemList, isEdit: false,
-                 isCreatedOrUpdate: this);
+                return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng);
               });
         })
+
         .whenComplete(() => {
-       /*add condition*/
        if(isCreateUpdate){
          state.eventItem.clear(),
-         state.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false,
-             pageToken: state.map['nextPageToken']),
+         state.presenter.getCalendarEvent(maxResult: 10, minTime: DateTime.now().toUtc(),
+             isPageToken: false, pageToken: state.map['nextPageToken']),
          state.setState(() {
            state.hasMoreItems = true;
          }),
        }
-    })
+    }) :
+        showModalBottomSheet(
+            backgroundColor: Colors.transparent,
+            context: geoFenceMapState.context,
+            isScrollControlled: true,
+            isDismissible: true,
+
+            builder: (context) {
+              return DraggableScrollableSheet(
+                  initialChildSize: 0.80,
+                  expand: true,
+                  builder: (context, scrollController) {
+                    return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng);
+                  });
+            })
+            .whenComplete(() => {
+          /*add condition*/
+          if(isCreateUpdate){}
+        })
+
         :
 
     showModalBottomSheet(
@@ -90,15 +106,10 @@ class HomeViewModel implements IsCreatedOrUpdate {
           return DraggableScrollableSheet(
               initialChildSize: 0.80,
               expand: true,
-
               builder: (context, scrollController) {
-                return isEdit?
-                MyBottomSheet(token: state.access_token, itemList: state.itemList, isEdit: true,
+                return MyBottomSheet(isEdit: true, address: address,
                   title: summary, description: description, getStartDate: startDate, getendDate: endDate,
-                  timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this,isCalenderID: null):
-
-                MyBottomSheet(token: state.access_token, itemList: state.itemList, isEdit: false,
-                    isCreatedOrUpdate: this);
+                  timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, isCalenderID: null);
               });
         })
 
@@ -106,8 +117,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
       /*add condition*/
       if(isCreateUpdate){
         state.eventItem.clear(),
-        state.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false,
-            pageToken: state.map['nextPageToken']),
+        state.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false, pageToken: state.map['nextPageToken']),
 
         state.setState(() {
           state.hasMoreItems = true;
@@ -237,7 +247,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
                                     openBottomSheetView(description: state.eventItem[index].description,
                                         summary: state.eventItem[index].summary, startDate: state.eventItem[index].start.dateTime,
                                         timeZone: state.eventItem[index].start.timeZone, endDate: state.eventItem[index].end.dateTime,
-                                        isEdit: true, eventID: state.eventItem[index].id, calenderId: null);
+                                        isEdit: true, eventID: state.eventItem[index].id,
+                                        calenderId: null, latlng: LatLng(21.170240, 72.831062), openfrom: "Edit", address: state.eventItem[index].location);
                                   },
                                 ),
                                 GestureDetector(

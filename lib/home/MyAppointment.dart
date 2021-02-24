@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
@@ -815,6 +816,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
       for (int i = 0; i < data.length; i++) {
         if (data[i]['accessRole'] == "owner") {
           itemList.add(Item.fromJson(data[i]));
+          _sharedPreferences.setString(Constant.ITEM_LIST, json.encode(itemList));
         }
       }
     });
@@ -900,13 +902,13 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   @override
   void isAccept() {
     eventItem.clear();
-    presenter.setAppointment(summary: str_summary, endDate: str_EndDate, startDate: str_startDate, description: str_description, timeZone: str_timeZone);
+    presenter.setAppointment(summary: str_summary, endDate: str_EndDate, startDate: str_startDate,
+        description: str_description, timeZone: str_timeZone);
 
     setState(() {
       isShareAppointment = true;
     });
   }
-
 
 }
 

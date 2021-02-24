@@ -1,7 +1,8 @@
+import 'dart:convert';
+
 import 'package:appointment/google_map/GeoFenceMap.dart';
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/OnHomeView.dart';
-import 'package:appointment/home/geofence/geofence.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/DBProvider.dart';
@@ -11,12 +12,10 @@ import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoder/geocoder.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-
 import 'model/CalendarList.dart';
 
 
@@ -145,7 +144,7 @@ class HomeState extends State<Home> implements OnHomeView{
 
   @override
   Widget build(BuildContext context) {
-    model = HomeViewModel(state1: this);
+    model = HomeViewModel(homestate: this);
 
     return Container(
       color: Colors.blue,
@@ -243,7 +242,7 @@ class HomeState extends State<Home> implements OnHomeView{
             child: Icon(Icons.add),
             onPressed: (){
               print('CALLED:::');
-              model.openBottomSheetView(isEdit: false);
+              model.openBottomSheetView(isEdit: false, openfrom: "Home");
             },
           ),
         ),
@@ -399,6 +398,7 @@ class HomeState extends State<Home> implements OnHomeView{
       for (int i = 0; i < data.length; i++) {
         if (data[i]['accessRole'] == "owner") {
           itemList.add(Item.fromJson(data[i]));
+          _sharedPreferences.setString(Constant.ITEM_LIST, json.encode(itemList));
         }
       }
     });

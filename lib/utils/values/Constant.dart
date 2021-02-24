@@ -24,6 +24,7 @@ class Constant{
   static String FROM_DATE = 'from_date';
   static String TO_DATE = 'to_date';
   static String CURRENT_LOCATION = 'current_location';
+  static String ITEM_LIST = 'item_list';
   static String token;
 
 

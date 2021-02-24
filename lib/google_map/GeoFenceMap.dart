@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:appointment/home/home_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -9,14 +10,15 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class GeoFenceMap extends StatefulWidget {
   @override
-  _GeoFenceMapState createState() => _GeoFenceMapState();
+  GeoFenceMapState createState() => GeoFenceMapState();
 }
 
-class _GeoFenceMapState extends State<GeoFenceMap> {
+class GeoFenceMapState extends State<GeoFenceMap> {
   LatLng _lng;
   Position _currentPosition;
   Completer _controller = Completer();
   Set<Marker> _markers = {};
+  HomeViewModel model;
 
   @override
   void initState() {
@@ -82,7 +84,7 @@ class _GeoFenceMapState extends State<GeoFenceMap> {
   }
 
 
-  void _getLocation(LatLng latLng) async {
+  _getLocation(LatLng latLng) async {
     final coordinates = new Coordinates(latLng.latitude, latLng.longitude);
     var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
 
@@ -93,6 +95,8 @@ class _GeoFenceMapState extends State<GeoFenceMap> {
 
   @override
   Widget build(BuildContext context) {
+    model = HomeViewModel(geoFenceMapState: this);
+
     return Scaffold(
         body:  GoogleMap(
           initialCameraPosition: CameraPosition(target: LatLng(21.2050,72.8408), zoom: 3),
@@ -103,19 +107,21 @@ class _GeoFenceMapState extends State<GeoFenceMap> {
           onLongPress: (LatLng latLng){
             _markers.add(Marker(markerId: MarkerId('mark'), position: latLng));
             setState(() {
-              _getLocation(LatLng(latLng.latitude, latLng.longitude));
+              // _getLocation(LatLng(latLng.latitude, latLng.longitude));
 
-              Geolocation location = Geolocation(
-                  latitude: 21.2050,
-                  longitude: 72.8408,
-                  radius: 50.0,
-                  id: "Surat Railway Station");
+              // Geolocation location = Geolocation(
+              //     latitude: 21.2050,
+              //     longitude: 72.8408,
+              //     radius: 50.0,
+              //     id: "Surat Railway Station");
 
-              Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue) {
-                scheduleNotification("Georegion added", "Your geofence has been added!");
-              }).catchError((onError) {
-                print("great failure");
-              });
+              // Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue) {
+              //   scheduleNotification("Georegion added", "Your geofence has been added!");
+              // }).catchError((onError) {
+              //   print("great failure");
+              // });
+
+              model.openBottomSheetView(isEdit: false, openfrom: "Map", latlng: LatLng(latLng.latitude, latLng.longitude));
             });
           },
           onMapCreated: (GoogleMapController controller) async {

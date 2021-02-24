@@ -19,7 +19,7 @@ class APIClient extends BasePresenter<OnHomeView>{
   OnHomeView view;
   APIClient(this.view);
 
-  Future<dynamic> api({String apiName, method, dynamic body, String token,String endPoint,
+  Future<dynamic> api({String apiName, method, dynamic body, String token, String endPoint,
     String user,String pageToken,String maxResult,String timeMin, bool isPageToken, String timeMax}) async{
     var response;
     var responseJson;
@@ -31,7 +31,7 @@ class APIClient extends BasePresenter<OnHomeView>{
 
         switch(method){
           case Method.POST:
-            print("Email ${Constant.email}");
+            print("Email ${Constant.email}   $token");
 
             dio.options.headers["Authorization"] = "Bearer " + token;
             try {
