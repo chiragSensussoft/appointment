@@ -95,7 +95,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     if (widget.isEdit) {
       widget.address != null ? address = widget.address : address = null;
     } else {
-      widget.latLng != null ? getLocation() : null;
+      widget.latLng != null ? getLocation() :  address = null;
     }
 
     widget.isEdit ? _startDateTime = widget.getStartDate.toLocal() : _startDateTime = DateTime.now();
