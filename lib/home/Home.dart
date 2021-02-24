@@ -104,10 +104,10 @@ class HomeState extends State<Home> implements OnHomeView{
   }
 
   _query() async {
-    final query = "28, S Zone Road, Chandanvan Society, Surat 395007, Gujarat Chandanvan Society Surat India";
-    var addresses = await Geocoder.local.findAddressesFromQuery(query);
-    var first = addresses.first;
-    print("HELLO POOJA::::::${first.featureName} : ${first.coordinates}");
+    // final query = "28, S Zone Road, Chandanvan Society, Surat 395007, Gujarat Chandanvan Society Surat India";
+    // var addresses = await Geocoder.local.findAddressesFromQuery(query);
+    // var first = addresses.first;
+    // print("HELLO POOJA::::::${first.featureName} : ${first.coordinates}");
 
     print('isCalled:::');
     Database db = await DatabaseHelper.instance.database;

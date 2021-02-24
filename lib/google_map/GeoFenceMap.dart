@@ -25,7 +25,7 @@ class _GeoFenceMapState extends State<GeoFenceMap> {
 
     initPlatformState();
 
-    var initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher.png');
+    var initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
     var initializationSettingsIOS = IOSInitializationSettings(onDidReceiveLocalNotification: null);
     var initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: null);
@@ -67,8 +67,8 @@ class _GeoFenceMapState extends State<GeoFenceMap> {
     try {
       Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
       Position position = await Geolocator().getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best,
-      );
+        desiredAccuracy: LocationAccuracy.best);
+
       setState(() async {
         _currentPosition = position;
         _lng = LatLng(_currentPosition.latitude, _currentPosition.longitude);
@@ -94,8 +94,8 @@ class _GeoFenceMapState extends State<GeoFenceMap> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: _lng!=null? GoogleMap(
-          initialCameraPosition: CameraPosition(target: _lng, zoom: 3),
+        body:  GoogleMap(
+          initialCameraPosition: CameraPosition(target: LatLng(21.2050,72.8408), zoom: 3),
           markers: _markers,
           mapType: MapType.normal,
           myLocationEnabled: true,
@@ -110,6 +110,7 @@ class _GeoFenceMapState extends State<GeoFenceMap> {
                   longitude: 72.8408,
                   radius: 50.0,
                   id: "Surat Railway Station");
+
               Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue) {
                 scheduleNotification("Georegion added", "Your geofence has been added!");
               }).catchError((onError) {
@@ -125,12 +126,9 @@ class _GeoFenceMapState extends State<GeoFenceMap> {
               ));
             });
           },
-        ) : Center(child: CircularProgressIndicator())
+        )
+            // : Center(child: CircularProgressIndicator())
     );
   }
-
-
-
-
 
 }
