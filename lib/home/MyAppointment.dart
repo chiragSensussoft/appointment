@@ -73,7 +73,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   bool descTextShowFlag = false;
   bool isLoading = false;
   bool isShareAppointment = false;
-  bool _isVisible = true;
+  // bool _isVisible = true;
   var dynamicLink;
 
   int _state = 0;
@@ -99,24 +99,24 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     refreshToken();
     _query();
 
-    _isVisible = true;
+    // _isVisible = true;
     menu.add(SortMenu(title: "Asc",isVisible: true));
     menu.add(SortMenu(title: "Desc",isVisible: false));
     menu.add(SortMenu(isVisible: false,title: "Between"));
     menu.add(SortMenu(isVisible: false,title: "Clear"));
 
-    widget.controller.addListener(() {
-      if (widget.controller.position.userScrollDirection == ScrollDirection.reverse) {
-        setState(() {
-            _isVisible = false;
-        });
-      }
-      if (widget.controller.position.userScrollDirection == ScrollDirection.forward) {
-        setState(() {
-          _isVisible = true;
-        });
-      }
-    });
+    // widget.controller.addListener(() {
+    //   if (widget.controller.position.userScrollDirection == ScrollDirection.reverse) {
+    //     setState(() {
+    //         _isVisible = false;
+    //     });
+    //   }
+    //   if (widget.controller.position.userScrollDirection == ScrollDirection.forward) {
+    //     setState(() {
+    //       _isVisible = true;
+    //     });
+    //   }
+    // });
   }
 
 
@@ -896,7 +896,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   @override
   onDelete(delete) {
     eventItem.removeWhere((element) => element.id == delete);
-    _isVisible = true;
+    // _isVisible = true;
   }
 
   @override

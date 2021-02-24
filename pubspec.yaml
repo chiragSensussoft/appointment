@@ -23,7 +23,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   # google sing in
   firebase_auth: ^0.16.0
   google_sign_in: ^4.5.9
@@ -66,15 +65,11 @@ dependencies:
   # toast
   fluttertoast: ^7.1.6
 
-  #Geofence
-  flutter_background_geolocation: ^1.11.1
   flutter_map: ^0.10.1
-  background_fetch: ^0.6.0
-  flutter_geofence: ^0.4.0
 
   # local notification
   flutter_local_notifications: ^4.0.1
-
+  flutter_geofence: ^0.4.0
   # google map
   google_maps_flutter: ^1.0.6
   geolocator: ^5.1.3

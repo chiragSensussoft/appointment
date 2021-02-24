@@ -11,6 +11,7 @@ import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
@@ -18,7 +19,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'OnHomeView.dart';
-import 'package:flutter_geofence/geofence.dart';
 
 
 class MyBottomSheet extends StatefulWidget {

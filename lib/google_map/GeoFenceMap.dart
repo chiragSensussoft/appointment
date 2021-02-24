@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofence/geofence.dart';
@@ -19,6 +20,7 @@ class GeoFenceMapState extends State<GeoFenceMap> {
   Completer _controller = Completer();
   Set<Marker> _markers = {};
   HomeViewModel model;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   void initState() {
@@ -27,28 +29,38 @@ class GeoFenceMapState extends State<GeoFenceMap> {
 
     initPlatformState();
 
-    var initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
-    var initializationSettingsIOS = IOSInitializationSettings(onDidReceiveLocalNotification: null);
-    var initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: null);
+    var initializationSettingsAndroid =
+    new AndroidInitializationSettings('@mipmap/ic_launcher');
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    var android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    var iOS = IOSInitializationSettings();
+    // var initializationSettingsIOS =
+    //     IOSInitializationSettings(onDidReceiveLocalNotification: null);
+    var initSettings = InitializationSettings(android:android,iOS: iOS);
+    flutterLocalNotificationsPlugin.initialize(initSettings,
+        onSelectNotification: null);
+
   }
 
   Future<void> initPlatformState() async {
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
     if (!mounted) return;
     Geofence.initialize();
     Geofence.startListening(GeolocationEvent.entry, (entry) {
-      print("ENTRY:::");
+      print("Enter");
       scheduleNotification("Entry of a georegion", "Welcome to: ${entry.id}");
     });
 
     Geofence.startListening(GeolocationEvent.exit, (entry) {
+      print("Exit");
       scheduleNotification("Exit of a georegion", "Byebye to: ${entry.id}");
     });
 
     setState(() {});
   }
 
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =  FlutterLocalNotificationsPlugin();
 
   void scheduleNotification(String title, String subtitle) {
     print("scheduling one with $title and $subtitle");
@@ -58,9 +70,12 @@ class GeoFenceMapState extends State<GeoFenceMap> {
           importance: Importance.max,
           priority: Priority.high,
           ticker: 'ticker');
-      var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-      var platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics, iOS: iOSPlatformChannelSpecifics);
-      await flutterLocalNotificationsPlugin.show(0, title, subtitle, platformChannelSpecifics, payload: 'item x');
+      var iOSPlatformChannelSpecifics = IOSNotificationDetails(badgeNumber: 1,presentAlert: true,);
+      var platformChannelSpecifics = NotificationDetails(
+          android:androidPlatformChannelSpecifics,iOS: iOSPlatformChannelSpecifics);
+      await flutterLocalNotificationsPlugin.show(
+          0, title, subtitle, platformChannelSpecifics,
+          payload: 'item x');
     });
   }
 
@@ -109,17 +124,17 @@ class GeoFenceMapState extends State<GeoFenceMap> {
             setState(() {
               // _getLocation(LatLng(latLng.latitude, latLng.longitude));
 
-              // Geolocation location = Geolocation(
-              //     latitude: 21.2050,
-              //     longitude: 72.8408,
-              //     radius: 50.0,
-              //     id: "Surat Railway Station");
+              Geolocation location = Geolocation(
+                  latitude: 21.2050,
+                  longitude: 72.8408,
+                  radius: 50.0,
+                  id: "Surat Railway Station");
 
-              // Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue) {
-              //   scheduleNotification("Georegion added", "Your geofence has been added!");
-              // }).catchError((onError) {
-              //   print("great failure");
-              // });
+              Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue) {
+                scheduleNotification("Georegion added", "Your geofence has been added!");
+              }).catchError((onError) {
+                print("great failure");
+              });
 
               model.openBottomSheetView(isEdit: false, openfrom: "Map", latlng: LatLng(latLng.latitude, latLng.longitude));
             });
