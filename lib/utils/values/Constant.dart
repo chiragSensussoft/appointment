@@ -105,4 +105,8 @@ class Constant{
     print("CALLED::::${first.featureName} : ${first.addressLine}");
   }
 
+  static bool isVisible;
+  // static Future initialLoad;
+  static bool hasMoreItems;
+
 }

@@ -16,6 +16,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
+import 'model/CalendarEvent.dart';
 import 'model/CalendarList.dart';
 
 
@@ -51,6 +52,9 @@ class HomeState extends State<Home> implements OnHomeView{
   FirebaseUser user;
   HomePresenter presenter;
   List<Item> itemList = List.empty(growable: true);
+  List<EventItem> eventItem = List.empty(growable: true);
+  bool hasMoreItems;
+  Future initialLoad;
 
   GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: [
@@ -89,14 +93,19 @@ class HomeState extends State<Home> implements OnHomeView{
     presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     presenter.attachView(this);
     presenter.getCalendar(googleSignInAuthentication.accessToken);
+    setState(() {
+      initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+
+    });
+
 
     return googleSignInAuthentication.accessToken;
   }
 
 
   void initState() {
-    _query();
     refreshToken();
+    _query();
     controller = ScrollController();
     super.initState();
     setValue();
@@ -132,7 +141,7 @@ class HomeState extends State<Home> implements OnHomeView{
     });
   }
   String text = "English";
-  int selectedIndex = 1;
+  int selectedIndex = 0;
 
 
   void _selectedTab(int index) {
@@ -254,7 +263,7 @@ class HomeState extends State<Home> implements OnHomeView{
     switch(index){
       case 0:
         return Container(
-          child: MyAppointment(controller),
+          child: MyAppointment(controller: controller,eventItem: eventItem,hasMoreItems: hasMoreItems,initialLoad: initialLoad,),
         );
         break;
 
@@ -375,19 +384,43 @@ class HomeState extends State<Home> implements OnHomeView{
 
   }
 
+  Map<String, dynamic> map;
+
   @override
   onEventSuccess(response, calendarResponse) {
+    print("success ${response}");
+    eventItem.clear();
+    setState(() {
+      map = calendarResponse;
+      List<dynamic> data = response;
+      eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+      // MyAppointmentState();
+    });
+    hasMoreItems = true;
 
+    if(eventItem.length<=3){
+      setState(() {
+        hasMoreItems = false;
+      });
+    }
+    print("Length${eventItem.length}");
   }
+
 
   @override
   onHideLoader() {
-
+    print("Hide Loader");
+    setState(() {
+      Constant.isVisible = false;
+    });
   }
 
   @override
   onShowLoader() {
-
+    print("Show Loader");
+    setState(() {
+      Constant.isVisible = true;
+    });
   }
 
   @override

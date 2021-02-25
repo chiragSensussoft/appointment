@@ -4,11 +4,6 @@ PODS:
     - AppAuth/ExternalUserAgent (= 1.4.0)
   - AppAuth/Core (1.4.0)
   - AppAuth/ExternalUserAgent (1.4.0)
-  - background_fetch (0.6.0):
-    - Flutter
-  - CocoaLumberjack (3.6.2):
-    - CocoaLumberjack/Core (= 3.6.2)
-  - CocoaLumberjack/Core (3.6.2)
   - Firebase/Auth (6.34.0):
     - Firebase/CoreOnly
     - FirebaseAuth (~> 6.9.2)
@@ -61,9 +56,6 @@ PODS:
     - GoogleUtilities/UserDefaults (~> 6.7)
     - PromisesObjC (~> 1.2)
   - Flutter (1.0.0)
-  - flutter_background_geolocation (1.11.1):
-    - CocoaLumberjack (~> 3.6.0)
-    - Flutter
   - flutter_geofence (0.1.1):
     - Flutter
   - flutter_local_notifications (0.0.1):
@@ -154,12 +146,10 @@ PODS:
   - Toast (4.0.0)
 
 DEPENDENCIES:
-  - background_fetch (from `.symlinks/plugins/background_fetch/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_dynamic_links (from `.symlinks/plugins/firebase_dynamic_links/ios`)
   - Flutter (from `Flutter`)
-  - flutter_background_geolocation (from `.symlinks/plugins/flutter_background_geolocation/ios`)
   - flutter_geofence (from `.symlinks/plugins/flutter_geofence/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_microsoft_authentication (from `.symlinks/plugins/flutter_microsoft_authentication/ios`)
@@ -177,7 +167,6 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - AppAuth
-    - CocoaLumberjack
     - Firebase
     - FirebaseAnalytics
     - FirebaseAuth
@@ -199,8 +188,6 @@ SPEC REPOS:
     - Toast
 
 EXTERNAL SOURCES:
-  background_fetch:
-    :path: ".symlinks/plugins/background_fetch/ios"
   firebase_auth:
     :path: ".symlinks/plugins/firebase_auth/ios"
   firebase_core:
@@ -209,8 +196,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_dynamic_links/ios"
   Flutter:
     :path: Flutter
-  flutter_background_geolocation:
-    :path: ".symlinks/plugins/flutter_background_geolocation/ios"
   flutter_geofence:
     :path: ".symlinks/plugins/flutter_geofence/ios"
   flutter_local_notifications:
@@ -240,8 +225,6 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
-  background_fetch: 9221ccc02b41aff8a52b2090d9f791c5ed82eaee
-  CocoaLumberjack: bd155f2dd06c0e0b03f876f7a3ee55693122ec94
   Firebase: c23a36d9e4cdf7877dfcba8dd0c58add66358999
   firebase_auth: af8784c4d8d87c36f730a305f97bfbcb24db024b
   firebase_core: 335c02abd48672b7c83c683df833d0488a72e73e
@@ -253,7 +236,6 @@ SPEC CHECKSUMS:
   FirebaseDynamicLinks: 6eac37d86910382eafb6315d952cc44c9e176094
   FirebaseInstallations: 466c7b4d1f58fe16707693091da253726a731ed2
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  flutter_background_geolocation: 35f598f4e5eca84a4a1da764a75b6fb28ebfdcc0
   flutter_geofence: 08e5427c56c540ffac97425b8e10dd598912fb3d
   flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
   flutter_microsoft_authentication: 121074a9b2f1babd8a335043111eb05820f1b6ac

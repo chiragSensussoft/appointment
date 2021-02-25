@@ -30,11 +30,13 @@ import 'OnHomeView.dart';
 
 class MyAppointment extends StatefulWidget {
   ScrollController controller;
-  List<EventItem> eventItem;
+  List<EventItem> eventItem = List.empty(growable: true);
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> searchEventList;
+  bool hasMoreItems;
+  Future initialLoad;
 
-  MyAppointment(this.controller);
+  MyAppointment({this.controller,this.eventItem,this.hasMoreItems,this.initialLoad});
 
   @override
   MyAppointmentState createState() => MyAppointmentState();
@@ -96,7 +98,9 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     super.initState();
     fetchLinkData();
     init();
-    refreshToken();
+    // refreshToken();
+    presenter = HomePresenter(this);
+    presenter.attachView(this);
     _query();
 
     // _isVisible = true;
@@ -155,20 +159,30 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   int lastIndex;
 
   Future _loadMoreItems() async {
-    if(widget.controller.position.pixels == widget.controller.position.maxScrollExtent){
+    if(widget.controller.position.pixels == widget.controller.position.maxScrollExtent && widget.hasMoreItems == true){
+      print(" widget.hasMoreItems In");
+      widget.hasMoreItems = false;
       await presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),
           isPageToken: true,pageToken: map['nextPageToken']);
+      print("widget.hasMoreItems out");
     }
     else{
-      hasMoreItems = false;
+      setState(() {
+        widget.hasMoreItems = false;
+      });
+      // print("widget.hasMoreItems ${widget.hasMoreItems}");
     }
-    hasMoreItems = map['nextPageToken'] != null;
+    widget.hasMoreItems = map['nextPageToken'] != null;
   }
 
   @override
   Widget build(BuildContext context) {
     model = HomeViewModel(state: this);
-
+    setState(() {
+      // widget.eventItem.clear();
+      // widget.eventItem = widget.widget.eventItem;
+      print("Event Item --> ${widget.eventItem.length}");
+    });
     return Scaffold(
         key: _scaffoldKey,
         body: RefreshIndicator(
@@ -176,9 +190,9 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                 children: [
                   Container(
                       color: Colors.grey[200],
-                      child: isVisible == false ? eventItem.length != 0
+                      child: Constant.isVisible == false ? widget.eventItem.length != 0
                           ? FutureBuilder(
-                        future: initialLoad,
+                        future: widget.initialLoad,
                         builder: (context, snapshot) {
                           switch (snapshot.connectionState) {
                             case ConnectionState.waiting:
@@ -191,8 +205,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                                   borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
                                 ),
                                 child: IncrementallyLoadingListView(
-                                  hasMore: () => hasMoreItems,
-                                  itemCount: () => eventItem.length,
+                                  hasMore: () => widget.hasMoreItems,
+                                  itemCount: () => widget.eventItem.length,
                                   loadMore: () async {
                                     await _loadMoreItems();
                                   },
@@ -212,7 +226,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                                   physics: AlwaysScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
                                     lastIndex = index;
-                                    if ((loadingMore ?? false) && index == eventItem.length-1) {
+                                    if ((loadingMore ?? false) && index == widget.eventItem.length-1) {
                                       return Column(
                                         children: <Widget>[
                                           model.slideMenu(index),
@@ -280,7 +294,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                                             fontFamily: "poppins_regular"),
                                         onChanged: (val){
                                           setState(() {
-                                             eventItem = eventItem.where((element) => element.summary.contains(_searchText) || element.description.contains(_searchText)).toList();
+                                             widget.eventItem = widget.eventItem.where((element) => element.summary.contains(_searchText) || element.description.contains(_searchText)).toList();
                                           });
                                         },
                                       ),
@@ -321,10 +335,10 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
               onRefresh: () {
                 print('onRefresh --> ${access_token}');
-                eventItem.clear();
+                widget.eventItem.clear();
                 searchEventList.clear();
                 itemList.clear();
-                isVisible = true;
+                Constant.isVisible = true;
                 return refreshToken();
               }),
 
@@ -347,7 +361,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         setState(() {
           // _isSearch = true;
           _searchText = "";
-          eventItem = searchEventList;
+          widget.eventItem = searchEventList;
         });
       } else {
         setState(() {
@@ -391,7 +405,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         selected = value;
         if(menu[0].title==value){
           setState(() {
-            eventItem.sort((a,b)=> a.start.dateTime.compareTo(b.start.dateTime));
+            widget.eventItem.sort((a,b)=> a.start.dateTime.compareTo(b.start.dateTime));
             menu.where((element) => element.isVisible != element.isVisible);
             menu.forEach((element) => element.isVisible = false);
             menu[0].isVisible = true;
@@ -399,7 +413,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         }
         else if(menu[1].title==value){
           setState(() {
-            eventItem.sort((a,b)=> b.start.dateTime.compareTo(a.start.dateTime));
+            widget.eventItem.sort((a,b)=> b.start.dateTime.compareTo(a.start.dateTime));
             menu.where((element) => element.isVisible != element.isVisible);
             menu.forEach((element) => element.isVisible = false);
             menu[1].isVisible = true;
@@ -412,9 +426,9 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
             return CustomDialogBox(onTap: (fromDate, toDate){
               print('form:::::${fromDate.isUtc}');
               print('to:::::${toDate.isUtc}');
-              eventItem.clear();
+              widget.eventItem.clear();
               searchEventList.clear();
-              hasMoreItems = true;
+              widget.hasMoreItems = true;
               return presenter.getCalendarEvent(pageToken: map['nextPageToken'],
                   maxResult: 10, minTime: fromDate, maxTime: toDate, isPageToken: false);
             },);
@@ -423,10 +437,10 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         }
         else{
          setState(() {
-           eventItem.clear();
+           widget.eventItem.clear();
            itemList.clear();
            searchEventList.clear();
-           isVisible = true;
+           Constant.isVisible = true;
            refreshToken();
            menu.forEach((element) {
              setState(() {
@@ -487,7 +501,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
               child: Text(Resources.from(context, Constant.languageCode).strings.no),
               onPressed: () {
                 // setState(() {
-                //     eventItem.insert(index, eventItem[index]);
+                //     widget.eventItem.insert(index, widget.eventItem[index]);
                 // });
                 Navigator.of(context).pop();
               },
@@ -495,7 +509,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
             FlatButton(
               child: Text(Resources.from(context, Constant.languageCode).strings.yes),
               onPressed: () {
-                presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
+                presenter.deleteEvent(widget.eventItem[index].id, widget.eventItem[index].creator.email);
                 Navigator.pop(context, true);
               },
             ),
@@ -782,7 +796,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   onShowLoader() {
     print("Show Loader");
     setState(() {
-      isVisible = true;
+      Constant.isVisible = true;
       loader = true;
     });
   }
@@ -791,7 +805,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   onHideLoader() {
     print("Hide Loader");
     setState(() {
-      isVisible = false;
+      Constant.isVisible = false;
       loader = false;
     });
   }
@@ -805,7 +819,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     //     seconds: 3);
     Constant.showToast(message, Toast.LENGTH_LONG);
     setState(() {
-      isVisible = false;
+      Constant.isVisible = false;
     });
   }
 
@@ -831,17 +845,17 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     setState(() {
       map = calendarResponse;
       List<dynamic> data = response;
-      eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+      widget.eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
       searchEventList.addAll(data.map((e) => EventItem.fromJson(e)).toList());
       // MyAppointmentState();
     });
 
-    if(eventItem.length<=3){
+    if(widget.eventItem.length<=3){
       setState(() {
-        hasMoreItems = false;
+        widget.hasMoreItems = false;
       });
     }
-    print("Length${eventItem.length}");
+    print("Length${widget.eventItem.length}");
   }
 
   Future<String> refreshToken() async {
@@ -870,8 +884,10 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     presenter.attachView(this);
     presenter.getCalendar(googleSignInAuthentication.accessToken);
-    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
-    hasMoreItems = true;
+    setState(() {
+      widget.initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+      widget.hasMoreItems = true;
+    });
 
     return googleSignInAuthentication.accessToken;
   }
@@ -895,13 +911,13 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   @override
   onDelete(delete) {
-    eventItem.removeWhere((element) => element.id == delete);
+    widget.eventItem.removeWhere((element) => element.id == delete);
     // _isVisible = true;
   }
 
   @override
   void isAccept() {
-    eventItem.clear();
+    widget.eventItem.clear();
     presenter.setAppointment(summary: str_summary, endDate: str_EndDate, startDate: str_startDate,
         description: str_description, timeZone: str_timeZone);
 
