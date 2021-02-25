@@ -20,7 +20,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
   MyAppointmentState state;
   HomeState homestate;
   GeoFenceMapState geoFenceMapState;
-  
+
   HomeViewModel({this.state, this.homestate, this.geoFenceMapState});
   bool isVisible;
 
@@ -37,9 +37,9 @@ class HomeViewModel implements IsCreatedOrUpdate {
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
             margin: EdgeInsets.only(top: 20),
-            child:  EventCalendar(eventItem: state.widget.eventItem, dateTime: index),
-      );
-    }
+            child:  EventCalendar(eventItem: state.eventItem, dateTime: index),
+          );
+        }
     );
   }
 
@@ -49,7 +49,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
     LatLng latlng, String openfrom, String address}){
 
     return !isEdit?
-        openfrom=="Home"?
+    openfrom=="Home"?
     showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: homestate.context,
@@ -63,39 +63,34 @@ class HomeViewModel implements IsCreatedOrUpdate {
               builder: (context, scrollController) {
                 return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng);
               });
-        })
-
-        .whenComplete(() => {
-       if(isCreateUpdate){
-         state.widget.eventItem.clear(),
-         state.presenter.getCalendarEvent(maxResult: 10, minTime: DateTime.now().toUtc(),
-             isPageToken: false, pageToken: state.map['nextPageToken']),
-         state.setState(() {
-           Constant.hasMoreItems = true;
-         }),
-       }
+        }).whenComplete(() => {
+      if(isCreateUpdate){
+        state.eventItem.clear(),
+        state.presenter.getCalendarEvent(maxResult: 10, minTime: DateTime.now().toUtc(),
+            isPageToken: false, pageToken: state.map['nextPageToken']),
+        state.setState(() {
+          state.hasMoreItems = true;
+        }),
+      }
     }) :
-        showModalBottomSheet(
-            backgroundColor: Colors.transparent,
-            context: geoFenceMapState.context,
-            isScrollControlled: true,
-            isDismissible: true,
+    showModalBottomSheet(
+        backgroundColor: Colors.transparent,
+        context: geoFenceMapState.context,
+        isScrollControlled: true,
+        isDismissible: true,
 
-            builder: (context) {
-              return DraggableScrollableSheet(
-                  initialChildSize: 0.80,
-                  expand: true,
-                  builder: (context, scrollController) {
-                    return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng);
-                  });
-            })
-            .whenComplete(() => {
-          /*add condition*/
-          if(isCreateUpdate){}
+        builder: (context) {
+          return DraggableScrollableSheet(
+              initialChildSize: 0.80,
+              expand: true,
+              builder: (context, scrollController) {
+                return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng);
+              });
         })
-
-        :
-
+        .whenComplete(() => {
+      /*add condition*/
+      if(isCreateUpdate){}
+    }):
     showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: state.context,
@@ -108,19 +103,19 @@ class HomeViewModel implements IsCreatedOrUpdate {
               expand: true,
               builder: (context, scrollController) {
                 return MyBottomSheet(isEdit: true, address: address,
-                  title: summary, description: description, getStartDate: startDate, getendDate: endDate,
-                  timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, isCalenderID: null);
+                    title: summary, description: description, getStartDate: startDate, getendDate: endDate,
+                    timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, isCalenderID: null);
               });
         })
 
         .whenComplete(() => {
       /*add condition*/
       if(isCreateUpdate){
-        state.widget.eventItem.clear(),
+        state.eventItem.clear(),
         state.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false, pageToken: state.map['nextPageToken']),
 
         state.setState(() {
-          Constant.hasMoreItems = true;
+          state.hasMoreItems = true;
         }),
       }
     });
@@ -131,7 +126,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
   slideMenu(index) {
     return Dismissible(
       direction: DismissDirection.endToStart,
-      key: Key(state.widget.eventItem[index].id),
+      key: Key(state.eventItem[index].id),
 
       // ignore: missing_return
       confirmDismiss: (direction) async {
@@ -158,7 +153,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                       ),
                       onPressed: () {
                         state.setState(() {
-                          state.presenter.deleteEvent(state.widget.eventItem[index].id, state.widget.eventItem[index].creator.email);
+                          state.presenter.deleteEvent(state.eventItem[index].id, state.eventItem[index].creator.email);
                         });
                         Navigator.of(context).pop();
                       },
@@ -195,17 +190,17 @@ class HomeViewModel implements IsCreatedOrUpdate {
         padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom:5),
         child: GestureDetector(
           onTap: () async {
-            detailSheet(state.widget.eventItem[index].start.dateTime);
+            detailSheet(state.eventItem[index].start.dateTime);
 
             // state.dynamicLink = await state.createDynamicLink(
-            //     title: state.widget.eventItem[index].summary,
-            //     desc: state.widget.eventItem[index].description,
-            //     startDate: Constant.getFullDateFormat(state.widget.eventItem[index].start.dateTime),
-            //     endDate: Constant.getFullDateFormat(state.widget.eventItem[index].end.dateTime),
+            //     title: state.eventItem[index].summary,
+            //     desc: state.eventItem[index].description,
+            //     startDate: Constant.getFullDateFormat(state.eventItem[index].start.dateTime),
+            //     endDate: Constant.getFullDateFormat(state.eventItem[index].end.dateTime),
             //     email: state.email,
             //     photoUrl: state.url,
             //     senderName: state.userName,
-            //     timeZone: state.widget.eventItem[index].start.timeZone);
+            //     timeZone: state.eventItem[index].start.timeZone);
             // print("Dynamic Link: $state.dynamicLink");
           },
 
@@ -229,7 +224,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Container(child: Text(state.widget.eventItem[index].summary.toString(),
+                            child: Container(child: Text(state.eventItem[index].summary.toString(),
                                 style: TextStyle(color: Colors.black, fontSize: 14,
                                     fontFamily: "poppins_medium")),),
                           ),
@@ -244,11 +239,11 @@ class HomeViewModel implements IsCreatedOrUpdate {
                                       child: Icon(Icons.edit_outlined,size: 20, color: Colors.black.withOpacity(0.5))),
 
                                   onTap: (){
-                                    openBottomSheetView(description: state.widget.eventItem[index].description,
-                                        summary: state.widget.eventItem[index].summary, startDate: state.widget.eventItem[index].start.dateTime,
-                                        timeZone: state.widget.eventItem[index].start.timeZone, endDate: state.widget.eventItem[index].end.dateTime,
-                                        isEdit: true, eventID: state.widget.eventItem[index].id,
-                                        calenderId: null, latlng: LatLng(21.170240, 72.831062), openfrom: "Edit", address: state.widget.eventItem[index].location);
+                                    openBottomSheetView(description: state.eventItem[index].description,
+                                        summary: state.eventItem[index].summary, startDate: state.eventItem[index].start.dateTime,
+                                        timeZone: state.eventItem[index].start.timeZone, endDate: state.eventItem[index].end.dateTime,
+                                        isEdit: true, eventID: state.eventItem[index].id,
+                                        calenderId: null, latlng: LatLng(21.170240, 72.831062), openfrom: "Edit", address: state.eventItem[index].location);
                                   },
                                 ),
                                 GestureDetector(
@@ -259,17 +254,17 @@ class HomeViewModel implements IsCreatedOrUpdate {
 
                                   onTap: ()async{
                                     state.dynamicLink = await state.createDynamicLink(
-                                        title: state.widget.eventItem[index].summary,
-                                        desc: state.widget.eventItem[index].description,
-                                        startDate: Constant.getFullDateFormat(state.widget.eventItem[index].start.dateTime.toLocal()),
-                                        endDate: Constant.getFullDateFormat(state.widget.eventItem[index].end.dateTime.toLocal()),
+                                        title: state.eventItem[index].summary,
+                                        desc: state.eventItem[index].description,
+                                        startDate: Constant.getFullDateFormat(state.eventItem[index].start.dateTime.toLocal()),
+                                        endDate: Constant.getFullDateFormat(state.eventItem[index].end.dateTime.toLocal()),
                                         email: state.email,
                                         photoUrl: state.url,
                                         senderName: state.userName,
-                                        timeZone: state.widget.eventItem[index].start.timeZone);
+                                        timeZone: state.eventItem[index].start.timeZone);
 
                                     print("Dynamic Link: ${state.dynamicLink}    "
-                                        "startData:::${state.widget.eventItem[index].start.dateTime.toLocal()}");
+                                        "startData:::${state.eventItem[index].start.dateTime.toLocal()}");
 
                                     if (state.dynamicLink != "") {
                                       Share.share(state.dynamicLink.toString());
@@ -291,11 +286,11 @@ class HomeViewModel implements IsCreatedOrUpdate {
                     ),
 
                     Visibility(
-                      visible: state.widget.eventItem[index].description!= null,
+                      visible: state.eventItem[index].description!= null,
                       child: Container(
                         padding: EdgeInsets.only(left: 15, right: 15, top: 10),
                         child: ReadMoreText(
-                          state.widget.eventItem[index].description??" ",
+                          state.eventItem[index].description??" ",
                           trimLines: 3,
                           colorClickableText: Colors.pink,
                           trimMode: TrimMode.Line,
@@ -308,7 +303,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
 
 
                     Visibility(
-                      visible: state.widget.eventItem[index].location!= null,
+                      visible: state.eventItem[index].location!= null,
                       child: Container(
                         // margin: EdgeInsets.only(),
                         padding: EdgeInsets.only(left: 10, top: 10),
@@ -318,7 +313,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                           children: [
                             Icon(Icons.location_on_outlined, size: 18, color: Colors.grey),
                             SizedBox(width: 3),
-                            Expanded(child: Text(state.widget.eventItem[index].location??" ",
+                            Expanded(child: Text(state.eventItem[index].location??" ",
                                 style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5))))
                           ],
                         ),
@@ -346,8 +341,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
                                       Container(
                                         margin: EdgeInsets.only(left: 7,top: 1),
                                         child: Text(
-                                            DateFormat('EE, d MMM, yyyy').format(state.widget.eventItem[index].start.dateTime.toLocal()) + "  " +
-                                                Constant.getTimeFormat(state.widget.eventItem[index].start.dateTime.toLocal()),
+                                            DateFormat('EE, d MMM, yyyy').format(state.eventItem[index].start.dateTime.toLocal()) + "  " +
+                                                Constant.getTimeFormat(state.eventItem[index].start.dateTime.toLocal()),
                                             style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black)),
                                       ),
                                     ],
@@ -379,8 +374,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
                                       Container(
                                           margin: EdgeInsets.only(left: 7,top: 1),
                                           child: Text(
-                                            DateFormat('EE, d MMM, yyyy').format(state.widget.eventItem[index].end.dateTime.toLocal()) + "  " +
-                                                Constant.getTimeFormat(state.widget.eventItem[index].end.dateTime.toLocal()),
+                                            DateFormat('EE, d MMM, yyyy').format(state.eventItem[index].end.dateTime.toLocal()) + "  " +
+                                                Constant.getTimeFormat(state.eventItem[index].end.dateTime.toLocal()),
                                             style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.7)),
                                           )
                                       ),

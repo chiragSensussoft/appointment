@@ -16,7 +16,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'model/CalendarEvent.dart';
 import 'model/CalendarList.dart';
 
 
@@ -52,9 +51,6 @@ class HomeState extends State<Home> implements OnHomeView{
   FirebaseUser user;
   HomePresenter presenter;
   List<Item> itemList = List.empty(growable: true);
-  List<EventItem> eventItem = List.empty(growable: true);
-  bool hasMoreItems;
-  Future initialLoad;
 
   GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: [
@@ -93,19 +89,14 @@ class HomeState extends State<Home> implements OnHomeView{
     presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     presenter.attachView(this);
     presenter.getCalendar(googleSignInAuthentication.accessToken);
-    setState(() {
-      initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
-
-    });
-
 
     return googleSignInAuthentication.accessToken;
   }
 
 
   void initState() {
-    refreshToken();
     _query();
+    refreshToken();
     controller = ScrollController();
     super.initState();
     setValue();
@@ -141,7 +132,7 @@ class HomeState extends State<Home> implements OnHomeView{
     });
   }
   String text = "English";
-  int selectedIndex = 0;
+  int selectedIndex = 1;
 
 
   void _selectedTab(int index) {
@@ -162,69 +153,69 @@ class HomeState extends State<Home> implements OnHomeView{
         child: Scaffold(
           extendBody: true,
           appBar: PreferredSize(
-            preferredSize: Size.fromHeight(60),
-            child: Container(
-              color: Colors.blue,
-              padding: EdgeInsets.only(left: 10,right: 10),
-              child: GestureDetector(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+              preferredSize: Size.fromHeight(60),
+              child: Container(
+                color: Colors.blue,
+                padding: EdgeInsets.only(left: 10,right: 10),
+                child: GestureDetector(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
 
-                  children: [
-                    Expanded(
-                          child: Row(
-                            children: [
-                              url != null ?CircleAvatar(
-                                backgroundImage: NetworkImage(url),
-                              ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 30),
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            url != null ?CircleAvatar(
+                              backgroundImage: NetworkImage(url),
+                            ):Image.asset('images/ic_defult.png',fit: BoxFit.contain,height: 30),
 
-                              Expanded(
-                                child: Container(
-                                  margin: EdgeInsets.only(left: 10,right: 10),
-                                  child:Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                          child: Text(userName!=''?userName : Resources(context, Constant.languageCode).strings.defaultUser, style: TextStyle(fontSize: 17,color: Colors.white))
-                                      ),
-                                      Container(
-                                          child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12,color: Colors.white))
-                                      ),
-                                    ],
-                                  ),
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.only(left: 10,right: 10),
+                                child:Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                        child: Text(userName!=''?userName : Resources(context, Constant.languageCode).strings.defaultUser, style: TextStyle(fontSize: 17,color: Colors.white))
+                                    ),
+                                    Container(
+                                        child: Text(email!=''?email:" ", style: TextStyle(fontSize: 12,color: Colors.white))
+                                    ),
+                                  ],
                                 ),
-                              )
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+
+                      GestureDetector(
+                        child: Container(
+                          // width: 80,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                margin: EdgeInsets.only(right: 5),
+                                child: Text(text,textAlign: TextAlign.center,style: TextStyle(fontSize: 16,color: Colors.white),),
+                              ),
+                              Container(
+                                child: Icon(Icons.language,color: Colors.white.withOpacity(0.9),),
+                              ),
                             ],
                           ),
                         ),
-
-                    GestureDetector(
-                          child: Container(
-                            // width: 80,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  margin: EdgeInsets.only(right: 5),
-                                  child: Text(text,textAlign: TextAlign.center,style: TextStyle(fontSize: 16,color: Colors.white),),
-                                ),
-                                Container(
-                                  child: Icon(Icons.language,color: Colors.white.withOpacity(0.9),),
-                                ),
-                              ],
-                            ),
-                          ),
-                          onTap: () {
-                            _showPopupMenu(context);
-                          },
-                        )
-                  ],
+                        onTap: () {
+                          _showPopupMenu(context);
+                        },
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            )
+              )
           ),
 
           body: _widgetOptions(selectedIndex),
@@ -263,7 +254,7 @@ class HomeState extends State<Home> implements OnHomeView{
     switch(index){
       case 0:
         return Container(
-          child: MyAppointment(controller: controller,eventItem: eventItem,hasMoreItems: hasMoreItems,initialLoad: initialLoad,),
+          child: MyAppointment(controller),
         );
         break;
 
@@ -282,7 +273,7 @@ class HomeState extends State<Home> implements OnHomeView{
     await showMenu(
       context: context,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10)
+          borderRadius: BorderRadius.circular(10)
       ),
       position: RelativeRect.fromLTRB(MediaQuery.of(context).size.width, 45, 0, 00),
       items: [
@@ -290,7 +281,7 @@ class HomeState extends State<Home> implements OnHomeView{
           value: 0,
           child: Container(
             alignment: Alignment.center,
-              child: Text('English',style: TextStyle(fontSize: 12,color: text =="English"?Colors.blue:Colors.black),),
+            child: Text('English',style: TextStyle(fontSize: 12,color: text =="English"?Colors.blue:Colors.black),),
           ),
           // enabled: enable1,
         ),
@@ -348,21 +339,21 @@ class HomeState extends State<Home> implements OnHomeView{
     setState(() {
       switch(_sharedPreferences.getString(Constant().languageKey)){
         case 'gu':
-         // setState(() {
-         //   text = "ગુજરાતી";
-         //   selectedIndex =2;
-         // });
-         //  break;
+        // setState(() {
+        //   text = "ગુજરાતી";
+        //   selectedIndex =2;
+        // });
+        //  break;
           return text = "ગુજરાતી";
         case 'hi':
-          // text = "हिन्दी";
-          // selectedIndex = 1;
-          // break;
+        // text = "हिन्दी";
+        // selectedIndex = 1;
+        // break;
           return text = "हिन्दी";
         default:
-          // text = "English";
-          // selectedIndex = 0;
-          // break;
+        // text = "English";
+        // selectedIndex = 0;
+        // break;
           return text = "English";
       }
     });
@@ -384,43 +375,19 @@ class HomeState extends State<Home> implements OnHomeView{
 
   }
 
-  Map<String, dynamic> map;
-
   @override
   onEventSuccess(response, calendarResponse) {
-    print("success ${response}");
-    eventItem.clear();
-    setState(() {
-      map = calendarResponse;
-      List<dynamic> data = response;
-      eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
-      // MyAppointmentState();
-    });
-    hasMoreItems = true;
 
-    if(eventItem.length<=3){
-      setState(() {
-        hasMoreItems = false;
-      });
-    }
-    print("Length${eventItem.length}");
   }
-
 
   @override
   onHideLoader() {
-    print("Hide Loader");
-    setState(() {
-      Constant.isVisible = false;
-    });
+
   }
 
   @override
   onShowLoader() {
-    print("Show Loader");
-    setState(() {
-      Constant.isVisible = true;
-    });
+
   }
 
   @override

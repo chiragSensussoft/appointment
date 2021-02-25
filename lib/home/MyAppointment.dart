@@ -30,13 +30,11 @@ import 'OnHomeView.dart';
 
 class MyAppointment extends StatefulWidget {
   ScrollController controller;
-  List<EventItem> eventItem = List.empty(growable: true);
+  List<EventItem> eventItem;
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> searchEventList;
-  bool hasMoreItems;
-  Future initialLoad;
 
-  MyAppointment({this.controller,this.eventItem,this.hasMoreItems,this.initialLoad});
+  MyAppointment(this.controller);
 
   @override
   MyAppointmentState createState() => MyAppointmentState();
@@ -98,9 +96,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     super.initState();
     fetchLinkData();
     init();
-    // refreshToken();
-    presenter = HomePresenter(this);
-    presenter.attachView(this);
+    refreshToken();
     _query();
 
     // _isVisible = true;
@@ -159,188 +155,178 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   int lastIndex;
 
   Future _loadMoreItems() async {
-    if(widget.controller.position.pixels == widget.controller.position.maxScrollExtent && widget.hasMoreItems == true){
-      print(" widget.hasMoreItems In");
-      widget.hasMoreItems = false;
+    if(widget.controller.position.pixels == widget.controller.position.maxScrollExtent || hasMoreItems == true){
       await presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),
           isPageToken: true,pageToken: map['nextPageToken']);
-      print("widget.hasMoreItems out");
     }
     else{
-      setState(() {
-        widget.hasMoreItems = false;
-      });
-      // print("widget.hasMoreItems ${widget.hasMoreItems}");
+      hasMoreItems = false;
     }
-    widget.hasMoreItems = map['nextPageToken'] != null;
+    hasMoreItems = map['nextPageToken'] != null;
   }
 
   @override
   Widget build(BuildContext context) {
     model = HomeViewModel(state: this);
-    setState(() {
-      // widget.eventItem.clear();
-      // widget.eventItem = widget.widget.eventItem;
-      print("Event Item --> ${widget.eventItem.length}");
-    });
-    return Scaffold(
-        key: _scaffoldKey,
-        body: RefreshIndicator(
-              child: Stack(
-                children: [
-                  Container(
-                      color: Colors.grey[200],
-                      child: Constant.isVisible == false ? widget.eventItem.length != 0
-                          ? FutureBuilder(
-                        future: widget.initialLoad,
-                        builder: (context, snapshot) {
-                          switch (snapshot.connectionState) {
-                            case ConnectionState.waiting:
-                              return Center(child: CircularProgressIndicator());
-                            case ConnectionState.done:
-                              return Container(
-                                margin: EdgeInsets.only(top: 35),
-                                padding: EdgeInsets.only(top: 20),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
-                                ),
-                                child: IncrementallyLoadingListView(
-                                  hasMore: () => widget.hasMoreItems,
-                                  itemCount: () => widget.eventItem.length,
-                                  loadMore: () async {
-                                    await _loadMoreItems();
-                                  },
-                                  onLoadMore: () {
-                                    setState(() {
-                                      loadingMore = true;
-                                    });
-                                  },
-                                  onLoadMoreFinished: () {
-                                    setState(() {
-                                      loadingMore = false;
-                                    });
-                                  },
-                                  controller: widget.controller,
-                                  loadMoreOffsetFromBottom: 2,
-                                  shrinkWrap: false,
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    lastIndex = index;
-                                    if ((loadingMore ?? false) && index == widget.eventItem.length-1) {
-                                      return Column(
-                                        children: <Widget>[
-                                          model.slideMenu(index),
-                                          PlaceholderItemCard(index: index,)
-                                        ],
-                                      );
-                                    }
-                                    return model.slideMenu(index);
-                                  },
-                                ),
-                              );
-                            default:
-                              return Text('Something went wrong');
-                          }
-                        },
 
-                      )
-                          : Center(child: Text("No Event Created"))
-                          :  Container(
-                        margin: EdgeInsets.only(top: 55),
-                        child: ListView.builder(
-                        itemCount: 40,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (_,index){
-                            return PlaceholderItemCard(index: index);
-                        },
-                      ),
-                      )
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(top: 10, left: 10, right: 10),
-                    height: 40,
-                    child: Row(
-                      children: [
-                        Container(
-                          child: Expanded(
-                            child:Material(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Padding(
-                                        padding: EdgeInsets.only(left: 15, top: 5),
-                                        child: Icon(Icons.search)),
-                                    Expanded(
-                                      child: TextFormField(
-                                        cursorColor: Colors.blue,
-                                        controller: search,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.only(left: 5,right: 20,bottom: 5),
-                                          border: InputBorder.none,
-                                          hintText: "Search event here...",
-                                          hintStyle:TextStyle(color: Color(0xff707070),
-                                            fontSize: 12,
-                                            fontFamily: "poppins_medium",),),
-                                        style: TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 12,
-                                            fontFamily: "poppins_regular"),
-                                        onChanged: (val){
-                                          setState(() {
-                                             widget.eventItem = widget.eventItem.where((element) => element.summary.contains(_searchText) || element.description.contains(_searchText)).toList();
-                                          });
-                                        },
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
+    return Scaffold(
+      key: _scaffoldKey,
+      body: RefreshIndicator(
+          child: Stack(
+            children: [
+              Container(
+                  color: Colors.grey[200],
+                  child: isVisible == false ? eventItem.length != 0
+                      ? FutureBuilder(
+                    future: initialLoad,
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                          return Center(child: CircularProgressIndicator());
+                        case ConnectionState.done:
+                          return Container(
+                            margin: EdgeInsets.only(top: 35),
+                            padding: EdgeInsets.only(top: 20),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
+                            ),
+                            child: IncrementallyLoadingListView(
+                              hasMore: () => hasMoreItems,
+                              itemCount: () => eventItem.length,
+                              loadMore: () async {
+                                await _loadMoreItems();
+                              },
+                              onLoadMore: () {
+                                setState(() {
+                                  loadingMore = true;
+                                });
+                              },
+                              onLoadMoreFinished: () {
+                                setState(() {
+                                  loadingMore = false;
+                                });
+                              },
+                              controller: widget.controller,
+                              loadMoreOffsetFromBottom: 2,
+                              shrinkWrap: false,
+                              physics: AlwaysScrollableScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                lastIndex = index;
+                                if ((loadingMore ?? false) && index == eventItem.length-1) {
+                                  return Column(
+                                    children: <Widget>[
+                                      model.slideMenu(index),
+                                      PlaceholderItemCard(index: index,)
+                                    ],
+                                  );
+                                }
+                                return model.slideMenu(index);
+                              },
+                            ),
+                          );
+                        default:
+                          return Text('Something went wrong');
+                      }
+                    },
+
+                  )
+                      : Center(child: Text("No Event Created"))
+                      :  Container(
+                    margin: EdgeInsets.only(top: 55),
+                    child: ListView.builder(
+                      itemCount: 40,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (_,index){
+                        return PlaceholderItemCard(index: index);
+                      },
+                    ),
+                  )
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 10, left: 10, right: 10),
+                height: 40,
+                child: Row(
+                  children: [
+                    Container(
+                      child: Expanded(
+                        child:Material(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                    padding: EdgeInsets.only(left: 15, top: 5),
+                                    child: Icon(Icons.search)),
+                                Expanded(
+                                  child: TextFormField(
+                                    cursorColor: Colors.blue,
+                                    controller: search,
+                                    decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.only(left: 5,right: 20,bottom: 5),
+                                      border: InputBorder.none,
+                                      hintText: "Search event here...",
+                                      hintStyle:TextStyle(color: Color(0xff707070),
+                                        fontSize: 12,
+                                        fontFamily: "poppins_medium",),),
+                                    style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                        fontFamily: "poppins_regular"),
+                                    onChanged: (val){
+                                      setState(() {
+                                        eventItem = eventItem.where((element) => element.summary.contains(_searchText) || element.description.contains(_searchText)).toList();
+                                      });
+                                    },
+                                  ),
+                                )
+                              ],
                             ),
                           ),
                         ),
-                        GestureDetector(
-                          child: Container(
-                            margin: EdgeInsets.only(left: 10),
-                            child: Material(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)
-                              ),
-                              child: Container(
-                                height: 40,
-                                width: 40,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: EdgeInsets.all(7),
-                                child: SvgPicture.asset("images/filter.svg",height: 30,width: 20,),
-                              ),
-                            ),
-                          ),
-                          onTap: (){
-                            _showPopupMenu(context);
-                          },
-                        )
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                    GestureDetector(
+                      child: Container(
+                        margin: EdgeInsets.only(left: 10),
+                        child: Material(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                          child: Container(
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.all(7),
+                            child: SvgPicture.asset("images/filter.svg",height: 30,width: 20,),
+                          ),
+                        ),
+                      ),
+                      onTap: (){
+                        _showPopupMenu(context);
+                      },
+                    )
+                  ],
+                ),
               ),
+            ],
+          ),
 
-              onRefresh: () {
-                print('onRefresh --> ${access_token}');
-                widget.eventItem.clear();
-                searchEventList.clear();
-                itemList.clear();
-                Constant.isVisible = true;
-                return refreshToken();
-              }),
+          onRefresh: () {
+            print('onRefresh --> ${access_token}');
+            searchEventList.clear();
+            itemList.clear();
+            isVisible = true;
+            eventItem.clear();
+            return refreshToken();
+          }),
 
       // floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       // floatingActionButton: _isVisible ? FloatingActionButton(
@@ -361,7 +347,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         setState(() {
           // _isSearch = true;
           _searchText = "";
-          widget.eventItem = searchEventList;
+          eventItem = searchEventList;
         });
       } else {
         setState(() {
@@ -389,7 +375,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
               Container(
                   alignment: Alignment.center,
                   child: e.isVisible ? Text(e.title,style: TextStyle(color:Colors.blue)):
-                      Text(e.title,)
+                  Text(e.title,)
               )
             ],
           ),
@@ -405,7 +391,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         selected = value;
         if(menu[0].title==value){
           setState(() {
-            widget.eventItem.sort((a,b)=> a.start.dateTime.compareTo(b.start.dateTime));
+            eventItem.sort((a,b)=> a.start.dateTime.compareTo(b.start.dateTime));
             menu.where((element) => element.isVisible != element.isVisible);
             menu.forEach((element) => element.isVisible = false);
             menu[0].isVisible = true;
@@ -413,7 +399,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         }
         else if(menu[1].title==value){
           setState(() {
-            widget.eventItem.sort((a,b)=> b.start.dateTime.compareTo(a.start.dateTime));
+            eventItem.sort((a,b)=> b.start.dateTime.compareTo(a.start.dateTime));
             menu.where((element) => element.isVisible != element.isVisible);
             menu.forEach((element) => element.isVisible = false);
             menu[1].isVisible = true;
@@ -426,9 +412,9 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
             return CustomDialogBox(onTap: (fromDate, toDate){
               print('form:::::${fromDate.isUtc}');
               print('to:::::${toDate.isUtc}');
-              widget.eventItem.clear();
+              eventItem.clear();
               searchEventList.clear();
-              widget.hasMoreItems = true;
+              hasMoreItems = true;
               return presenter.getCalendarEvent(pageToken: map['nextPageToken'],
                   maxResult: 10, minTime: fromDate, maxTime: toDate, isPageToken: false);
             },);
@@ -436,18 +422,18 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
           );
         }
         else{
-         setState(() {
-           widget.eventItem.clear();
-           itemList.clear();
-           searchEventList.clear();
-           Constant.isVisible = true;
-           refreshToken();
-           menu.forEach((element) {
-             setState(() {
-               element.isVisible = false;
-             });
-           });
-         });
+          setState(() {
+            eventItem.clear();
+            itemList.clear();
+            searchEventList.clear();
+            isVisible = true;
+            refreshToken();
+            menu.forEach((element) {
+              setState(() {
+                element.isVisible = false;
+              });
+            });
+          });
         }
       }
     });
@@ -501,7 +487,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
               child: Text(Resources.from(context, Constant.languageCode).strings.no),
               onPressed: () {
                 // setState(() {
-                //     widget.eventItem.insert(index, widget.eventItem[index]);
+                //     eventItem.insert(index, eventItem[index]);
                 // });
                 Navigator.of(context).pop();
               },
@@ -509,7 +495,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
             FlatButton(
               child: Text(Resources.from(context, Constant.languageCode).strings.yes),
               onPressed: () {
-                presenter.deleteEvent(widget.eventItem[index].id, widget.eventItem[index].creator.email);
+                presenter.deleteEvent(eventItem[index].id, eventItem[index].creator.email);
                 Navigator.pop(context, true);
               },
             ),
@@ -588,135 +574,135 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         context: context,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(20),topLeft: Radius.circular(20))),
         builder: (_){
-        return Material(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(20),topLeft: Radius.circular(20))),
-          child: Container(
-            padding: EdgeInsets.only(left: 20, right: 20, top: 20),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    alignment: Alignment.center,
-                    child: Text(Resources.from(context, Constant.languageCode).strings.createNewEvent,
-                        style: TextStyle(
-                            fontSize: 16, fontFamily: "poppins_medium")),
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(height: 20),
-                      Container(
-                        child: CircleAvatar(
-                          backgroundImage: NetworkImage(senderPhoto),
-                        ),
-                      ),
-                      SizedBox(width: 15),
-                      Container(
-                        child: Text(senderName,
-                            style: TextStyle(
-                                fontSize: 16, fontFamily: "poppins_medium")),
-                      )
-                    ],
-                  ),
-                  SizedBox(height: 15),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    child: Text(summary,
-                        style: TextStyle(
-                            fontSize: 14, fontFamily: "poppins_regular")),
-                  ),
-                  SizedBox(height: 15),
-                  Visibility(
-                    visible: description!=null,
-                    child: Container(
-                      alignment: Alignment.centerLeft,
-                      child: ReadMoreText(
-                        description,
-                        trimLines: 3,
-                        colorClickableText: Colors.pink,
-                        trimMode: TrimMode.Line,
-                        trimCollapsedText: Resources.from(context, Constant.languageCode).strings.showMore,
-                        trimExpandedText: Resources.from(context, Constant.languageCode).strings.showLess,
-                        style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
-                      ),
-
+          return Material(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(20),topLeft: Radius.circular(20))),
+            child: Container(
+              padding: EdgeInsets.only(left: 20, right: 20, top: 20),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      child: Text(Resources.from(context, Constant.languageCode).strings.createNewEvent,
+                          style: TextStyle(
+                              fontSize: 16, fontFamily: "poppins_medium")),
                     ),
-                  ),
-                  SizedBox(height: 15),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 10),
-                    child:Column(
+                    Row(
                       children: [
+                        SizedBox(height: 20),
                         Container(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      height:10,
-                                      width: 10,
-                                      decoration: BoxDecoration(
-                                          color: Colors.blue,
-                                          borderRadius: BorderRadius.circular(60)
-                                      ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.only(left: 7,top: 1),
-                                      child: Text(
-                                          DateFormat('EE, d MMM, yyyy').format(DateTime.parse(sDate)),
-                                          style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  Container(
-                                    margin: EdgeInsets.only(left: 4.5),
-                                    alignment: Alignment.centerLeft,
-                                    height: 20,
-                                    width: 1,
-                                    color: Colors.grey,
-                                  ),
-                                ],
-                              ),
-
-                              Container(
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      height:10,
-                                      width: 10,
-                                      decoration: BoxDecoration(
-                                          color: Colors.grey,
-                                          borderRadius: BorderRadius.circular(60)
-                                      ),
-                                    ),
-
-                                    Container(
-                                        margin: EdgeInsets.only(left: 7,top: 1),
-                                        child: Text(
-                                          DateFormat('EE, d MMM, yyyy').format(DateTime.parse(eDate)),
-                                          style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.7)),
-                                        )
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          child: CircleAvatar(
+                            backgroundImage: NetworkImage(senderPhoto),
                           ),
+                        ),
+                        SizedBox(width: 15),
+                        Container(
+                          child: Text(senderName,
+                              style: TextStyle(
+                                  fontSize: 16, fontFamily: "poppins_medium")),
                         )
                       ],
                     ),
-                  ),
+                    SizedBox(height: 15),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(summary,
+                          style: TextStyle(
+                              fontSize: 14, fontFamily: "poppins_regular")),
+                    ),
+                    SizedBox(height: 15),
+                    Visibility(
+                      visible: description!=null,
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        child: ReadMoreText(
+                          description,
+                          trimLines: 3,
+                          colorClickableText: Colors.pink,
+                          trimMode: TrimMode.Line,
+                          trimCollapsedText: Resources.from(context, Constant.languageCode).strings.showMore,
+                          trimExpandedText: Resources.from(context, Constant.languageCode).strings.showLess,
+                          style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
+                        ),
 
-                  SizedBox(height: 20),
+                      ),
+                    ),
+                    SizedBox(height: 15),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 10),
+                      child:Column(
+                        children: [
+                          Container(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height:10,
+                                        width: 10,
+                                        decoration: BoxDecoration(
+                                            color: Colors.blue,
+                                            borderRadius: BorderRadius.circular(60)
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(left: 7,top: 1),
+                                        child: Text(
+                                            DateFormat('EE, d MMM, yyyy').format(DateTime.parse(sDate)),
+                                            style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(left: 4.5),
+                                      alignment: Alignment.centerLeft,
+                                      height: 20,
+                                      width: 1,
+                                      color: Colors.grey,
+                                    ),
+                                  ],
+                                ),
 
-                  ProgressButton(isAccept: this, text: Resources.from(context,
-                      Constant.languageCode).strings.accept, formKey:  null, isVisible: true),
+                                Container(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height:10,
+                                        width: 10,
+                                        decoration: BoxDecoration(
+                                            color: Colors.grey,
+                                            borderRadius: BorderRadius.circular(60)
+                                        ),
+                                      ),
 
-                  SizedBox(height: 10),
+                                      Container(
+                                          margin: EdgeInsets.only(left: 7,top: 1),
+                                          child: Text(
+                                            DateFormat('EE, d MMM, yyyy').format(DateTime.parse(eDate)),
+                                            style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.7)),
+                                          )
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 20),
+
+                    ProgressButton(isAccept: this, text: Resources.from(context,
+                        Constant.languageCode).strings.accept, formKey:  null, isVisible: true),
+
+                    SizedBox(height: 10),
                   ],
                 ),
               ),
@@ -775,20 +761,20 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   showAlertDialog(summary){
     return showDialog(
-      context: context,
-      builder: (_){
-        return AlertDialog(
-          title: Text(summary,style: TextStyle(color: Colors.black,fontFamily: "poppins_medium",fontSize: 14),),
-          actions: [
-            TextButton(
-              child: Text(Resources.from(context, Constant.languageCode).strings.okay),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      }
+        context: context,
+        builder: (_){
+          return AlertDialog(
+            title: Text(summary,style: TextStyle(color: Colors.black,fontFamily: "poppins_medium",fontSize: 14),),
+            actions: [
+              TextButton(
+                child: Text(Resources.from(context, Constant.languageCode).strings.okay),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        }
     );
   }
 
@@ -796,7 +782,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   onShowLoader() {
     print("Show Loader");
     setState(() {
-      Constant.isVisible = true;
+      isVisible = true;
       loader = true;
     });
   }
@@ -805,7 +791,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   onHideLoader() {
     print("Hide Loader");
     setState(() {
-      Constant.isVisible = false;
+      isVisible = false;
       loader = false;
     });
   }
@@ -819,7 +805,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     //     seconds: 3);
     Constant.showToast(message, Toast.LENGTH_LONG);
     setState(() {
-      Constant.isVisible = false;
+      isVisible = false;
     });
   }
 
@@ -845,17 +831,17 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     setState(() {
       map = calendarResponse;
       List<dynamic> data = response;
-      widget.eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+      eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
       searchEventList.addAll(data.map((e) => EventItem.fromJson(e)).toList());
       // MyAppointmentState();
     });
 
-    if(widget.eventItem.length<=3){
+    if(eventItem.length<=3){
       setState(() {
-        widget.hasMoreItems = false;
+        hasMoreItems = false;
       });
     }
-    print("Length${widget.eventItem.length}");
+    print("Length${eventItem.length}");
   }
 
   Future<String> refreshToken() async {
@@ -884,10 +870,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     presenter.attachView(this);
     presenter.getCalendar(googleSignInAuthentication.accessToken);
-    setState(() {
-      widget.initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
-      widget.hasMoreItems = true;
-    });
+    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+    hasMoreItems = true;
 
     return googleSignInAuthentication.accessToken;
   }
@@ -911,13 +895,13 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   @override
   onDelete(delete) {
-    widget.eventItem.removeWhere((element) => element.id == delete);
+    eventItem.removeWhere((element) => element.id == delete);
     // _isVisible = true;
   }
 
   @override
   void isAccept() {
-    widget.eventItem.clear();
+    eventItem.clear();
     presenter.setAppointment(summary: str_summary, endDate: str_EndDate, startDate: str_startDate,
         description: str_description, timeZone: str_timeZone);
 
@@ -943,65 +927,65 @@ class PlaceholderItemCard extends StatelessWidget {
         child: Shimmer.fromColors(child: Padding(
           padding: EdgeInsets.only(left: 0, top: 0, right: 0, bottom:0),
           child: GestureDetector(
-           child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: EdgeInsets.only(top: 8, bottom: 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+            child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding: EdgeInsets.only(top: 8, bottom: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
 
-                    children: [
-                      SizedBox(height: 5),
-                      Container(
-                        padding: EdgeInsets.only(left: 18, right: 18),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              height: 5,
-                              width: 50,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(2),
-                                  color: Colors.white
-                              ),
+                  children: [
+                    SizedBox(height: 5),
+                    Container(
+                      padding: EdgeInsets.only(left: 18, right: 18),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            height: 5,
+                            width: 50,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(2),
+                                color: Colors.white
                             ),
-                            Container(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                 Container(
-                                   height: 15,
-                                   width: 15,
-                                   decoration: BoxDecoration(
-                                     borderRadius: BorderRadius.circular(2),
-                                     color: Colors.white
-                                   ),
-                                 ),
-                                  Container(
-                                    margin: EdgeInsets.only(left: 5),
-                                    height: 15,
-                                    width: 15,
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(2),
-                                        color: Colors.white
-                                    ),
+                          ),
+                          Container(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Container(
+                                  height: 15,
+                                  width: 15,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(2),
+                                      color: Colors.white
                                   ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(left: 5),
+                                  height: 15,
+                                  width: 15,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(2),
+                                      color: Colors.white
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
                       ),
-                      SizedBox(height: 3),
-                      Divider(
-                        color: Colors.white,
-                        thickness: 0.3,
-                        height: 0.3,
-                      ),
-                      SizedBox(height: 5),
-                      Container(
+                    ),
+                    SizedBox(height: 3),
+                    Divider(
+                      color: Colors.white,
+                      thickness: 0.3,
+                      height: 0.3,
+                    ),
+                    SizedBox(height: 5),
+                    Container(
                         padding: EdgeInsets.only(left: 18, right: 18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1025,83 +1009,83 @@ class PlaceholderItemCard extends StatelessWidget {
                             ),
                           ],
                         )
-                      ),
-                      SizedBox(height: 5),
+                    ),
+                    SizedBox(height: 5),
 
-                      Container(
-                        margin: EdgeInsets.only(left: 18,bottom: 10),
-                        child:Column(
-                          children: [
-                            Container(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          height:10,
-                                          width: 10,
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(60)
-                                          ),
-                                        ),
-                                        Container(
-                                          height: 5,
-                                          margin: EdgeInsets.only(left: 7),
-                                          width: MediaQuery.of(context).size.width * 0.50,
-                                          decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(2),
-                                              color: Colors.white
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Row(
+                    Container(
+                      margin: EdgeInsets.only(left: 18,bottom: 10),
+                      child:Column(
+                        children: [
+                          Container(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  child: Row(
                                     children: [
                                       Container(
-                                        margin: EdgeInsets.only(left: 4.5),
-                                        alignment: Alignment.centerLeft,
-                                        height: 20,
-                                        width: 1,
-                                        color: Colors.white,
+                                        height:10,
+                                        width: 10,
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(60)
+                                        ),
+                                      ),
+                                      Container(
+                                        height: 5,
+                                        margin: EdgeInsets.only(left: 7),
+                                        width: MediaQuery.of(context).size.width * 0.50,
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(2),
+                                            color: Colors.white
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  Container(
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          height:10,
-                                          width: 10,
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(60)
-                                          ),
-                                        ),
-                                        Container(
-                                          height: 5,
-                                          margin: EdgeInsets.only(left: 7),
-                                          width: MediaQuery.of(context).size.width * 0.50,
-                                          decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(2),
-                                              color: Colors.white
-                                          ),
-                                        ),
-                                      ],
+                                ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(left: 4.5),
+                                      alignment: Alignment.centerLeft,
+                                      height: 20,
+                                      width: 1,
+                                      color: Colors.white,
                                     ),
+                                  ],
+                                ),
+                                Container(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height:10,
+                                        width: 10,
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(60)
+                                        ),
+                                      ),
+                                      Container(
+                                        height: 5,
+                                        margin: EdgeInsets.only(left: 7),
+                                        width: MediaQuery.of(context).size.width * 0.50,
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(2),
+                                            color: Colors.white
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
                       ),
-                    ],
-                  )
-              ),
+                    ),
+                  ],
+                )
+            ),
           ),
         ),
           baseColor: Colors.grey[300],
