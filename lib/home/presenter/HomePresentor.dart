@@ -20,7 +20,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
   }
 
       Future setAppointment({String description, String summary,String startDate,
-        String endDate,String timeZone, LatLng latLng, String address}) async {
+        String endDate,String timeZone, LatLng latLng, String address,String coords}) async {
 
         print("get_address::::::$address    $token");
 
@@ -39,7 +39,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
               },
               "summary": summary,
               "description": description,
-              "location": address
+              "location": coords
             }) :
 
             jsonEncode({
@@ -127,7 +127,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
   }
 
   Future updatevent({String id, String email, String description, String summary, String startDate,
-    String endDate,String timeZone, String address})async{
+    String endDate,String timeZone, String address,String coords})async{
 
     print("Token $token");
     print("description $description");
@@ -160,7 +160,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
           },
           "summary": summary,
           "description": description,
-          "location": address
+          "location": coords
         }
         ) :
 

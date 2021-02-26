@@ -1,4 +1,5 @@
 import 'package:appointment/google_map/GeoFenceMap.dart';
+import 'package:appointment/home/model/LatLong.dart';
 import 'package:appointment/interface/IsCreatedOrUpdate.dart';
 import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/home/BottomSheet.dart';
@@ -61,7 +62,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
               initialChildSize: 0.80,
               expand: true,
               builder: (context, scrollController) {
-                return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng);
+
+                return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this);
               });
         }).whenComplete(() => {
       if(isCreateUpdate){
@@ -84,6 +86,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
               initialChildSize: 0.80,
               expand: true,
               builder: (context, scrollController) {
+                //Map LatLng
                 return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng);
               });
         }).whenComplete(() => {
@@ -316,7 +319,9 @@ class HomeViewModel implements IsCreatedOrUpdate {
                           children: [
                             Icon(Icons.location_on_outlined, size: 18, color: Colors.grey),
                             SizedBox(width: 3),
-                            Expanded(child: Text(state.eventItem[index].location??" ",
+                            // Expanded(child: Text(state.add[index]??"",
+                            //     style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5))))
+                            Expanded(child: Text(state.eventItem[index].location??"",
                                 style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5))))
                           ],
                         ),
@@ -396,6 +401,200 @@ class HomeViewModel implements IsCreatedOrUpdate {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  pageView(index){
+    return Material(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+
+      child: Container(
+        height: 220,
+          width: MediaQuery.of(geoFenceMapState.context).size.width,
+          padding: EdgeInsets.only(top: 8, bottom: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+
+            children: [
+              SizedBox(height: 5),
+              Container(
+                padding: EdgeInsets.only(left: 15, right: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Container(child: Text(geoFenceMapState.locationEvent[index].summary.toString(),
+                          style: TextStyle(color: Colors.black, fontSize: 14,
+                              fontFamily: "poppins_medium")),),
+                    ),
+                    Container(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          GestureDetector(
+                            child: Padding(
+                                padding: EdgeInsets.only(left: 30),
+                                child: Icon(Icons.edit_outlined,size: 20, color: Colors.black.withOpacity(0.5))),
+
+                            onTap: (){
+                              openBottomSheetView(description: geoFenceMapState.locationEvent[index].description,
+                                  summary: geoFenceMapState.locationEvent[index].summary, startDate: geoFenceMapState.locationEvent[index].start.dateTime,
+                                  timeZone: geoFenceMapState.locationEvent[index].start.timeZone, endDate: geoFenceMapState.locationEvent[index].end.dateTime,
+                                  isEdit: true, eventID: geoFenceMapState.locationEvent[index].id,
+                                  calenderId: null, latlng: LatLng(21.170240, 72.831062), openfrom: "Edit", address: geoFenceMapState.locationEvent[index].location);
+                            },
+                          ),
+                          GestureDetector(
+                            child: Padding(
+                                padding:EdgeInsets.only(left:10),
+                                child: Icon(Icons.share_rounded,size: 20, color: Colors.black.withOpacity(0.5))
+                            ),
+
+                            onTap: ()async{
+                              // state.dynamicLink = await state.createDynamicLink(
+                              //     title: geoFenceMapState.locationEvent[index].summary,
+                              //     desc: geoFenceMapState.locationEvent[index].description,
+                              //     startDate: Constant.getFullDateFormat(geoFenceMapState.locationEvent[index].start.dateTime.toLocal()),
+                              //     endDate: Constant.getFullDateFormat(geoFenceMapState.locationEvent[index].end.dateTime.toLocal()),
+                              //     email: geoFenceMapState.email,
+                              //     photoUrl: geoFenceMapState.url,
+                              //     senderName: geoFenceMapState.userName,
+                              //     timeZone: geoFenceMapState.eventItem[index].start.timeZone);
+
+                              // print("Dynamic Link: ${state.dynamicLink}    "
+                              //     "startData:::${state.eventItem[index].start.dateTime.toLocal()}");
+
+                              // if (state.dynamicLink != "") {
+                              //   Share.share(state.dynamicLink.toString());
+                              // }
+                            },
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(height: 3),
+
+              Divider(
+                color: Colors.grey,
+                thickness: 0.3,
+                height: 0.3,
+              ),
+
+              Visibility(
+                visible: geoFenceMapState.locationEvent[index].description!= null,
+                child: Container(
+                  padding: EdgeInsets.only(left: 15, right: 15, top: 10),
+                  child: ReadMoreText(
+                    geoFenceMapState.locationEvent[index].description??" ",
+                    trimLines: 3,
+                    colorClickableText: Colors.pink,
+                    trimMode: TrimMode.Line,
+                    trimCollapsedText: Resources.from(geoFenceMapState.context, Constant.languageCode).strings.showMore,
+                    trimExpandedText: Resources.from(geoFenceMapState.context, Constant.languageCode).strings.showLess,
+                    style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.5)),
+                  ),
+                ),
+              ),
+
+
+              Visibility(
+                visible: geoFenceMapState.locationEvent[index].location!= null,
+                child: Container(
+                  // margin: EdgeInsets.only(),
+                  padding: EdgeInsets.only(left: 10, top: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(Icons.location_on_outlined, size: 18, color: Colors.grey),
+                      SizedBox(width: 3),
+                      // Expanded(child: Text(state.add[index]??"",
+                      //     style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5))))
+                      Expanded(child: Text(geoFenceMapState.locationEvent[index].location??"",
+                          style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5))))
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              Container(
+                margin: EdgeInsets.only(left: 15,bottom: 10),
+                child:Column(
+                  children: [
+                    Container(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            child: Row(
+                              children: [
+                                Container(
+                                  height:10,
+                                  width: 10,
+                                  decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(60)),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(left: 7,top: 1),
+                                  child: Text(
+                                      DateFormat('EE, d MMM, yyyy').format(geoFenceMapState.locationEvent[index].start.dateTime.toLocal()) + "  " +
+                                          Constant.getTimeFormat(geoFenceMapState.locationEvent[index].start.dateTime.toLocal()),
+                                      style: TextStyle(fontSize: 12, fontFamily: "poppins_regular", color: Colors.black)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Container(
+                                margin: EdgeInsets.only(left: 4.5),
+                                alignment: Alignment.centerLeft,
+                                height: 20,
+                                width: 1,
+                                color: Colors.grey,
+                              ),
+                            ],
+                          ),
+                          Container(
+                            child: Row(
+                              children: [
+                                Container(
+                                  height:10,
+                                  width: 10,
+                                  decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.circular(60)
+                                  ),
+                                ),
+
+                                Container(
+                                    margin: EdgeInsets.only(left: 7,top: 1),
+                                    child: Text(
+                                      DateFormat('EE, d MMM, yyyy').format(geoFenceMapState.locationEvent[index].end.dateTime.toLocal()) + "  " +
+                                          Constant.getTimeFormat(geoFenceMapState.locationEvent[index].end.dateTime.toLocal()),
+                                      style: TextStyle(fontSize: 12, fontFamily: "poppins_regular",color: Colors.black.withOpacity(0.7)),
+                                    )
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          )
       ),
     );
   }

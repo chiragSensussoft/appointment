@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
 import 'package:appointment/home/model/CalendarList.dart';
+import 'package:appointment/home/model/LatLong.dart';
 import 'package:appointment/home/model/Menu.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsAcceptAppointment.dart';
@@ -15,6 +16,8 @@ import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -822,7 +825,26 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     });
   }
 
+  String address;
+
+  Future getLocation(LatLng latLng) async {
+    final coordinates = new Coordinates(latLng.latitude, latLng.longitude);
+    var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    var first = addresses.first;
+    setState(() {
+      address = first.addressLine;
+      add.add(first.addressLine);
+    });
+
+    print("CALLED::::${first.addressLine}");
+    return first.addressLine;
+  }
+
+  List<String> add = List.empty(growable: true);
+  
+
   Map<String, dynamic> map;
+  List<LatLong> addressList = List.empty(growable: true);
 
   @override
   onEventSuccess(response, calendarResponse) {
@@ -831,17 +853,39 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     setState(() {
       map = calendarResponse;
       List<dynamic> data = response;
-      eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
-      searchEventList.addAll(data.map((e) => EventItem.fromJson(e)).toList());
-      // MyAppointmentState();
+      ///Add Event Data
+      // eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+      // searchEventList.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+      ///Only latLong Event
+      for(int i=0;i<data.length;i++){
+        if(data[i]['location'] == null){
+          eventItem.add(EventItem.fromJson(data[i]));
+          searchEventList.add(EventItem.fromJson(data[i]));
+          // eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+        }
+      }
+      addressList.clear();
+      for(int i=0;i<data.length;i++){
+        if(data[i]['location'] != null){
+          print("------- Enter ------");
+          var lat;
+          var lng;
+          var latlobg = data[i]['location'].toString().split(",");
+          lat = latlobg[0];
+          lng = latlobg[1];
+          addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
+          // getLocation(LatLng(double.parse(lat),double.parse(lng)));
+        }
+      }
     });
 
-    if(eventItem.length<=3){
+    if(eventItem.length>=3 || eventItem.length>=9){
       setState(() {
         hasMoreItems = false;
       });
     }
-    print("Length${eventItem.length}");
+
+    print("Length${addressList.length}");
   }
 
   Future<String> refreshToken() async {

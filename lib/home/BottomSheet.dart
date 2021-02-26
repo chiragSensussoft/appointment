@@ -506,6 +506,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
             description: desc.text,
             id: widget.eventID,
             email: Constant.email,
+            coords: address==null?"":widget.latLng.latitude.toString()+","+widget.latLng.longitude.toString(),
             address: address)
 
         : _presenter.setAppointment(
@@ -513,6 +514,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
             startDate: startDate + "T" + _startTime,
             timeZone: _startDateTime.timeZoneName,
             summary: title.text,
+            coords: address==null?"":widget.latLng.latitude.toString()+","+widget.latLng.longitude.toString(),
             description: desc.text,
             address: address);
   }

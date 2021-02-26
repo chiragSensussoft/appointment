@@ -1,12 +1,20 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:appointment/home/OnHomeView.dart';
 import 'package:appointment/home/home_view_model.dart';
+import 'package:appointment/home/model/CalendarEvent.dart';
+import 'package:appointment/home/model/LatLong.dart';
+import 'package:appointment/home/presenter/HomePresentor.dart';
+import 'package:appointment/utils/values/Constant.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class GeoFenceMap extends StatefulWidget {
@@ -14,17 +22,42 @@ class GeoFenceMap extends StatefulWidget {
   GeoFenceMapState createState() => GeoFenceMapState();
 }
 
-class GeoFenceMapState extends State<GeoFenceMap> {
+class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   LatLng _lng;
   Position _currentPosition;
   Completer _controller = Completer();
   Set<Marker> _markers = {};
   HomeViewModel model;
+  bool isVisible;
+  List<LatLong> addressList = List.empty(growable: true);
+  List<String> add = List.empty(growable: true);
+  List<EventItem> locationEvent =  List.empty(growable: true);
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  HomePresenter presenter;
+  FirebaseUser user;
+  GoogleSignIn googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+      'https://www.googleapis.com/auth/contacts.readonly',
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/calendar"
+    ],
+    clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
+  );
+  SharedPreferences _sharedPreferences;
+  String access_token = '';
+  PageController _pageViewController;
+
 
   @override
   void initState() {
     super.initState();
+    // presenter = HomePresenter(this);
+    // presenter.attachView(this);
+    // presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+    refreshToken();
+
     getCurrentLocation();
 
     initPlatformState();
@@ -61,6 +94,37 @@ class GeoFenceMapState extends State<GeoFenceMap> {
     setState(() {});
   }
 
+  Future<String> refreshToken() async {
+    final GoogleSignInAccount googleSignInAccount =
+    await googleSignIn.signInSilently();
+    final GoogleSignInAuthentication googleSignInAuthentication =
+    await googleSignInAccount.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    await _auth.signInWithCredential(credential);
+    print("Access token 1 ==> ${googleSignInAuthentication.accessToken}");
+    _sharedPreferences = await SharedPreferences.getInstance();
+    _sharedPreferences.setString(Constant.ACCESS_TOKEN, googleSignInAuthentication.accessToken);
+    access_token = googleSignInAuthentication.accessToken;
+    print("Id token 1 ==> $access_token");
+
+    AuthResult authResult = await _auth.signInWithCredential(credential);
+    user = authResult.user;
+    Constant.email = user.email;
+    Constant.token = googleSignInAuthentication.accessToken;
+    presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
+    presenter.attachView(this);
+    // presenter.getCalendar(googleSignInAuthentication.accessToken);
+    presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+
+
+    return googleSignInAuthentication.accessToken;
+  }
 
   void scheduleNotification(String title, String subtitle) {
     print("scheduling one with $title and $subtitle");
@@ -107,49 +171,188 @@ class GeoFenceMapState extends State<GeoFenceMap> {
     print("CALLED::::${first.addressLine}");
   }
 
-
   @override
   Widget build(BuildContext context) {
     model = HomeViewModel(geoFenceMapState: this);
 
     return Scaffold(
-        body:  GoogleMap(
-          initialCameraPosition: CameraPosition(target: LatLng(21.2050,72.8408), zoom: 3),
-          markers: _markers,
-          mapType: MapType.normal,
-          myLocationEnabled: true,
+        body: isVisible == false ?  Stack(
+          children:[
+            GoogleMap(
+            initialCameraPosition: CameraPosition(target: LatLng(_lng.latitude,_lng.longitude), zoom: 7),
+            markers: _markers,
+            mapType: MapType.normal,
+            myLocationEnabled: true,
 
-          onLongPress: (LatLng latLng){
-            _markers.add(Marker(markerId: MarkerId('mark'), position: latLng));
-            setState(() {
-              // _getLocation(LatLng(latLng.latitude, latLng.longitude));
+            onLongPress: (LatLng latLng){
+              _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: latLng));
+              setState(() {
+                // _getLocation(LatLng(latLng.latitude, latLng.longitude));
 
-              Geolocation location = Geolocation(
-                  latitude: 21.2050,
-                  longitude: 72.8408,
-                  radius: 50.0,
-                  id: "Surat Railway Station");
+                Geolocation location = Geolocation(
+                    latitude: 21.2050,
+                    longitude: 72.8408,
+                    radius: 50.0,
+                    id: "Surat Railway Station");
 
-              Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue) {
-                scheduleNotification("Georegion added", "Your geofence has been added!");
-              }).catchError((onError) {
-                print("great failure");
+                Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue) {
+                  scheduleNotification("Georegion added", "Your geofence has been added!");
+                }).catchError((onError) {
+                  print("great failure");
+                });
+
+                model.openBottomSheetView(isEdit: false, openfrom: "Map", latlng: LatLng(latLng.latitude, latLng.longitude));
               });
+            },
+            onMapCreated: (GoogleMapController controller) async {
+              _controller.complete(controller);
+              setState(() {
+                _markers.add(Marker(markerId: MarkerId("location"),
+                  position: _lng, infoWindow: InfoWindow(title: "home"),
+                ));
+              });
+            },
+          ),
 
-              model.openBottomSheetView(isEdit: false, openfrom: "Map", latlng: LatLng(latLng.latitude, latLng.longitude));
-            });
-          },
-          onMapCreated: (GoogleMapController controller) async {
-            _controller.complete(controller);
-            setState(() {
-              _markers.add(Marker(markerId: MarkerId("location"),
-                position: _lng, infoWindow: InfoWindow(title: "home"),
-              ));
-            });
-          },
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                margin : EdgeInsets.only(bottom: 90),
+                height: 220,
+                // padding: EdgeInsets.only(bottom: 10),
+                /// PageView which shows the world wonder details at the bottom.
+                child: PageView.builder(
+                  itemCount: addressList.length,
+                  onPageChanged: (index){
+                    currentIndex = index;
+                  },
+                  controller: _pageViewController,
+                  itemBuilder: (BuildContext context, int index) {
+                    // final WorldWonderModel item = _data[index];
+                    return Transform.scale(
+                      scale: index == currentIndex ? 1 : 0.85,
+                      child: Stack(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              color:
+                              Theme.of(context).brightness == Brightness.light
+                                  ? Color.fromRGBO(255, 255, 255, 1)
+                                  : Color.fromRGBO(66, 66, 66, 1),
+                              border: Border.all(
+                                color: Color.fromRGBO(153, 153, 153, 1),
+                                width: 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: model.pageView(index),
+                          ),
+                          // Adding splash to card while tapping.
+                          // Material(
+                          //   color: Colors.transparent,
+                          //   child: InkWell(
+                          //     borderRadius:
+                          //     BorderRadius.all(Radius.elliptical(10, 10)),
+                          //     onTap: () {
+                          //       if (_currentSelectedIndex != index) {
+                          //         _pageViewController.animateToPage(
+                          //           index,
+                          //           duration: const Duration(milliseconds: 500),
+                          //           curve: Curves.easeInOut,
+                          //         );
+                          //       }
+                          //     },
+                          //   ),
+                          // ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ]
         )
-            // : Center(child: CircularProgressIndicator())
+            : Center(child: CircularProgressIndicator())
     );
   }
+
+  int currentIndex;
+
+  @override
+  onCreateEvent(response) {
+
+  }
+
+  @override
+  onDelete(delete) {
+
+  }
+
+  @override
+  onErrorHandler(String error) {
+
+  }
+
+  Map<String, dynamic> map;
+
+  @override
+  onEventSuccess(response, calendarResponse) {
+    print("success ${response.runtimeType}");
+
+    setState(() {
+      map = calendarResponse;
+      List<dynamic> data = response;
+      addressList.clear();
+      for(int i=0;i<data.length;i++){
+        if(data[i]['location'] != null){
+          locationEvent.add(EventItem.fromJson(data[i]));
+          print("------- Enter ------");
+          var lat;
+          var lng;
+          var latlobg = data[i]['location'].toString().split(",");
+          lat = latlobg[0];
+          lng = latlobg[1];
+          addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
+          // getLocation(LatLng(double.parse(lat),double.parse(lng)));
+        }
+      }
+    });
+
+    // if(addressList.length<=3){
+    //   setState(() {
+    //     hasMoreItems = false;
+    //   });
+    // }
+
+    print("Length${locationEvent.length}");
+  }
+
+  @override
+  onHideLoader() {
+   setState(() {
+     isVisible = false;
+   });
+  }
+
+  @override
+  onShowLoader() {
+    setState(() {
+      isVisible = true;
+    });
+  }
+
+  @override
+  onSuccessRes(response) {
+
+  }
+
+  @override
+  onUpdateEvent(response) {
+
+  }
+
+
 
 }
