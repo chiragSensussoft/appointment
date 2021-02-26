@@ -72,8 +72,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
           state.hasMoreItems = true;
         }),
       }
-    }) :
-    showModalBottomSheet(
+    })
+    : showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: geoFenceMapState.context,
         isScrollControlled: true,
@@ -86,12 +86,15 @@ class HomeViewModel implements IsCreatedOrUpdate {
               builder: (context, scrollController) {
                 return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng);
               });
-        })
-        .whenComplete(() => {
+        }).whenComplete(() => {
       /*add condition*/
-      if(isCreateUpdate){}
-    }):
-    showModalBottomSheet(
+      if(!isCreateUpdate){
+
+      }
+    })
+
+    //Edit
+        : showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: state.context,
         isScrollControlled: true,
@@ -111,9 +114,9 @@ class HomeViewModel implements IsCreatedOrUpdate {
         .whenComplete(() => {
       /*add condition*/
       if(isCreateUpdate){
+        print("Edit"),
         state.eventItem.clear(),
         state.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false, pageToken: state.map['nextPageToken']),
-
         state.setState(() {
           state.hasMoreItems = true;
         }),

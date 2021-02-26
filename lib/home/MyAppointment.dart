@@ -33,8 +33,9 @@ class MyAppointment extends StatefulWidget {
   List<EventItem> eventItem;
   List<Item> itemList = List.empty(growable: true);
   List<EventItem> searchEventList;
+  Function(bool) onCreate;
 
-  MyAppointment(this.controller);
+  MyAppointment({this.controller,this.onCreate});
 
   @override
   MyAppointmentState createState() => MyAppointmentState();
@@ -324,7 +325,6 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
             searchEventList.clear();
             itemList.clear();
             isVisible = true;
-            eventItem.clear();
             return refreshToken();
           }),
 
@@ -870,6 +870,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     presenter.attachView(this);
     presenter.getCalendar(googleSignInAuthentication.accessToken);
+    eventItem.clear();
     initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
     hasMoreItems = true;
 
@@ -901,6 +902,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   @override
   void isAccept() {
+    print("Update --->");
     eventItem.clear();
     presenter.setAppointment(summary: str_summary, endDate: str_EndDate, startDate: str_startDate,
         description: str_description, timeZone: str_timeZone);

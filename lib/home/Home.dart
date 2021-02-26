@@ -254,7 +254,12 @@ class HomeState extends State<Home> implements OnHomeView{
     switch(index){
       case 0:
         return Container(
-          child: MyAppointment(controller),
+          child: MyAppointment(controller:controller,onCreate: (val){
+            if(val == true){
+              presenter.getCalendarEvent(maxResult: 10, minTime: DateTime.now().toUtc(),
+                  isPageToken: false);
+            }
+          },),
         );
         break;
 
