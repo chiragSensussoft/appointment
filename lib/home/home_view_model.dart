@@ -411,7 +411,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
 
       child: Container(
-        height: 220,
+        height: 228,
           width: MediaQuery.of(geoFenceMapState.context).size.width,
           padding: EdgeInsets.only(top: 8, bottom: 8),
           child: Column(
@@ -427,8 +427,9 @@ class HomeViewModel implements IsCreatedOrUpdate {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Container(child: Text(geoFenceMapState.locationEvent[index].summary.toString(),
-                          style: TextStyle(color: Colors.black, fontSize: 14,
+                      child: Container(
+                        child: Text(geoFenceMapState.locationEvent[index].summary.toString(),
+                          style: TextStyle(color: Colors.black, fontSize: 12,
                               fontFamily: "poppins_medium")),),
                     ),
                     Container(

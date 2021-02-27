@@ -132,7 +132,7 @@ class HomeState extends State<Home> implements OnHomeView{
     });
   }
   String text = "English";
-  int selectedIndex = 1;
+  int selectedIndex = 0;
 
 
   void _selectedTab(int index) {

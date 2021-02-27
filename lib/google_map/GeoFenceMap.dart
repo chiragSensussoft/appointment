@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
+import 'package:appointment/home/LoadMore.dart';
+import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/OnHomeView.dart';
 import 'package:appointment/home/home_view_model.dart';
 import 'package:appointment/home/model/CalendarEvent.dart';
@@ -8,6 +11,7 @@ import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geocoder/geocoder.dart';
@@ -15,7 +19,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:ui' as ui;
 
 class GeoFenceMap extends StatefulWidget {
   @override
@@ -26,7 +30,8 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   LatLng _lng;
   Position _currentPosition;
   Completer _controller = Completer();
-  Set<Marker> _markers = {};
+  GoogleMapController gController;
+  List<Marker> _markers = [];
   HomeViewModel model;
   bool isVisible;
   List<LatLong> addressList = List.empty(growable: true);
@@ -53,12 +58,14 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   @override
   void initState() {
     super.initState();
+    _pageViewController = PageController(initialPage: 0,viewportFraction: 0.8,keepPage: true);
+    setMarkersPoint();
     // presenter = HomePresenter(this);
     // presenter.attachView(this);
     // presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
     refreshToken();
 
-    getCurrentLocation();
+    // getCurrentLocation();
 
     initPlatformState();
 
@@ -170,22 +177,97 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
     var first = addresses.first;
     print("CALLED::::${first.addressLine}");
   }
+  Uint8List markerIconRed;
+  Uint8List markerIconBlue;
+  Set<Circle> circle;
+  Future setMarkersPoint() async {
+    var iconRed = "https://ckfluttersite.000webhostapp.com/locationRedPng.png";
+    var iconBlue = 'https://ckfluttersite.000webhostapp.com/locationbluePng.png';
+    Uint8List dataBytesRed;
+    Uint8List dataBytesBlue;
+    var requestRed = await http.get(iconRed);
+    var requestBlue = await http.get(iconBlue);
+    var bytesRed = requestRed.bodyBytes;
+    var byteBlue = requestBlue.bodyBytes;
+
+    setState(() {
+      dataBytesRed = bytesRed;
+      dataBytesBlue = byteBlue;
+    });
+    markerIconRed = await getBytesFromCanvas(80, 80, dataBytesRed);
+    markerIconBlue = await getBytesFromCanvas(80, 80, dataBytesBlue);
+  }
+  Future<Uint8List> getBytesFromCanvas(
+      int width, int height, Uint8List dataBytes) async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint paint = Paint()..color = Colors.transparent;
+    final Radius radius = Radius.circular(20.0);
+    canvas.drawRRect(
+        RRect.fromRectAndCorners(
+          Rect.fromLTWH(0.0, 0.0, width.toDouble(), height.toDouble()),
+          topLeft: radius,
+          topRight: radius,
+          bottomLeft: radius,
+          bottomRight: radius,
+        ),
+        paint);
+
+    var imaged = await loadImage(dataBytes.buffer.asUint8List());
+    canvas.drawImageRect(
+      imaged,
+      Rect.fromLTRB(
+          0.0, 0.0, imaged.width.toDouble(), imaged.height.toDouble()),
+      Rect.fromLTRB(0.0, 0.0, width.toDouble(), height.toDouble()),
+      new Paint(),
+    );
+
+    final img = await pictureRecorder.endRecording().toImage(width, height);
+    final data = await img.toByteData(format: ui.ImageByteFormat.png);
+    return data.buffer.asUint8List();
+  }
+
+  Future<ui.Image> loadImage(List<int> img) async {
+    final Completer<ui.Image> completer = new Completer();
+    ui.decodeImageFromList(img, (ui.Image img) {
+      return completer.complete(img);
+    });
+    return completer.future;
+  }
+
+  bool loadingMore;
+  bool hasMoreItems;
+  Future initialLoad;
+  int lastIndex;
+
+  Future _loadMoreItems() async {
+    if(_pageViewController.position.pixels == _pageViewController.position.maxScrollExtent || hasMoreItems == true){
+      await presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),
+          isPageToken: true,pageToken: map['nextPageToken']);
+    }
+    else{
+      hasMoreItems = false;
+    }
+    hasMoreItems = map['nextPageToken'] != null;
+  }
 
   @override
   Widget build(BuildContext context) {
     model = HomeViewModel(geoFenceMapState: this);
-
     return Scaffold(
         body: isVisible == false ?  Stack(
           children:[
             GoogleMap(
-            initialCameraPosition: CameraPosition(target: LatLng(_lng.latitude,_lng.longitude), zoom: 7),
-            markers: _markers,
+            initialCameraPosition: CameraPosition(target: LatLng(21.1702,72.8311), zoom: 7),
+            markers: Set.of(_markers),
             mapType: MapType.normal,
             myLocationEnabled: true,
 
+            onTap: (p){
+            },
             onLongPress: (LatLng latLng){
-              _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: latLng));
+              _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: latLng,
+              icon: BitmapDescriptor.fromBytes(markerIconRed)));
               setState(() {
                 // _getLocation(LatLng(latLng.latitude, latLng.longitude));
 
@@ -204,71 +286,58 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
                 model.openBottomSheetView(isEdit: false, openfrom: "Map", latlng: LatLng(latLng.latitude, latLng.longitude));
               });
             },
+            onCameraMove: (p){
+              position = p;
+            },
             onMapCreated: (GoogleMapController controller) async {
               _controller.complete(controller);
-              setState(() {
-                _markers.add(Marker(markerId: MarkerId("location"),
-                  position: _lng, infoWindow: InfoWindow(title: "home"),
-                ));
-              });
+              gController = controller;
+              // setState(() {
+              //   _markers.add(Marker(markerId: MarkerId("location"),
+              //     position: _lng, infoWindow: InfoWindow(title: "home"),
+              //   ));
+              // });
             },
           ),
 
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                margin : EdgeInsets.only(bottom: 90),
-                height: 220,
-                // padding: EdgeInsets.only(bottom: 10),
-                /// PageView which shows the world wonder details at the bottom.
-                child: PageView.builder(
-                  itemCount: addressList.length,
-                  onPageChanged: (index){
-                    currentIndex = index;
-                  },
-                  controller: _pageViewController,
-                  itemBuilder: (BuildContext context, int index) {
-                    // final WorldWonderModel item = _data[index];
-                    return Transform.scale(
-                      scale: index == currentIndex ? 1 : 0.85,
-                      child: Stack(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color:
-                              Theme.of(context).brightness == Brightness.light
-                                  ? Color.fromRGBO(255, 255, 255, 1)
-                                  : Color.fromRGBO(66, 66, 66, 1),
-                              border: Border.all(
-                                color: Color.fromRGBO(153, 153, 153, 1),
-                                width: 0.5,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
+            Visibility(
+              visible: addressList.length != 0,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  margin : EdgeInsets.only(bottom: 90),
+                  height: 228,
+                  // padding: EdgeInsets.only(bottom: 10),
+                  /// PageView which shows the world wonder details at the bottom.
+                  child: PageView.builder(
+                    itemCount: addressList.length,
+                    onPageChanged: (int index){
+                      setState(() => currentIndex = index);
+                      print(index);
+                      gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
+                      LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
+                      for(int i=0;i<locationEvent.length;i++){
+                        _markers[i] = Marker(markerId: MarkerId(locationEvent[i].id),icon: BitmapDescriptor.fromBytes(markerIconRed),
+                            position: LatLng(addressList[i].latitude,addressList[i].longitude));
+                      }
+                      _markers[index] = Marker(markerId: MarkerId(locationEvent[index].id),icon: BitmapDescriptor.fromBytes(markerIconBlue),
+                          position: LatLng(addressList[index].latitude,addressList[index].longitude));
+                    },
+                    controller: _pageViewController,
+                    itemBuilder: (BuildContext context, int index) {
+                      // final WorldWonderModel item = _data[index];
+                      return Transform.scale(
+                        scale: index == currentIndex ? 1.03 : 0.9,
+                        child: Stack(
+                          children: [
+                            Container(
+                              child: model.pageView(index),
                             ),
-                            child: model.pageView(index),
-                          ),
-                          // Adding splash to card while tapping.
-                          // Material(
-                          //   color: Colors.transparent,
-                          //   child: InkWell(
-                          //     borderRadius:
-                          //     BorderRadius.all(Radius.elliptical(10, 10)),
-                          //     onTap: () {
-                          //       if (_currentSelectedIndex != index) {
-                          //         _pageViewController.animateToPage(
-                          //           index,
-                          //           duration: const Duration(milliseconds: 500),
-                          //           curve: Curves.easeInOut,
-                          //         );
-                          //       }
-                          //     },
-                          //   ),
-                          // ),
-                        ],
-                      ),
-                    );
-                  },
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -277,6 +346,65 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
             : Center(child: CircularProgressIndicator())
     );
   }
+
+  builder(){
+    FutureBuilder(
+      future: initialLoad,
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return Center(child: CircularProgressIndicator());
+          case ConnectionState.done:
+            return Container(
+              margin: EdgeInsets.only(top: 35),
+              padding: EdgeInsets.only(top: 20),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
+              ),
+              child: IncrementallyLoadingListView(
+                hasMore: () => hasMoreItems,
+                itemCount: () => addressList.length,
+                loadMore: () async {
+                  await _loadMoreItems();
+                },
+                onLoadMore: () {
+                  setState(() {
+                    loadingMore = true;
+                  });
+                },
+                onLoadMoreFinished: () {
+                  setState(() {
+                    loadingMore = false;
+                  });
+                },
+                controller: _pageViewController,
+                loadMoreOffsetFromBottom: 2,
+                shrinkWrap: false,
+                physics: AlwaysScrollableScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  lastIndex = index;
+                  if ((loadingMore ?? false) && index == addressList.length-1) {
+                    return Column(
+                      children: <Widget>[
+                        model.pageView(index),
+                        PlaceholderItemCard(index: index,)
+                      ],
+                    );
+                  }
+                  return model.pageView(index);
+                },
+              ),
+            );
+          default:
+            return Text('Something went wrong');
+        }
+      },
+
+    )
+  }
+
+  CameraPosition position;
 
   int currentIndex;
 
@@ -315,6 +443,8 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
           lat = latlobg[0];
           lng = latlobg[1];
           addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
+          _markers.add(Marker(markerId: MarkerId(data[i]['id']),position: LatLng(double.parse(lat),double.parse(lng)),
+          icon: BitmapDescriptor.fromBytes(markerIconRed),onTap: (){}));
           // getLocation(LatLng(double.parse(lat),double.parse(lng)));
         }
       }
