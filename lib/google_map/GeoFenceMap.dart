@@ -11,6 +11,7 @@ import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/utils/values/Constant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -40,6 +41,8 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   HomePresenter presenter;
   FirebaseUser user;
+  BitmapDescriptor redPinLocationIcon;
+  BitmapDescriptor bluePinLocationIcon;
   GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: [
       'email',
@@ -59,7 +62,9 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   void initState() {
     super.initState();
     _pageViewController = PageController(initialPage: 0,viewportFraction: 0.8,keepPage: true);
-    setMarkersPoint();
+    // setMarkersPoint();
+    setCustomMapRedPin();
+    setCustomMapBluePin();
     // presenter = HomePresenter(this);
     // presenter.attachView(this);
     // presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
@@ -127,9 +132,8 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
     presenter = new HomePresenter(this, token: googleSignInAuthentication.accessToken);
     presenter.attachView(this);
     // presenter.getCalendar(googleSignInAuthentication.accessToken);
-    presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
-
-
+    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+    hasMoreItems = true;
     return googleSignInAuthentication.accessToken;
   }
 
@@ -235,6 +239,26 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
     return completer.future;
   }
 
+
+  Future<Uint8List> getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png)).buffer.asUint8List();
+  }
+
+  Future<BitmapDescriptor> getBitmapDescriptorFromAssetBytes(String path, int width) async {
+    final Uint8List imageData = await getBytesFromAsset(path, width);
+    return BitmapDescriptor.fromBytes(imageData);
+  }
+
+  void setCustomMapBluePin() async {
+    bluePinLocationIcon = await getBitmapDescriptorFromAssetBytes('images/locationbluePng.png', 40);
+  }
+  void setCustomMapRedPin() async {
+    redPinLocationIcon = await getBitmapDescriptorFromAssetBytes('images/locationRedPng.png', 40);
+  }
+
   bool loadingMore;
   bool hasMoreItems;
   Future initialLoad;
@@ -267,7 +291,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
             },
             onLongPress: (LatLng latLng){
               _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: latLng,
-              icon: BitmapDescriptor.fromBytes(markerIconRed)));
+              icon: redPinLocationIcon));
               setState(() {
                 // _getLocation(LatLng(latLng.latitude, latLng.longitude));
 
@@ -299,48 +323,137 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
               // });
             },
           ),
-
-            Visibility(
-              visible: addressList.length != 0,
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  margin : EdgeInsets.only(bottom: 90),
-                  height: 228,
-                  // padding: EdgeInsets.only(bottom: 10),
-                  /// PageView which shows the world wonder details at the bottom.
-                  child: PageView.builder(
-                    itemCount: addressList.length,
-                    onPageChanged: (int index){
-                      setState(() => currentIndex = index);
-                      print(index);
-                      gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
-                      LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
-                      for(int i=0;i<locationEvent.length;i++){
-                        _markers[i] = Marker(markerId: MarkerId(locationEvent[i].id),icon: BitmapDescriptor.fromBytes(markerIconRed),
-                            position: LatLng(addressList[i].latitude,addressList[i].longitude));
-                      }
-                      _markers[index] = Marker(markerId: MarkerId(locationEvent[index].id),icon: BitmapDescriptor.fromBytes(markerIconBlue),
-                          position: LatLng(addressList[index].latitude,addressList[index].longitude));
-                    },
-                    controller: _pageViewController,
-                    itemBuilder: (BuildContext context, int index) {
-                      // final WorldWonderModel item = _data[index];
-                      return Transform.scale(
-                        scale: index == currentIndex ? 1.03 : 0.9,
-                        child: Stack(
-                          children: [
-                            Container(
-                              child: model.pageView(index),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: FutureBuilder(
+                    future: initialLoad,
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                          return Center(child: CircularProgressIndicator());
+                        case ConnectionState.done:
+                          return Container(
+                            height: 228,
+                            margin: EdgeInsets.only(top: 35,bottom: 100),
+                            // padding: EdgeInsets.only(top: 20),
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    topRight: Radius.circular(20))),
+                            child: IncrementallyLoadingListView(
+                              hasMore: () => hasMoreItems,
+                              itemCount: () => locationEvent.length,
+                              loadMore: () async {
+                                await _loadMoreItems();
+                              },
+                              onLoadMore: () {
+                                setState(() {
+                                  loadingMore = true;
+                                });
+                              },
+                              onLoadMoreFinished: () {
+                                setState(() {
+                                  loadingMore = false;
+                                });
+                              },
+                              controller: _pageViewController,
+                              loadMoreOffsetFromBottom: 2,
+                              shrinkWrap: false,
+                              physics: AlwaysScrollableScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                currentIndex = index;
+                                gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
+                                LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
+                                for(int i=0;i<locationEvent.length;i++){
+                                  _markers[i] = Marker(markerId: MarkerId(locationEvent[i].id),icon: redPinLocationIcon,
+                                      position: LatLng(addressList[i].latitude,addressList[i].longitude));
+                                }
+                                _markers[index] = Marker(markerId: MarkerId(locationEvent[index].id),icon: bluePinLocationIcon,
+                                    position: LatLng(addressList[index].latitude,addressList[index].longitude));
+                                if ((loadingMore ?? false) && index == locationEvent.length - 1) {
+                                  return Transform.scale(
+                                    scale: 0.9,
+                                    child: Stack(
+                                      children: [
+                                        Row(
+                                          children: <Widget>[
+                                            model.pageView(index),
+                                            PlaceholderItemCard(index: index,height: 228,)
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return Transform.scale(
+                                    scale: 0.9,
+                                    child: Stack(
+                                      children: [
+                                        Container(
+                                          height:228,
+                                          child: model.pageView(index),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                              },
                             ),
-                          ],
-                        ),
-                      );
+                          );
+                        default:
+                          return Text('Something went wrong');
+                      }
                     },
                   ),
-                ),
-              ),
-            ),
+            )
+                // Visibility(
+            //   visible: addressList.length != 0,
+            //   child: Align(
+            //     alignment: Alignment.bottomCenter,
+            //     child: Container(
+            //       margin : EdgeInsets.only(bottom: 90),
+            //       height: 228,
+            //       // padding: EdgeInsets.only(bottom: 10),
+            //       /// PageView which shows the world wonder details at the bottom.
+            //       child: PageView.builder(
+            //         itemCount: addressList.length,
+            //         onPageChanged: (int index){
+            //           setState(() => currentIndex = index);
+            //           print(index);
+            //           print("Pixel ${_pageViewController.position.pixels}");
+            //           print("Max Pixel ${_pageViewController.position.maxScrollExtent}");
+            //           // if (_pageViewController.position.pixels == _pageViewController.position.maxScrollExtent) {
+            //           //   print("Enter");
+            //           //   presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),
+            //           //       isPageToken: true,pageToken: map['nextPageToken']);
+            //           // }
+            //           gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
+            //           LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
+            //           for(int i=0;i<locationEvent.length;i++){
+            //             _markers[i] = Marker(markerId: MarkerId(locationEvent[i].id),icon: BitmapDescriptor.fromBytes(markerIconRed),
+            //                 position: LatLng(addressList[i].latitude,addressList[i].longitude));
+            //           }
+            //           _markers[index] = Marker(markerId: MarkerId(locationEvent[index].id),icon: BitmapDescriptor.fromBytes(markerIconBlue),
+            //               position: LatLng(addressList[index].latitude,addressList[index].longitude));
+            //         },
+            //         controller: _pageViewController,
+            //         itemBuilder: (BuildContext context, int index) {
+            //           return Transform.scale(
+            //             scale: index == currentIndex ? 1.03 : 0.9,
+            //             child: Stack(
+            //               children: [
+            //                 Container(
+            //                   child: model.pageView(index),
+            //                 ),
+            //               ],
+            //             ),
+            //           );
+            //         },
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ]
         )
             : Center(child: CircularProgressIndicator())
@@ -388,7 +501,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
                     return Column(
                       children: <Widget>[
                         model.pageView(index),
-                        PlaceholderItemCard(index: index,)
+                        PlaceholderItemCard(index: index,height: 228,)
                       ],
                     );
                   }
@@ -443,7 +556,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
           lng = latlobg[1];
           addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
           _markers.add(Marker(markerId: MarkerId(data[i]['id']),position: LatLng(double.parse(lat),double.parse(lng)),
-          icon: BitmapDescriptor.fromBytes(markerIconRed),onTap: (){}));
+          icon: redPinLocationIcon,onTap: (){}));
           // getLocation(LatLng(double.parse(lat),double.parse(lng)));
         }
       }

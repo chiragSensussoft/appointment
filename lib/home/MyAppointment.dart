@@ -220,7 +220,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                                   return Column(
                                     children: <Widget>[
                                       model.slideMenu(index),
-                                      PlaceholderItemCard(index: index,)
+                                      PlaceholderItemCard(index: index,height: 128,)
                                     ],
                                   );
                                 }
@@ -241,7 +241,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
                       itemCount: 40,
                       physics: NeverScrollableScrollPhysics(),
                       itemBuilder: (_,index){
-                        return PlaceholderItemCard(index: index);
+                        return PlaceholderItemCard(index: index,height: 128,);
                       },
                     ),
                   )
@@ -959,13 +959,15 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 }
 
 class PlaceholderItemCard extends StatelessWidget {
-  const PlaceholderItemCard({Key key, @required this.index}) : super(key: key);
+  double height;
+  PlaceholderItemCard({Key key, @required this.index,this.height}) : super(key: key);
 
   final index;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: height,
       margin: EdgeInsets.only(left: 10, top: 5, right: 10, bottom:5),
       child: Material(
         color: Colors.grey[100],

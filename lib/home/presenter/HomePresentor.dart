@@ -82,6 +82,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
   
   Future getCalendarEvent({pageToken, maxResult, minTime, bool isPageToken, maxTime}) async{
     isPageToken == false?view.onShowLoader():null;
+    // view.onShowLoader();
     print('get_list:1::${Constant().event}   $maxTime');
     Response getCalendarEventList;
     maxTime==null?
