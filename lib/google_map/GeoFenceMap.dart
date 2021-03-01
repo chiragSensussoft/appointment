@@ -400,8 +400,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
             return Text('Something went wrong');
         }
       },
-
-    )
+    );
   }
 
   CameraPosition position;
