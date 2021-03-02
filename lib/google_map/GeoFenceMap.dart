@@ -54,7 +54,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
     clientId: "148622577769-nq42nevup780o2699h0ohtj1stsapmjj.apps.googleusercontent.com",
   );
   SharedPreferences _sharedPreferences;
-  String access_token = '';
+  String accessToken = '';
   PageController _pageViewController;
 
 
@@ -74,8 +74,6 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
 
     initPlatformState();
 
-    var initializationSettingsAndroid =
-    new AndroidInitializationSettings('@mipmap/ic_launcher');
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     var android = AndroidInitializationSettings('@mipmap/ic_launcher');
     var iOS = IOSInitializationSettings();
@@ -122,8 +120,8 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
     print("Access token 1 ==> ${googleSignInAuthentication.accessToken}");
     _sharedPreferences = await SharedPreferences.getInstance();
     _sharedPreferences.setString(Constant.ACCESS_TOKEN, googleSignInAuthentication.accessToken);
-    access_token = googleSignInAuthentication.accessToken;
-    print("Id token 1 ==> $access_token");
+    accessToken = googleSignInAuthentication.accessToken;
+    print("Id token 1 ==> $accessToken");
 
     AuthResult authResult = await _auth.signInWithCredential(credential);
     user = authResult.user;
@@ -157,7 +155,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
 
   Future<void> getCurrentLocation() async {
     try {
-      Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
+      // Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
       Position position = await Geolocator().getCurrentPosition(
         desiredAccuracy: LocationAccuracy.best);
 
@@ -253,10 +251,10 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   }
 
   void setCustomMapBluePin() async {
-    bluePinLocationIcon = await getBitmapDescriptorFromAssetBytes('images/locationbluePng.png', 40);
+    bluePinLocationIcon = await getBitmapDescriptorFromAssetBytes('images/locationbluePng.png', 60);
   }
   void setCustomMapRedPin() async {
-    redPinLocationIcon = await getBitmapDescriptorFromAssetBytes('images/locationRedPng.png', 40);
+    redPinLocationIcon = await getBitmapDescriptorFromAssetBytes('images/locationRedPng.png', 60);
   }
 
   bool loadingMore;
@@ -274,6 +272,12 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
     }
     hasMoreItems = map['nextPageToken'] != null;
   }
+
+  bool isScroll = false;
+  // GeoFenceMapState(){
+  //     print(currentIndex);
+  //
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -316,6 +320,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
             onMapCreated: (GoogleMapController controller) async {
               _controller.complete(controller);
               gController = controller;
+              gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(addressList[0].latitude, addressList[0].longitude),zoom: 7)));
               // setState(() {
               //   _markers.add(Marker(markerId: MarkerId("location"),
               //     position: _lng, infoWindow: InfoWindow(title: "home"),
@@ -364,14 +369,21 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (context, index) {
                                 currentIndex = index;
-                                gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
-                                LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
-                                for(int i=0;i<locationEvent.length;i++){
-                                  _markers[i] = Marker(markerId: MarkerId(locationEvent[i].id),icon: redPinLocationIcon,
-                                      position: LatLng(addressList[i].latitude,addressList[i].longitude));
-                                }
-                                _markers[index] = Marker(markerId: MarkerId(locationEvent[index].id),icon: bluePinLocationIcon,
-                                    position: LatLng(addressList[index].latitude,addressList[index].longitude));
+                                _pageViewController.addListener(() {
+                                  gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
+                                        LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
+                                  for(int i=0;i<locationEvent.length??1;i++){
+                                   setState(() {
+                                     _markers[i] = Marker(markerId: MarkerId(locationEvent[i].id),icon: redPinLocationIcon,
+                                         position: LatLng(addressList[i].latitude,addressList[i].longitude));
+                                   });
+                                  }
+                                 setState(() {
+                                   _markers[currentIndex] = Marker(markerId: MarkerId(locationEvent[currentIndex].id),icon: bluePinLocationIcon,
+                                       position: LatLng(addressList[currentIndex].latitude,addressList[currentIndex].longitude));
+                                 });
+                                });
+
                                 if ((loadingMore ?? false) && index == locationEvent.length - 1) {
                                   return Transform.scale(
                                     scale: 0.9,
@@ -407,7 +419,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
                     },
                   ),
             )
-                // Visibility(
+            //     Visibility(
             //   visible: addressList.length != 0,
             //   child: Align(
             //     alignment: Alignment.bottomCenter,
@@ -460,65 +472,9 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
     );
   }
 
-  builder(){
-    FutureBuilder(
-      future: initialLoad,
-      builder: (context, snapshot) {
-        switch (snapshot.connectionState) {
-          case ConnectionState.waiting:
-            return Center(child: CircularProgressIndicator());
-          case ConnectionState.done:
-            return Container(
-              margin: EdgeInsets.only(top: 35),
-              padding: EdgeInsets.only(top: 20),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
-              ),
-              child: IncrementallyLoadingListView(
-                hasMore: () => hasMoreItems,
-                itemCount: () => addressList.length,
-                loadMore: () async {
-                  await _loadMoreItems();
-                },
-                onLoadMore: () {
-                  setState(() {
-                    loadingMore = true;
-                  });
-                },
-                onLoadMoreFinished: () {
-                  setState(() {
-                    loadingMore = false;
-                  });
-                },
-                controller: _pageViewController,
-                loadMoreOffsetFromBottom: 2,
-                shrinkWrap: false,
-                physics: AlwaysScrollableScrollPhysics(),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  lastIndex = index;
-                  if ((loadingMore ?? false) && index == addressList.length-1) {
-                    return Column(
-                      children: <Widget>[
-                        model.pageView(index),
-                        PlaceholderItemCard(index: index,height: 228,)
-                      ],
-                    );
-                  }
-                  return model.pageView(index);
-                },
-              ),
-            );
-          default:
-            return Text('Something went wrong');
-        }
-      },
-    );
-  }
-
   CameraPosition position;
 
-  int currentIndex;
+  int currentIndex = null;
 
   @override
   onCreateEvent(response) {
@@ -544,7 +500,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
     setState(() {
       map = calendarResponse;
       List<dynamic> data = response;
-      addressList.clear();
+      // addressList.clear();
       for(int i=0;i<data.length;i++){
         if(data[i]['location'] != null){
           locationEvent.add(EventItem.fromJson(data[i]));
@@ -594,7 +550,4 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   onUpdateEvent(response) {
 
   }
-
-
-
 }
