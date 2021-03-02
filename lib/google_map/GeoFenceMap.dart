@@ -518,11 +518,11 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
       }
     });
 
-    // if(addressList.length<=3){
-    //   setState(() {
-    //     hasMoreItems = false;
-    //   });
-    // }
+    if(locationEvent.length>=3 || locationEvent.length>=9){
+      setState(() {
+        hasMoreItems = false;
+      });
+    }
 
     print("Length${locationEvent.length}");
   }
