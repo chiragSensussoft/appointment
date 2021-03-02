@@ -15,15 +15,21 @@ import 'Home.dart';
 import 'event_calendar.dart';
 
 
+abstract class SetMarker{
+  void setmarker();
+}
+
+
 class HomeViewModel implements IsCreatedOrUpdate {
   bool isCreateUpdate = false;
 
   MyAppointmentState state;
   HomeState homestate;
   GeoFenceMapState geoFenceMapState;
-
-  HomeViewModel({this.state, this.homestate, this.geoFenceMapState});
   bool isVisible;
+  SetMarker setMarker;
+
+  HomeViewModel({this.state, this.homestate, this.geoFenceMapState, this.setMarker});
 
 
   detailSheet(index){
@@ -232,7 +238,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                           Expanded(
                             child: Container(child: Text(state.eventItem[index].summary.toString(),
                                 style: TextStyle(color: Colors.black, fontSize: 14,
-                                    fontFamily: "poppins_medium")),),
+                                    fontFamily: "poppins_medium"))),
                           ),
                           Container(
                             child: Row(
@@ -604,5 +610,9 @@ class HomeViewModel implements IsCreatedOrUpdate {
   onCreateUpdate(bool bool) {
     isCreateUpdate = bool;
     print('isCreateUpdtae::::$bool   $isCreateUpdate');
+
+    if(bool){
+      setMarker.setmarker();
+    }
   }
 }

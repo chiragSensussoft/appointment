@@ -845,6 +845,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   Map<String, dynamic> map;
   List<LatLong> addressList = List.empty(growable: true);
+  List<String> full_address = List.empty(growable: true);
 
   @override
   onEventSuccess(response, calendarResponse) {
@@ -870,12 +871,20 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
           print("------- Enter ------");
           var lat;
           var lng;
-          var latlobg = data[i]['location'].toString().split(",");
-          lat = latlobg[0];
-          lng = latlobg[1];
+          var latlng = data[i]['location'].toString().split(",");
+          lat = latlng[0];
+          lng = latlng[1];
           addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
           // getLocation(LatLng(double.parse(lat),double.parse(lng)));
         }
+      }
+
+      for(int i=0; i<addressList.length; i++){
+        getLocation(LatLng(addressList[i].latitude, addressList[i].longitude)).then((value){
+          full_address.add(value);
+          print("GETLOCATION::::;;${full_address.length}");
+          print("GETLOCATION::::;;${full_address[0]}");
+        });
       }
     });
 
@@ -886,6 +895,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     }
 
     print("Length${addressList.length}");
+
   }
 
   Future<String> refreshToken() async {
@@ -928,7 +938,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventCreateMsg, Toast.LENGTH_SHORT);
 
     if(isShareAppointment = true){
-      presenter.getCalendarEvent(maxResult: 10,isPageToken: false,minTime: DateTime.now().toUtc());
+      presenter.getCalendarEvent(maxResult: 10, isPageToken: false, minTime: DateTime.now().toUtc());
     }
   }
 
@@ -960,9 +970,10 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
 class PlaceholderItemCard extends StatelessWidget {
   double height;
-  PlaceholderItemCard({Key key, @required this.index,this.height}) : super(key: key);
-
   final index;
+  List<String> full_address = List.empty(growable: true);
+
+  PlaceholderItemCard({Key key, @required this.index, this.height, this.full_address}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

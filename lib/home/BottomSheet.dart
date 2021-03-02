@@ -721,6 +721,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     Navigator.pop(context);
     Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventCreateMsg,Toast.LENGTH_SHORT);
     widget.isCreatedOrUpdate.onCreateUpdate(true);
+
+
   }
 
   @override
@@ -741,3 +743,5 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     createAppointment();
   }
 }
+
+

@@ -27,7 +27,7 @@ class GeoFenceMap extends StatefulWidget {
   GeoFenceMapState createState() => GeoFenceMapState();
 }
 
-class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
+class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMarker{
   LatLng _lng;
   Position _currentPosition;
   Completer _controller = Completer();
@@ -56,39 +56,28 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   SharedPreferences _sharedPreferences;
   String accessToken = '';
   PageController _pageViewController;
+  List<String> full_address = List.empty(growable: true);
 
 
   @override
   void initState() {
     super.initState();
     _pageViewController = PageController(initialPage: 0,viewportFraction: 0.8,keepPage: true);
-    // setMarkersPoint();
     setCustomMapRedPin();
     setCustomMapBluePin();
-    // presenter = HomePresenter(this);
-    // presenter.attachView(this);
-    // presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
     refreshToken();
-
-    // getCurrentLocation();
 
     initPlatformState();
 
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     var android = AndroidInitializationSettings('@mipmap/ic_launcher');
     var iOS = IOSInitializationSettings();
-    // var initializationSettingsIOS =
-    //     IOSInitializationSettings(onDidReceiveLocalNotification: null);
     var initSettings = InitializationSettings(android:android,iOS: iOS);
-    flutterLocalNotificationsPlugin.initialize(initSettings,
-        onSelectNotification: null);
+    flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: null);
 
   }
 
   Future<void> initPlatformState() async {
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
     if (!mounted) return;
     Geofence.initialize();
     Geofence.startListening(GeolocationEvent.entry, (entry) {
@@ -179,63 +168,10 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
     var first = addresses.first;
     print("CALLED::::${first.addressLine}");
   }
+
   Uint8List markerIconRed;
   Uint8List markerIconBlue;
   Set<Circle> circle;
-  Future setMarkersPoint() async {
-    var iconRed = "https://ckfluttersite.000webhostapp.com/locationRedPng.png";
-    var iconBlue = 'https://ckfluttersite.000webhostapp.com/locationbluePng.png';
-    Uint8List dataBytesRed;
-    Uint8List dataBytesBlue;
-    var requestRed = await http.get(iconRed);
-    var requestBlue = await http.get(iconBlue);
-    var bytesRed = requestRed.bodyBytes;
-    var byteBlue = requestBlue.bodyBytes;
-
-    setState(() {
-      dataBytesRed = bytesRed;
-      dataBytesBlue = byteBlue;
-    });
-    markerIconRed = await getBytesFromCanvas(80, 80, dataBytesRed);
-    markerIconBlue = await getBytesFromCanvas(80, 80, dataBytesBlue);
-  }
-  Future<Uint8List> getBytesFromCanvas(
-      int width, int height, Uint8List dataBytes) async {
-    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(pictureRecorder);
-    final Paint paint = Paint()..color = Colors.transparent;
-    final Radius radius = Radius.circular(20.0);
-    canvas.drawRRect(
-        RRect.fromRectAndCorners(
-          Rect.fromLTWH(0.0, 0.0, width.toDouble(), height.toDouble()),
-          topLeft: radius,
-          topRight: radius,
-          bottomLeft: radius,
-          bottomRight: radius,
-        ),
-        paint);
-
-    var imaged = await loadImage(dataBytes.buffer.asUint8List());
-    canvas.drawImageRect(
-      imaged,
-      Rect.fromLTRB(
-          0.0, 0.0, imaged.width.toDouble(), imaged.height.toDouble()),
-      Rect.fromLTRB(0.0, 0.0, width.toDouble(), height.toDouble()),
-      new Paint(),
-    );
-
-    final img = await pictureRecorder.endRecording().toImage(width, height);
-    final data = await img.toByteData(format: ui.ImageByteFormat.png);
-    return data.buffer.asUint8List();
-  }
-
-  Future<ui.Image> loadImage(List<int> img) async {
-    final Completer<ui.Image> completer = new Completer();
-    ui.decodeImageFromList(img, (ui.Image img) {
-      return completer.complete(img);
-    });
-    return completer.future;
-  }
 
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
@@ -274,14 +210,12 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   }
 
   bool isScroll = false;
-  // GeoFenceMapState(){
-  //     print(currentIndex);
-  //
-  // }
+  LatLng setLatLng;
+
 
   @override
   Widget build(BuildContext context) {
-    model = HomeViewModel(geoFenceMapState: this);
+    model = HomeViewModel(geoFenceMapState: this, setMarker: this);
     return Scaffold(
         body: isVisible == false ?  Stack(
           children:[
@@ -294,9 +228,10 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
             onTap: (p){
             },
             onLongPress: (LatLng latLng){
-              _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: latLng,
-              icon: redPinLocationIcon));
+              // _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: latLng, icon: redPinLocationIcon));
+
               setState(() {
+                setLatLng = latLng;
                 // _getLocation(LatLng(latLng.latitude, latLng.longitude));
 
                 Geolocation location = Geolocation(
@@ -321,11 +256,6 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
               _controller.complete(controller);
               gController = controller;
               gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(addressList[0].latitude, addressList[0].longitude),zoom: 7)));
-              // setState(() {
-              //   _markers.add(Marker(markerId: MarkerId("location"),
-              //     position: _lng, infoWindow: InfoWindow(title: "home"),
-              //   ));
-              // });
             },
           ),
             Align(
@@ -340,7 +270,6 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
                           return Container(
                             height: 228,
                             margin: EdgeInsets.only(top: 35,bottom: 100),
-                            // padding: EdgeInsets.only(top: 20),
                             decoration: BoxDecoration(
                               color: Colors.transparent,
                                 borderRadius: BorderRadius.only(
@@ -370,8 +299,10 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
                               itemBuilder: (context, index) {
                                 currentIndex = index;
                                 _pageViewController.addListener(() {
+
                                   gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
                                         LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
+
                                   for(int i=0;i<locationEvent.length??1;i++){
                                    setState(() {
                                      _markers[i] = Marker(markerId: MarkerId(locationEvent[i].id),icon: redPinLocationIcon,
@@ -392,7 +323,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
                                         Row(
                                           children: <Widget>[
                                             model.pageView(index),
-                                            PlaceholderItemCard(index: index,height: 228,)
+                                            PlaceholderItemCard(index: index,height: 228, full_address: full_address)
                                           ],
                                         )
                                       ],
@@ -419,53 +350,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
                     },
                   ),
             )
-            //     Visibility(
-            //   visible: addressList.length != 0,
-            //   child: Align(
-            //     alignment: Alignment.bottomCenter,
-            //     child: Container(
-            //       margin : EdgeInsets.only(bottom: 90),
-            //       height: 228,
-            //       // padding: EdgeInsets.only(bottom: 10),
-            //       /// PageView which shows the world wonder details at the bottom.
-            //       child: PageView.builder(
-            //         itemCount: addressList.length,
-            //         onPageChanged: (int index){
-            //           setState(() => currentIndex = index);
-            //           print(index);
-            //           print("Pixel ${_pageViewController.position.pixels}");
-            //           print("Max Pixel ${_pageViewController.position.maxScrollExtent}");
-            //           // if (_pageViewController.position.pixels == _pageViewController.position.maxScrollExtent) {
-            //           //   print("Enter");
-            //           //   presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),
-            //           //       isPageToken: true,pageToken: map['nextPageToken']);
-            //           // }
-            //           gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
-            //           LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
-            //           for(int i=0;i<locationEvent.length;i++){
-            //             _markers[i] = Marker(markerId: MarkerId(locationEvent[i].id),icon: BitmapDescriptor.fromBytes(markerIconRed),
-            //                 position: LatLng(addressList[i].latitude,addressList[i].longitude));
-            //           }
-            //           _markers[index] = Marker(markerId: MarkerId(locationEvent[index].id),icon: BitmapDescriptor.fromBytes(markerIconBlue),
-            //               position: LatLng(addressList[index].latitude,addressList[index].longitude));
-            //         },
-            //         controller: _pageViewController,
-            //         itemBuilder: (BuildContext context, int index) {
-            //           return Transform.scale(
-            //             scale: index == currentIndex ? 1.03 : 0.9,
-            //             child: Stack(
-            //               children: [
-            //                 Container(
-            //                   child: model.pageView(index),
-            //                 ),
-            //               ],
-            //             ),
-            //           );
-            //         },
-            //       ),
-            //     ),
-            //   ),
-            // ),
+
           ]
         )
             : Center(child: CircularProgressIndicator())
@@ -511,10 +396,24 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
           lat = latlobg[0];
           lng = latlobg[1];
           addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
+
           _markers.add(Marker(markerId: MarkerId(data[i]['id']),position: LatLng(double.parse(lat),double.parse(lng)),
-          icon: redPinLocationIcon,onTap: (){}));
-          // getLocation(LatLng(double.parse(lat),double.parse(lng)));
+              icon: redPinLocationIcon,onTap: (){}));
+
+          /*load more change condition*/
+          setState(() {
+            _markers[0] = Marker(markerId: MarkerId(locationEvent[0].id),icon: bluePinLocationIcon,
+                position: LatLng(addressList[0].latitude,addressList[0].longitude));
+          });
         }
+      }
+
+      for(int i=0; i<addressList.length; i++){
+        getLocation(LatLng(addressList[i].latitude, addressList[i].longitude)).then((value){
+          full_address.add(value);
+          print("GETLOCATION::::;;${full_address.length}");
+          print("GETLOCATION::::;;${full_address[0]}");
+        });
       }
     });
 
@@ -526,6 +425,19 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
 
     print("Length${locationEvent.length}");
   }
+
+  Future getLocation(LatLng latLng) async {
+    final coordinates = new Coordinates(latLng.latitude, latLng.longitude);
+    var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    var first = addresses.first;
+    setState(() {
+      add.add(first.addressLine);
+    });
+
+    print("CALLED::::${first.addressLine}");
+    return first.addressLine;
+  }
+
 
   @override
   onHideLoader() {
@@ -550,4 +462,11 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView{
   onUpdateEvent(response) {
 
   }
+
+  @override
+  void setmarker() {
+   print("setMarkers::::;");
+   _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: setLatLng, icon: redPinLocationIcon));
+  }
+
 }
