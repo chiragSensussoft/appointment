@@ -237,6 +237,7 @@ class HomeState extends State<Home> implements OnHomeView{
             ],
           ),
 
+
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
           floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
@@ -254,6 +255,7 @@ class HomeState extends State<Home> implements OnHomeView{
     switch(index){
       case 0:
         return Container(
+          margin: EdgeInsets.only(bottom: 60),
           child: MyAppointment(controller:controller,onCreate: (val){
             if(val == true){
               presenter.getCalendarEvent(maxResult: 10, minTime: DateTime.now().toUtc(),
@@ -265,11 +267,15 @@ class HomeState extends State<Home> implements OnHomeView{
 
       case 1:
         return Container(
+          margin: EdgeInsets.only(bottom: 60),
           child: GeoFenceMap(),
         );
         break;
 
       case 2:
+        return Container(
+            margin: EdgeInsets.only(bottom: 60),
+        );
         break;
     }
   }

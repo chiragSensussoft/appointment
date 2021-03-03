@@ -29,9 +29,12 @@ class MyBottomSheet extends StatefulWidget {
   String timeZone;
   String eventID;
   IsCreatedOrUpdate isCreatedOrUpdate;
-  String isCalenderID;
+  String calenderId;
   LatLng latLng;
   String address;
+  bool isDelete;
+  DeleteEvent deleteEvent;
+
 
   MyBottomSheet({this.title,
       this.description,
@@ -41,9 +44,11 @@ class MyBottomSheet extends StatefulWidget {
       this.isEdit,
       this.eventID,
       this.isCreatedOrUpdate,
-      this.isCalenderID,
+      this.calenderId,
       this.latLng,
-      this.address});
+      this.address,
+  this.isDelete,
+  this.deleteEvent});
 
   @override
   _MyBottomSheetState createState() => _MyBottomSheetState();
@@ -480,7 +485,16 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
                     SizedBox(height: 20),
 
                     ProgressButton(isAccept: this, text: widget.isEdit ? 'Update' : 'save',
-                        formKey: _formKey, isVisible: true),
+                        formKey: _formKey, isVisible: true, color: Colors.blue),
+
+                    Visibility(
+                     visible: widget.isDelete,
+                      child: Container(
+                          margin: EdgeInsets.only(top: 20),
+                          child: ProgressButton(text: "Delete", color: Colors.redAccent, id: widget.eventID, isAccept: this,
+                          email: widget.calenderId)
+                      ),
+                    ),
 
                     SizedBox(height: 20),
                   ],
@@ -564,7 +578,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
         }else{
           messageDialog("Start Time");
         }
-
       });
   }
 
@@ -721,8 +734,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     Navigator.pop(context);
     Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventCreateMsg,Toast.LENGTH_SHORT);
     widget.isCreatedOrUpdate.onCreateUpdate(true);
-
-
   }
 
   @override
@@ -734,14 +745,61 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
   }
 
   @override
-  onDelete(delete) {}
+  onDelete(delete) {
+    // eventItem.removeWhere((element) => element.id == delete);
+    Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventDeleteMsg,Toast.LENGTH_SHORT);
+    Navigator.pop(context);
+
+    // pass interface to geo fence for delete event id
+    widget.deleteEvent.delete_event();
+  }
 
 
   @override
-  void isAccept() {
-    print('called::::');
-    createAppointment();
+  void isAccept(String str, String id, String email) {
+    print('called::::$str    event_id::::$id    email::::$email');
+
+    if(str=="Delete"){
+      _presenter = new HomePresenter(this, token: token);
+      _presenter.attachView(this);
+      _presenter.deleteEvent(id, 'chirag.1sensussoft@gmail.com');
+
+    }else {
+      createAppointment();
+    }
   }
+
+  // Future<bool> showConfirmationDialog(BuildContext context, String str, String id) {
+  //   return showDialog<bool>(
+  //     context: context,
+  //     barrierDismissible: true,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text(Resources.from(context, Constant.languageCode).strings.conformDelete, style: TextStyle(fontSize: 14, fontFamily: "poppins_regular"),),
+  //         actions: <Widget>[
+  //           FlatButton(
+  //             child: Text(Resources.from(context, Constant.languageCode).strings.no),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //           FlatButton(
+  //             child: Text(Resources.from(context, Constant.languageCode).strings.yes),
+  //             onPressed: () {
+  //               _presenter.deleteEvent(id, Constant.email);
+  //               Navigator.pop(context, true);
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
 }
 
+
+abstract class DeleteEvent{
+  void delete_event();
+}
 

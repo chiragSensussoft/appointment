@@ -149,4 +149,8 @@ class StringsGujarati extends Strings {
   // TODO: implement Location
   String get location => "સ્થાન";
 
+  @override
+  // TODO: implement eventDeleteMsg
+  String get eventDeleteMsg => "સફળતાપૂર્વક કા .ી નાખ્યું";
+
 }

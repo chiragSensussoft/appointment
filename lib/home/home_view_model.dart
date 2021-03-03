@@ -1,5 +1,6 @@
 import 'package:appointment/google_map/GeoFenceMap.dart';
 import 'package:appointment/home/model/LatLong.dart';
+import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsCreatedOrUpdate.dart';
 import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/home/BottomSheet.dart';
@@ -20,7 +21,7 @@ abstract class SetMarker{
 }
 
 
-class HomeViewModel implements IsCreatedOrUpdate {
+class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
   bool isCreateUpdate = false;
 
   MyAppointmentState state;
@@ -28,9 +29,9 @@ class HomeViewModel implements IsCreatedOrUpdate {
   GeoFenceMapState geoFenceMapState;
   bool isVisible;
   SetMarker setMarker;
+  DeleteEvent deleteEvent;
 
-  HomeViewModel({this.state, this.homestate, this.geoFenceMapState, this.setMarker});
-
+  HomeViewModel({this.state, this.homestate, this.geoFenceMapState, this.setMarker, this.deleteEvent});
 
   detailSheet(index){
     return showModalBottomSheet(
@@ -67,9 +68,9 @@ class HomeViewModel implements IsCreatedOrUpdate {
           return DraggableScrollableSheet(
               initialChildSize: 0.80,
               expand: true,
-              builder: (context, scrollController) {
 
-                return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this);
+              builder: (context, scrollController) {
+                return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, isDelete: false);
               });
         }).whenComplete(() => {
       if(isCreateUpdate){
@@ -81,6 +82,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
         }),
       }
     })
+
     : showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: geoFenceMapState.context,
@@ -93,9 +95,10 @@ class HomeViewModel implements IsCreatedOrUpdate {
               expand: true,
               builder: (context, scrollController) {
                 //Map LatLng
-                return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng);
+                return MyBottomSheet(isEdit: false, isCreatedOrUpdate: this, latLng: latlng, isDelete: false);
               });
         }).whenComplete(() => {
+
       /*add condition*/
       if(!isCreateUpdate){
 
@@ -103,7 +106,10 @@ class HomeViewModel implements IsCreatedOrUpdate {
     })
 
     //Edit
-        : showModalBottomSheet(
+        :
+        /*Edit from home*/
+    openfrom == "Home"?
+    showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: state.context,
         isScrollControlled: true,
@@ -116,7 +122,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
               builder: (context, scrollController) {
                 return MyBottomSheet(isEdit: true, address: address,
                     title: summary, description: description, getStartDate: startDate, getendDate: endDate,
-                    timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, isCalenderID: null);
+                    timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, calenderId: null, isDelete: false);
               });
         })
 
@@ -128,6 +134,38 @@ class HomeViewModel implements IsCreatedOrUpdate {
         state.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false, pageToken: state.map['nextPageToken']),
         state.setState(() {
           state.hasMoreItems = true;
+        }),
+      }
+    })
+        :
+
+        /*edit from Geo Fence*/
+    showModalBottomSheet(
+        backgroundColor: Colors.transparent,
+        context: geoFenceMapState.context,
+        isScrollControlled: true,
+        isDismissible: true,
+
+        builder: (context) {
+          return DraggableScrollableSheet(
+              initialChildSize: 0.80,
+              expand: true,
+              builder: (context, scrollController) {
+                return MyBottomSheet(isEdit: true, address: address,
+                    title: summary, description: description, getStartDate: startDate, getendDate: endDate,
+                    timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, calenderId: null, isDelete: false,
+                    deleteEvent: this);
+              });
+        })
+
+        .whenComplete(() => {
+      /*add condition*/
+      if(isCreateUpdate){
+        print("Edit"),
+        geoFenceMapState.locationEvent.clear(),
+        geoFenceMapState.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false, pageToken: state.map['nextPageToken']),
+        geoFenceMapState.setState(() {
+          geoFenceMapState.hasMoreItems = true;
         }),
       }
     });
@@ -147,7 +185,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
               context: state.context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  content: Text(Resources.from(context, Constant.languageCode).strings.conformDelete, style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
+                  content: Text(Resources.from(context, Constant.languageCode).strings.conformDelete,
+                      style: TextStyle(fontSize: 14, fontFamily: "poppins_regular")),
                   actions: <Widget>[
                     FlatButton(
                       child: Text(
@@ -254,8 +293,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
                                     openBottomSheetView(description: state.eventItem[index].description,
                                         summary: state.eventItem[index].summary, startDate: state.eventItem[index].start.dateTime,
                                         timeZone: state.eventItem[index].start.timeZone, endDate: state.eventItem[index].end.dateTime,
-                                        isEdit: true, eventID: state.eventItem[index].id,
-                                        calenderId: null, latlng: LatLng(21.170240, 72.831062), openfrom: "Edit", address: state.eventItem[index].location);
+                                        isEdit: true, eventID: state.eventItem[index].id, calenderId: null,
+                                        latlng: LatLng(21.170240, 72.831062), openfrom: "Edit", address: state.eventItem[index].location);
                                   },
                                 ),
                                 GestureDetector(
@@ -412,6 +451,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
   }
 
   pageView(index){
+  
     return Material(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -436,7 +476,8 @@ class HomeViewModel implements IsCreatedOrUpdate {
                       child: Container(
                         child: Text(geoFenceMapState.locationEvent[index].summary.toString(),
                           style: TextStyle(color: Colors.black, fontSize: 12,
-                              fontFamily: "poppins_medium")),),
+                              fontFamily: "poppins_medium"))
+                      ),
                     ),
                     Container(
                       child: Row(
@@ -445,21 +486,58 @@ class HomeViewModel implements IsCreatedOrUpdate {
                         children: [
                           GestureDetector(
                             child: Padding(
-                                padding: EdgeInsets.only(left: 30),
-                                child: Icon(Icons.edit_outlined,size: 20, color: Colors.black.withOpacity(0.5))),
+                                // padding: EdgeInsets.only(left: 30),
+                              padding: EdgeInsets.all(10),
+                                child: Icon(Icons.edit_outlined,size: 30, color: Colors.black.withOpacity(0.5))),
 
                             onTap: (){
-                              openBottomSheetView(description: geoFenceMapState.locationEvent[index].description,
-                                  summary: geoFenceMapState.locationEvent[index].summary, startDate: geoFenceMapState.locationEvent[index].start.dateTime,
-                                  timeZone: geoFenceMapState.locationEvent[index].start.timeZone, endDate: geoFenceMapState.locationEvent[index].end.dateTime,
-                                  isEdit: true, eventID: geoFenceMapState.locationEvent[index].id,
-                                  calenderId: null, latlng: LatLng(21.170240, 72.831062), openfrom: "Edit", address: geoFenceMapState.locationEvent[index].location);
+                              print("isEdit:::");
+                                  // openBottomSheetView(description: geoFenceMapState.locationEvent[index].description,
+                                  // summary: geoFenceMapState.locationEvent[index].summary, startDate: geoFenceMapState.locationEvent[index].start.dateTime,
+                                  // timeZone: geoFenceMapState.locationEvent[index].start.timeZone, endDate: geoFenceMapState.locationEvent[index].end.dateTime,
+                                  // isEdit: true, eventID: geoFenceMapState.locationEvent[index].id,
+                                  // calenderId: null, latlng: LatLng(21.170240, 72.831062),
+                                  // openfrom: "Edit", address: geoFenceMapState.locationEvent[index].location);
+
+                                  showModalBottomSheet(
+                                      backgroundColor: Colors.transparent,
+                                      context: geoFenceMapState.context,
+                                      isScrollControlled: true,
+                                      isDismissible: true,
+
+                                      builder: (context) {
+                                        return DraggableScrollableSheet(
+                                            initialChildSize: 0.80,
+                                            expand: true,
+                                            builder: (context, scrollController) {
+                                              return MyBottomSheet(isEdit: true, address: geoFenceMapState.locationEvent[index].location,
+                                                  title: geoFenceMapState.locationEvent[index].summary,
+                                                  description: geoFenceMapState.locationEvent[index].description,
+                                                  getStartDate: geoFenceMapState.locationEvent[index].start.dateTime,
+                                                  getendDate: geoFenceMapState.locationEvent[index].end.dateTime,
+                                                  timeZone: geoFenceMapState.locationEvent[index].start.timeZone,
+                                                  eventID: geoFenceMapState.locationEvent[index].id, isCreatedOrUpdate: this,
+                                                  calenderId: geoFenceMapState.locationEvent[index].summary, isDelete: true);
+                                            });
+                                      })
+
+                                      .whenComplete(() => {
+                                    /*add condition*/
+                                    if(isCreateUpdate){
+                                      print("OnBACK:::::::::"),
+                                      geoFenceMapState.locationEvent.clear(),
+                                      geoFenceMapState.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false, pageToken: state.map['nextPageToken']),
+                                      geoFenceMapState.setState(() {
+                                        geoFenceMapState.hasMoreItems = true;
+                                      }),
+                                    }
+                                  });
                             },
                           ),
                           GestureDetector(
                             child: Padding(
                                 padding:EdgeInsets.only(left:10),
-                                child: Icon(Icons.share_rounded,size: 20, color: Colors.black.withOpacity(0.5))
+                                child: Icon(Icons.share_rounded, size: 20, color: Colors.black.withOpacity(0.5))
                             ),
 
                             onTap: ()async{
@@ -487,6 +565,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                   ],
                 ),
               ),
+
               SizedBox(height: 3),
 
               Divider(
@@ -510,8 +589,7 @@ class HomeViewModel implements IsCreatedOrUpdate {
                   ),
                 ),
               ),
-
-
+              
               Visibility(
                 visible: geoFenceMapState.locationEvent[index].location!= null,
                 child: Container(
@@ -614,5 +692,10 @@ class HomeViewModel implements IsCreatedOrUpdate {
     if(bool){
       setMarker.setmarker();
     }
+  }
+
+  @override
+  void delete_event() {
+    deleteEvent.delete_event();
   }
 }

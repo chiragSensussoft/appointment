@@ -104,6 +104,8 @@ abstract class Strings {
   //More
   //વધુ
   //अधिक
+  String get eventDeleteMsg;
+
 }
 
 class Resources {

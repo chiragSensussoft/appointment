@@ -122,6 +122,10 @@ class StringsHindi extends Strings {
   // TODO: implement Location
   String get location => "स्थान";
 
+  @override
+  // TODO: implement eventDeleteMsg
+  String get eventDeleteMsg => "सफलतापूर्वक मिटाया गया";
+
 
 
 }

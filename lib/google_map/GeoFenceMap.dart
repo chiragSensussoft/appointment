@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/LoadMore.dart';
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/home/OnHomeView.dart';
@@ -27,7 +28,7 @@ class GeoFenceMap extends StatefulWidget {
   GeoFenceMapState createState() => GeoFenceMapState();
 }
 
-class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMarker{
+class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMarker, DeleteEvent{
   LatLng _lng;
   Position _currentPosition;
   Completer _controller = Completer();
@@ -215,7 +216,8 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMark
 
   @override
   Widget build(BuildContext context) {
-    model = HomeViewModel(geoFenceMapState: this, setMarker: this);
+    model = HomeViewModel(geoFenceMapState: this, setMarker: this, deleteEvent: this);
+
     return Scaffold(
         body: isVisible == false ?  Stack(
           children:[
@@ -224,15 +226,16 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMark
             markers: Set.of(_markers),
             mapType: MapType.normal,
             myLocationEnabled: true,
+              zoomControlsEnabled: false,
 
             onTap: (p){
             },
+
             onLongPress: (LatLng latLng){
               // _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: latLng, icon: redPinLocationIcon));
 
               setState(() {
                 setLatLng = latLng;
-                // _getLocation(LatLng(latLng.latitude, latLng.longitude));
 
                 Geolocation location = Geolocation(
                     latitude: 21.2050,
@@ -258,6 +261,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMark
               gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(addressList[0].latitude, addressList[0].longitude),zoom: 7)));
             },
           ),
+
             Align(
               alignment: Alignment.bottomCenter,
               child: FutureBuilder(
@@ -266,15 +270,17 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMark
                       switch (snapshot.connectionState) {
                         case ConnectionState.waiting:
                           return Center(child: CircularProgressIndicator());
+
                         case ConnectionState.done:
                           return Container(
                             height: 228,
-                            margin: EdgeInsets.only(top: 35,bottom: 100),
+                            margin: EdgeInsets.only(top: 35, bottom: 20),
                             decoration: BoxDecoration(
                               color: Colors.transparent,
                                 borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(20),
                                     topRight: Radius.circular(20))),
+
                             child: IncrementallyLoadingListView(
                               hasMore: () => hasMoreItems,
                               itemCount: () => locationEvent.length,
@@ -300,8 +306,8 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMark
                                 currentIndex = index;
                                 _pageViewController.addListener(() {
 
-                                  gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
-                                        LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
+                                  gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+                                      target: LatLng(addressList[index].latitude,addressList[index].longitude,),zoom: 7)));
 
                                   for(int i=0;i<locationEvent.length??1;i++){
                                    setState(() {
@@ -315,6 +321,7 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMark
                                  });
                                 });
 
+                                /*load more set shimmer view*/
                                 if ((loadingMore ?? false) && index == locationEvent.length - 1) {
                                   return Transform.scale(
                                     scale: 0.9,
@@ -323,13 +330,15 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMark
                                         Row(
                                           children: <Widget>[
                                             model.pageView(index),
-                                            PlaceholderItemCard(index: index,height: 228, full_address: full_address)
+                                            PlaceholderItemCard(index: index, height: 228, full_address: full_address)
                                           ],
                                         )
                                       ],
                                     ),
                                   );
                                 }
+
+                                /*load more set*/
                                 return Transform.scale(
                                     scale: 0.9,
                                     child: Stack(
@@ -368,7 +377,9 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMark
 
   @override
   onDelete(delete) {
-
+    print("DELETE::::::::");
+    // eventItem.removeWhere((element) => element.id == delete);
+    // _isVisible = true;
   }
 
   @override
@@ -467,6 +478,15 @@ class GeoFenceMapState extends State<GeoFenceMap> implements OnHomeView, SetMark
   void setmarker() {
    print("setMarkers::::;");
    _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: setLatLng, icon: redPinLocationIcon));
+
+   initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+   hasMoreItems = true;
+  }
+
+  @override
+  void delete_event() {
+    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+    hasMoreItems = true;
   }
 
 }

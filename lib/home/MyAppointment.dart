@@ -814,6 +814,8 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
 
   @override
   onSuccessRes(response) {
+    print("CALENDER_LIST_SUCESS:::::$response");
+
     setState(() {
       List<dynamic> data = response;
       for (int i = 0; i < data.length; i++) {
@@ -823,6 +825,9 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
         }
       }
     });
+
+    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+    hasMoreItems = true;
   }
 
   String address;
@@ -841,68 +846,64 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   }
 
   List<String> add = List.empty(growable: true);
-  
 
   Map<String, dynamic> map;
-  List<LatLong> addressList = List.empty(growable: true);
-  List<String> full_address = List.empty(growable: true);
+  // List<LatLong> addressList = List.empty(growable: true);
+  // List<String> full_address = List.empty(growable: true);
 
   @override
   onEventSuccess(response, calendarResponse) {
     print("success ${response.runtimeType}");
 
+
     setState(() {
       map = calendarResponse;
       List<dynamic> data = response;
+      print("KFJJFGJDFJFJJ:::::::${data.length}     datatat::::'${data[0]["id"]}    response::::$response");
+
       ///Add Event Data
       // eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
       // searchEventList.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+
       ///Only latLong Event
       for(int i=0;i<data.length;i++){
+        print("LOCATION:::::${data[i]['location']}");
+
         if(data[i]['location'] == null){
+          print("list_data_get::::::${EventItem.fromJson(data[i])}");
           eventItem.add(EventItem.fromJson(data[i]));
           searchEventList.add(EventItem.fromJson(data[i]));
-          // eventItem.addAll(data.map((e) => EventItem.fromJson(e)).toList());
+        }else{
+          print("ELSE::::::");
         }
       }
-      addressList.clear();
-      for(int i=0;i<data.length;i++){
-        if(data[i]['location'] != null){
-          print("------- Enter ------");
-          var lat;
-          var lng;
-          var latlng = data[i]['location'].toString().split(",");
-          lat = latlng[0];
-          lng = latlng[1];
-          addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
-          // getLocation(LatLng(double.parse(lat),double.parse(lng)));
-        }
-      }
-
-      for(int i=0; i<addressList.length; i++){
-        getLocation(LatLng(addressList[i].latitude, addressList[i].longitude)).then((value){
-          full_address.add(value);
-          print("GETLOCATION::::;;${full_address.length}");
-          print("GETLOCATION::::;;${full_address[0]}");
-        });
-      }
+      // print('leghth:::::${eventItem.length}');
+      // addressList.clear();
+      // for(int i=0;i<data.length;i++){
+      //   if(data[i]['location'] != null){
+      //     print("------- Enter ------");
+      //     var lat;
+      //     var lng;
+      //     var latlng = data[i]['location'].toString().split(",");
+      //     lat = latlng[0];
+      //     lng = latlng[1];
+      //     addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
+      //     // getLocation(LatLng(double.parse(lat),double.parse(lng)));
+      //   }
+      // }
     });
 
-    if(eventItem.length>=3 || eventItem.length>=9){
-      setState(() {
-        hasMoreItems = false;
-      });
-    }
-
-    print("Length${addressList.length}");
+    // if(eventItem.length>=3 || eventItem.length>=9){
+    //   setState(() {
+    //     hasMoreItems = false;
+    //   });
+    // }
 
   }
 
   Future<String> refreshToken() async {
-    final GoogleSignInAccount googleSignInAccount =
-    await googleSignIn.signInSilently();
-    final GoogleSignInAuthentication googleSignInAuthentication =
-    await googleSignInAccount.authentication;
+    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signInSilently();
+    final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
 
     final AuthCredential credential = GoogleAuthProvider.getCredential(
       accessToken: googleSignInAuthentication.accessToken,
@@ -925,8 +926,9 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
     presenter.attachView(this);
     presenter.getCalendar(googleSignInAuthentication.accessToken);
     eventItem.clear();
-    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
-    hasMoreItems = true;
+    print("get_calenderAPI::::::::::");
+    // initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+    // hasMoreItems = true;
 
     return googleSignInAuthentication.accessToken;
   }
@@ -955,7 +957,7 @@ class MyAppointmentState extends State<MyAppointment>with TickerProviderStateMix
   }
 
   @override
-  void isAccept() {
+  void isAccept(String str, String id, String email) {
     print("Update --->");
     eventItem.clear();
     presenter.setAppointment(summary: str_summary, endDate: str_EndDate, startDate: str_startDate,
@@ -983,7 +985,8 @@ class PlaceholderItemCard extends StatelessWidget {
       child: Material(
         color: Colors.grey[100],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Shimmer.fromColors(child: Padding(
+        child: Shimmer.fromColors(
+          child: Padding(
           padding: EdgeInsets.only(left: 0, top: 0, right: 0, bottom:0),
           child: GestureDetector(
             child: Container(

@@ -148,4 +148,8 @@ class StringsEnglish extends Strings {
   // TODO: implement Location
   String get location => "Location";
 
+  @override
+  // TODO: implement eventDeleteMsg
+  String get eventDeleteMsg => "Deleted successfully";
+
 }

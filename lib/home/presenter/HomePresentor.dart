@@ -65,6 +65,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     }
   }
 
+
   Future getCalendar(String authToken)async{
     view.onShowLoader();
     print('authToken::$authToken');
@@ -87,7 +88,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     Response getCalendarEventList;
     maxTime==null?
      getCalendarEventList = await apiHelper.api(token: token, method: Method.GET,isPageToken: isPageToken,
-        apiName: Constant().event, endPoint: Constant().event,pageToken: pageToken,
+        apiName: Constant().event, endPoint: Constant().event, pageToken: pageToken,
         maxResult: maxResult.toString(),timeMin: minTime.toString())
     :
     getCalendarEventList = await apiHelper.api(token: token, method: Method.GET,isPageToken: isPageToken,
@@ -105,9 +106,9 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     }
   }
 
-  Future deleteEvent(id,email)async{
+  Future deleteEvent(id, email)async{
     view.onShowLoader();
-    Response deleteCalendarEvent = await apiHelper.api(method: Method.DELETE,token: token,endPoint: id,apiName: Constant().event,
+    Response deleteCalendarEvent = await apiHelper.api(method: Method.DELETE, token: token,endPoint: id,apiName: Constant().event,
         user: email);
     if(deleteCalendarEvent.runtimeType == null){
       print("RunTimeType${deleteCalendarEvent.runtimeType}");
@@ -115,17 +116,9 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     else{
       view.onDelete(id);
       view.onHideLoader();
-      // Response getCalendarEventList = await apiHelper.api(token: token,method: Method.GET,apiName: Constant().event,endPoint: Constant().event,isPageToken: false,maxResult: "10",currentTime: DateTime.now().toUtc().toString());
-      // if(getCalendarEventList.statusCode == 200){
-      //   isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items'],getCalendarEventList.data) : null;
-      //   view.onHideLoader();
-      //   print("RunTimeType${deleteCalendarEvent.runtimeType}");
-      // }else{
-      //   view.onHideLoader();
-      //   print("RunTimeType${deleteCalendarEvent.runtimeType}");
-      // }
     }
   }
+
 
   Future updatevent({String id, String email, String description, String summary, String startDate,
     String endDate,String timeZone, String address,String coords})async{
@@ -146,7 +139,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     view.onShowLoader();
 
     Response postResponse = await apiHelper.api(apiName:Constant().event, method: Method.PUT,
-        endPoint: id, user: email,token: token,
+        endPoint: id, user: email, token: token,
         body:
         address!=""?
         jsonEncode(

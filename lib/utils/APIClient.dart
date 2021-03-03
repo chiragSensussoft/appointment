@@ -10,14 +10,12 @@ import 'BasePresenter.dart';
 class APIClient extends BasePresenter<OnHomeView>{
 
   static final BASEURL = 'https://www.googleapis.com/calendar/v3/calendars/';
-  //https://www.googleapis.com/calendar/v3/calendars/jay.sensussoft@gmail.com/events/tekmrqi30pif8ej3li0hv7c398
   final calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/";
-
-
 
   Dio dio = new Dio();
   OnHomeView view;
   APIClient(this.view);
+
 
   Future<dynamic> api({String apiName, method, dynamic body, String token, String endPoint,
     String user,String pageToken,String maxResult,String timeMin, bool isPageToken, String timeMax}) async{
@@ -39,7 +37,7 @@ class APIClient extends BasePresenter<OnHomeView>{
               responseJson = _returnResponse(response);
 
             } on DioError catch (e) {
-              responseJson = _returnResponse(e.response);
+              responseJson =    _returnResponse(e.response);
             }
             break;
 
@@ -59,6 +57,8 @@ class APIClient extends BasePresenter<OnHomeView>{
               case "events":
                 try {
                   String time = timeMin.replaceAll(" ", "T");
+                  print('TIMEE::::$apiName');
+                  print('maxResult::::$maxResult');
                   print('TIMEE::::$time');
 
                   if(timeMax==null){
@@ -66,8 +66,7 @@ class APIClient extends BasePresenter<OnHomeView>{
                     response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"
                         +"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"pageToken="+pageToken)
 
-                        : response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="
-                        +maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time);
+                        : response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="+maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time);
 
                   }else{
                     String max = timeMax.replaceAll(" ", "T");
@@ -77,8 +76,11 @@ class APIClient extends BasePresenter<OnHomeView>{
                         :response = await dio.get(BASEURL+ Constant.email+"/"+ apiName+"?"+"maxResults="
                         +maxResult+"&"+"singleEvents="+"true"+"&"+"timeMin="+time+"&"+"timeMax="+max);
                   }
+
+                  print("CALLEDLL::::::$response");
+
                   responseJson = _returnResponse(response);
-                  print('response:::$response');
+                  print('response:get::$responseJson     respppppp:::::$response');
 
                 } on DioError catch (e) {
                   responseJson = _returnResponse(e.response);
