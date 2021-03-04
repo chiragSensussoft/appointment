@@ -6,6 +6,7 @@ import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/MyAppointment.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
@@ -55,6 +56,7 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
   openBottomSheetView({String summary, String description, DateTime startDate,
     DateTime endDate, String timeZone, bool isEdit, String eventID, String calenderId,
     LatLng latlng, String openfrom, String address}){
+    print("OPENFROM:::::$openfrom");
 
     return !isEdit?
     openfrom=="Home"?
@@ -74,6 +76,7 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
               });
         }).whenComplete(() => {
       if(isCreateUpdate){
+        print("HOME:::MADE:::::"),
         state.eventItem.clear(),
         state.presenter.getCalendarEvent(maxResult: 10, minTime: DateTime.now().toUtc(),
             isPageToken: false, pageToken: state.map['nextPageToken']),
@@ -100,8 +103,13 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
         }).whenComplete(() => {
 
       /*add condition*/
-      if(!isCreateUpdate){
-
+      if(isCreateUpdate){
+        geoFenceMapState.locationEvent.clear(),
+        geoFenceMapState.presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),
+            isPageToken: false, pageToken: state.map['nextPageToken']),
+        geoFenceMapState.setState(() {
+        geoFenceMapState.hasMoreItems = true;
+        }),
       }
     })
 
@@ -122,7 +130,8 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
               builder: (context, scrollController) {
                 return MyBottomSheet(isEdit: true, address: address,
                     title: summary, description: description, getStartDate: startDate, getendDate: endDate,
-                    timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, calenderId: null, isDelete: false);
+                    timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, calenderId: null, isDelete: false,
+                    deleteEvent: this);
               });
         })
 
@@ -153,8 +162,8 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
               builder: (context, scrollController) {
                 return MyBottomSheet(isEdit: true, address: address,
                     title: summary, description: description, getStartDate: startDate, getendDate: endDate,
-                    timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, calenderId: null, isDelete: false,
-                    deleteEvent: this);
+                    timeZone: timeZone, eventID: eventID, isCreatedOrUpdate: this, calenderId: null,
+                    isDelete: false, deleteEvent: this);
               });
         })
 
@@ -172,7 +181,6 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
   }
 
   /*swipe to delete*/
-
   slideMenu(index) {
     return Dismissible(
       direction: DismissDirection.endToStart,
@@ -451,7 +459,6 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
   }
 
   pageView(index){
-  
     return Material(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -492,13 +499,6 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
 
                             onTap: (){
                               print("isEdit:::");
-                                  // openBottomSheetView(description: geoFenceMapState.locationEvent[index].description,
-                                  // summary: geoFenceMapState.locationEvent[index].summary, startDate: geoFenceMapState.locationEvent[index].start.dateTime,
-                                  // timeZone: geoFenceMapState.locationEvent[index].start.timeZone, endDate: geoFenceMapState.locationEvent[index].end.dateTime,
-                                  // isEdit: true, eventID: geoFenceMapState.locationEvent[index].id,
-                                  // calenderId: null, latlng: LatLng(21.170240, 72.831062),
-                                  // openfrom: "Edit", address: geoFenceMapState.locationEvent[index].location);
-
                                   showModalBottomSheet(
                                       backgroundColor: Colors.transparent,
                                       context: geoFenceMapState.context,
@@ -517,7 +517,7 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
                                                   getendDate: geoFenceMapState.locationEvent[index].end.dateTime,
                                                   timeZone: geoFenceMapState.locationEvent[index].start.timeZone,
                                                   eventID: geoFenceMapState.locationEvent[index].id, isCreatedOrUpdate: this,
-                                                  calenderId: geoFenceMapState.locationEvent[index].summary, isDelete: true);
+                                                  calenderId: geoFenceMapState.locationEvent[index].summary, isDelete: true, deleteEvent: this);
                                             });
                                       })
 
@@ -593,7 +593,6 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
               Visibility(
                 visible: geoFenceMapState.locationEvent[index].location!= null,
                 child: Container(
-                  // margin: EdgeInsets.only(),
                   padding: EdgeInsets.only(left: 10, top: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -601,9 +600,7 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
                     children: [
                       Icon(Icons.location_on_outlined, size: 18, color: Colors.grey),
                       SizedBox(width: 3),
-                      // Expanded(child: Text(state.add[index]??"",
-                      //     style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5))))
-                      Expanded(child: Text(geoFenceMapState.locationEvent[index].location??"",
+                      Expanded(child: Text(geoFenceMapState.full_address.length!=0?geoFenceMapState.full_address[index]:"",
                           style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5))))
                     ],
                   ),
@@ -684,18 +681,31 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
     );
   }
 
+  var address;
+  Future<String> getLocation(double latitude, double longitude) async {
+    final coordinates = new Coordinates(latitude, longitude);
+    var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    var first = addresses.first;
+    // geoFenceMapState.setState(() {
+    //   address = first.addressLine;
+    // });
+
+    return first.addressLine;
+  }
+
+
   @override
   onCreateUpdate(bool bool) {
     isCreateUpdate = bool;
-    print('isCreateUpdtae::::$bool   $isCreateUpdate');
-
+    print('isCreateUpdtae::::$isCreateUpdate');
     if(bool){
       setMarker.setmarker();
     }
   }
 
   @override
-  void delete_event() {
-    deleteEvent.delete_event();
+  void delete_event(String eventId) {
+    print("DELEELEELLEELLE:::::");
+    deleteEvent.delete_event(eventId);
   }
 }

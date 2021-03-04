@@ -19,7 +19,7 @@
 // }
 //
 // void backgroundGeolocationHeadlessTask(bg.HeadlessEvent headlessEvent) async {
-//   print('📬 --> $headlessEvent');
+
 //
 //   switch (headlessEvent.name) {
 //     case bg.Event.TERMINATE:

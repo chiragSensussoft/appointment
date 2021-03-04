@@ -98,7 +98,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
     print('statusCode::::${getCalendarEventList.statusCode}');
 
     if(getCalendarEventList.statusCode == 200){
-      isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items'],getCalendarEventList.data) : null;
+      isViewAttached ? getView().onEventSuccess(getCalendarEventList.data['items'], getCalendarEventList.data) : null;
       view.onHideLoader();
     }else{
       print('ELSE::::');

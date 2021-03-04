@@ -751,7 +751,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     Navigator.pop(context);
 
     // pass interface to geo fence for delete event id
-    widget.deleteEvent.delete_event();
+    widget.deleteEvent.delete_event(delete);
   }
 
 
@@ -800,6 +800,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
 
 
 abstract class DeleteEvent{
-  void delete_event();
+  void delete_event(String eventId);
 }
 
