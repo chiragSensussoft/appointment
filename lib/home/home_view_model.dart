@@ -517,7 +517,7 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
                                                   getendDate: geoFenceMapState.locationEvent[index].end.dateTime,
                                                   timeZone: geoFenceMapState.locationEvent[index].start.timeZone,
                                                   eventID: geoFenceMapState.locationEvent[index].id, isCreatedOrUpdate: this,
-                                                  calenderId: geoFenceMapState.locationEvent[index].summary, isDelete: true, deleteEvent: this);
+                                                  calenderId: geoFenceMapState.locationEvent[index].creator.email, isDelete: true, deleteEvent: this);
                                             });
                                       })
 

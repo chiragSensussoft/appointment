@@ -103,6 +103,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
       widget.latLng != null ? getLocation() :  address = null;
     }
 
+    // print()
+
     widget.isEdit ? _startDateTime = widget.getStartDate.toLocal() : _startDateTime = DateTime.now();
 
     startDate = _startDateTime.year.toString() + "-" + _startDateTime.month.toString() + "-" + _startDateTime.day.toString();
@@ -112,7 +114,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     _startTime = Constant.getTimeFormat(_startDateTime);
 
     start = DateTime(_startDateTime.year, _startDateTime.month,
-        _startDateTime.day, int.parse(_startHour), int.parse(_startMinute));
+            _startDateTime.day, int.parse(_startHour), int.parse(_startMinute));
 
     if (widget.isEdit) {
       _endHour = widget.getendDate.toLocal().hour.toString();
@@ -511,6 +513,7 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     _presenter = new HomePresenter(this, token: token);
     _presenter.attachView(this);
 
+    /*update event*/
     widget.isEdit
         ? _presenter.updatevent(
             endDate: startDate + "T" + _endTime,
@@ -520,9 +523,10 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
             description: desc.text,
             id: widget.eventID,
             email: Constant.email,
-            coords: address==null?"":widget.latLng.latitude.toString()+","+widget.latLng.longitude.toString(),
+            coords: address==null?"":address,
             address: address)
 
+    /*create event*/
         : _presenter.setAppointment(
             endDate: startDate + "T" + _endTime,
             startDate: startDate + "T" + _startTime,
@@ -762,9 +766,10 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     if(str=="Delete"){
       _presenter = new HomePresenter(this, token: token);
       _presenter.attachView(this);
-      _presenter.deleteEvent(id, 'chirag.1sensussoft@gmail.com');
+      _presenter.deleteEvent(id, email);
 
     }else {
+      print("UPDATE:::::");
       createAppointment();
     }
   }

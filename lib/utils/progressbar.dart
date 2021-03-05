@@ -134,6 +134,7 @@ class _ProgressButtonState extends State<ProgressButton>
       setState(() {
         _state = 2;
         if(widget.text=="Delete"){
+          print("DELETE:::::::${widget.email}");
           widget.isAccept.isAccept(widget.text, widget.id, widget.email);
         }else{
           widget.isAccept.isAccept(widget.text, widget.id," ");

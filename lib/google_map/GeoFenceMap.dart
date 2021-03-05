@@ -63,7 +63,6 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
   AppLifecycleState state;
 
 
-
   @override
   void initState() {
     super.initState();
@@ -457,8 +456,6 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
   @override
   onDelete(delete) {
     print("DELETE::::::::");
-    // eventItem.removeWhere((element) => element.id == delete);
-    // _isVisible = true;
   }
 
   @override
@@ -478,7 +475,7 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
       for(int i=0;i<data.length;i++){
         if(data[i]['location'] != null){
           locationEvent.add(EventItem.fromJson(data[i]));
-          print("------- Enter ------");
+          print("------- Enter ------${locationEvent.length}");
           var lat;
           var lng;
           var latlobg = data[i]['location'].toString().split(",");
@@ -487,12 +484,23 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
           addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
 
           /*load more change condition*/
-          setState(() {
-            _markers.add(Marker(markerId: MarkerId(data[i]['id']),position: LatLng(double.parse(lat),double.parse(lng)),
-                icon: redPinLocationIcon, onTap: (){}));
+          // setState(() {
+          //   if(i==0){
+          //     _markers[0] = Marker(markerId: MarkerId(locationEvent[0].id), icon: bluePinLocationIcon,
+          //         position: LatLng(addressList[0].latitude, addressList[0].longitude));
+          //
+          //   }else{
+          //     _markers.add(Marker(markerId: MarkerId(data[i]['id']),position: LatLng(double.parse(lat),double.parse(lng)),
+          //         icon: redPinLocationIcon, onTap: (){}));
+          //   }
+          // });
 
-            _markers[0] = Marker(markerId: MarkerId(locationEvent[0].id), icon: bluePinLocationIcon,
-                position: LatLng(addressList[0].latitude, addressList[0].longitude));
+          setState(() {
+            _markers.add(Marker(markerId: MarkerId(data[i]['id']), position: LatLng(double.parse(lat),double.parse(lng)),
+                icon: i==0?bluePinLocationIcon:redPinLocationIcon,
+                onTap: (){
+
+                }));
           });
         }
       }
@@ -552,8 +560,8 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
 
   @override
   void setmarker() {
-   _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: setLatLng,
-       icon: redPinLocationIcon));
+    print("SET_MARKERS:::::");
+   _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: setLatLng, icon: bluePinLocationIcon));
 
    locationEvent.clear();
    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
@@ -563,17 +571,16 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
   @override
   void delete_event(String eventID) {
     locationEvent.removeWhere((element) => element.id == eventID);
-
-    locationEvent.clear();
-    presenter = new HomePresenter(this, token: accessToken);
-    presenter.attachView(this);
-    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
-    hasMoreItems = true;
-
     setState(() {
       _markers.remove(_markers.firstWhere((Marker marker) => marker.markerId.value == eventID));
     });
 
+    locationEvent.clear();
+    _markers.clear();
+    presenter = new HomePresenter(this, token: accessToken);
+    presenter.attachView(this);
+    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+    hasMoreItems = true;
   }
 
 }

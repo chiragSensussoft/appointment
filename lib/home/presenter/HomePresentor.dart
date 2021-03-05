@@ -140,8 +140,7 @@ class HomePresenter extends BasePresenter<OnHomeView>  {
 
     Response postResponse = await apiHelper.api(apiName:Constant().event, method: Method.PUT,
         endPoint: id, user: email, token: token,
-        body:
-        address!=""?
+        body: address!=""?
         jsonEncode(
             {
           "end": {
