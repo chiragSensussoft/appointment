@@ -1,6 +1,4 @@
 import 'package:appointment/google_map/GeoFenceMap.dart';
-import 'package:appointment/home/model/LatLong.dart';
-import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsCreatedOrUpdate.dart';
 import 'package:appointment/utils/expand_text.dart';
 import 'package:appointment/home/BottomSheet.dart';
@@ -464,7 +462,7 @@ class HomeViewModel implements IsCreatedOrUpdate, DeleteEvent {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
 
       child: Container(
-        height: 228,
+        height: 300,
           width: MediaQuery.of(geoFenceMapState.context).size.width,
           padding: EdgeInsets.only(top: 8, bottom: 8),
           child: Column(

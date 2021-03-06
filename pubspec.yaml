@@ -76,6 +76,8 @@ dependencies:
   geocoder: any
 #  firebase_crashlytics: any
 
+  geofencing: ^0.1.0
+
 
 
 dev_dependencies:

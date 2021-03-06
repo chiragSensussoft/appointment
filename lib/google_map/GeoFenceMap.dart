@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:appointment/home/BottomSheet.dart';
 import 'package:appointment/home/LoadMore.dart';
 import 'package:appointment/home/MyAppointment.dart';
@@ -13,6 +15,8 @@ import 'package:appointment/utils/values/Constant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geofencing/geofencing.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -22,6 +26,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui' as ui;
+
 
 
 class GeoFenceMap extends StatefulWidget {
@@ -61,6 +66,26 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
   List<String> full_address = List.empty(growable: true);
 
   AppLifecycleState state;
+  ReceivePort port = ReceivePort();
+  String geofenceState = 'N/A';
+  double latitude;
+  double longitude;
+  double radius = 80.0;
+  List<String> registeredGeofences = [];
+
+  final List<GeofenceEvent> triggers = <GeofenceEvent>[
+    GeofenceEvent.enter,
+    GeofenceEvent.dwell,
+    GeofenceEvent.exit
+  ];
+
+  final AndroidGeofencingSettings androidSettings = AndroidGeofencingSettings(
+      initialTrigger: <GeofenceEvent>[
+        GeofenceEvent.enter,
+        GeofenceEvent.exit,
+        GeofenceEvent.dwell
+      ],
+      loiteringDelay: 1000 * 60);
 
 
   @override
@@ -73,14 +98,43 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     setCustomMapBluePin();
     refreshToken();
 
-    initPlatformState();
-
+    /*local notification*/
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     var android = AndroidInitializationSettings('@mipmap/ic_launcher');
     var iOS = IOSInitializationSettings();
     var initSettings = InitializationSettings(android:android,iOS: iOS);
     flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: null);
 
+    /*geofence init*/
+    IsolateNameServer.registerPortWithName(port.sendPort, 'geofencing_send_port');
+    port.listen((dynamic data) {
+      print('Event: $data');
+      setState(() {
+        geofenceState = data;
+        scheduleNotification("My Appointment App", geofenceState);
+      });
+    });
+    initPlatformState();
+
+  }
+
+  Future<void> initPlatformState() async {
+    print('Initializing...');
+    await GeofencingManager.initialize();
+    print('Initialization done');
+  }
+
+  // 21.7241   71.2156
+
+  String numberValidator(String value) {
+    if (value == null) {
+      return null;
+    }
+    final num a = num.tryParse(value);
+    if (a == null) {
+      return '"$value" is not a valid number';
+    }
+    return null;
   }
 
   @override
@@ -90,6 +144,8 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     super.dispose();
   }
 
+  //21.724100000867107, 71.21560011059046
+
   /* get state --> onResume */
   void didChangeAppLifecycleState(AppLifecycleState appLifecycleState) {
     state = appLifecycleState;
@@ -97,22 +153,7 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     print("AppLifecycleState:::::::$state");
   }
 
-
-  Future<void> initPlatformState() async {
-    if (!mounted) return;
-    Geofence.initialize();
-    Geofence.startListening(GeolocationEvent.entry, (entry) {
-      print("Enter");
-      scheduleNotification("Entry of a georegion", "Welcome to: ${entry.id}");
-    });
-
-    Geofence.startListening(GeolocationEvent.exit, (entry) {
-      print("Exit");
-      scheduleNotification("Exit of a georegion", "Byebye to: ${entry.id}");
-    });
-
-    setState(() {});
-  }
+// 23.457472  72.562007
 
   Future<String> refreshToken() async {
     final GoogleSignInAccount googleSignInAccount =
@@ -146,18 +187,13 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
 
   void scheduleNotification(String title, String subtitle) {
     print("scheduling one with $title and $subtitle");
+
     Future.delayed(Duration(seconds: 5)).then((result) async {
       var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-          'your channel id', 'your channel name', 'your channel description',
-          importance: Importance.max,
-          priority: Priority.high,
-          ticker: 'ticker');
+          'your channel id', 'your channel name', 'your channel description', importance: Importance.max, priority: Priority.high, ticker: 'ticker');
       var iOSPlatformChannelSpecifics = IOSNotificationDetails(badgeNumber: 1,presentAlert: true,);
-      var platformChannelSpecifics = NotificationDetails(
-          android:androidPlatformChannelSpecifics,iOS: iOSPlatformChannelSpecifics);
-      await flutterLocalNotificationsPlugin.show(
-          0, title, subtitle, platformChannelSpecifics,
-          payload: 'item x');
+      var platformChannelSpecifics = NotificationDetails(android:androidPlatformChannelSpecifics,iOS: iOSPlatformChannelSpecifics);
+      await flutterLocalNotificationsPlugin.show(0, title, subtitle, platformChannelSpecifics, payload: 'item x');
     });
   }
 
@@ -165,8 +201,7 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
   Future<void> getCurrentLocation() async {
     try {
       // Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
-      Position position = await Geolocator().getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best);
+      Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
 
       setState(() async {
         _currentPosition = position;
@@ -190,7 +225,6 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
   }
 
   Set<Circle> circle;
-
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
@@ -238,46 +272,57 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     return Scaffold(
         body: isVisible == false ?  Stack(
           children:[
+
             GoogleMap(
             initialCameraPosition: CameraPosition(target: LatLng(21.1702,72.8311), zoom: 7),
             markers: Set.of(_markers),
             mapType: MapType.normal,
             myLocationEnabled: true,
               zoomControlsEnabled: false,
-
             onTap: (p){
             },
 
             onLongPress: (LatLng latLng){
-              // _markers.add(Marker(markerId: MarkerId(Random.secure().nextInt(100).toString()), position: latLng, icon: redPinLocationIcon));
+              latitude = latLng.latitude;
+              longitude = latLng.longitude;
 
               setState(() {
                 setLatLng = latLng;
-
-                Geolocation location = Geolocation(
-                    latitude: 21.2050,
-                    longitude: 72.8408,
-                    radius: 50.0,
-                    id: "Surat Railway Station");
-
-                Geofence.addGeolocation(location, GeolocationEvent.entry).then((onValue) {
-                  scheduleNotification("Georegion added", "Your geofence has been added!");
-                }).catchError((onError) {
-                  print("great failure");
-                });
-
                 model.openBottomSheetView(isEdit: false, openfrom: "Map", latlng: LatLng(latLng.latitude, latLng.longitude));
               });
             },
             onCameraMove: (p){
               position = p;
             },
+
             onMapCreated: (GoogleMapController controller) async {
               _controller.complete(controller);
               gController = controller;
               gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(addressList[0].latitude, addressList[0].longitude),zoom: 7)));
             },
           ),
+
+            Padding(
+              padding: EdgeInsets.only(left: 10 ,top: 5),
+              child: RaisedButton(
+                onPressed: (){
+                  /*remove geo fence code*/
+                  GeofencingManager.removeGeofenceById('mtv')
+                      .then((_) {
+                    GeofencingManager.getRegisteredGeofenceIds()
+                        .then((value) {
+                      setState(() {
+                        registeredGeofences = value;
+                        Constant.showToast("Geofencing remove successfully!", Toast.LENGTH_SHORT);
+                      });
+                    });
+                  });
+                },
+                child: Text("Remove GeoFence", style: TextStyle(color: Colors.black, fontSize: 12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                color: Colors.white,
+              ),
+            ),
 
             Align(
               alignment: Alignment.bottomCenter,
@@ -445,7 +490,6 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
   }
 
   CameraPosition position;
-
   int currentIndex = null;
 
   @override
@@ -472,38 +516,50 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     setState(() {
       map = calendarResponse;
       List<dynamic> data = response;
+
       for(int i=0;i<data.length;i++){
         if(data[i]['location'] != null){
           locationEvent.add(EventItem.fromJson(data[i]));
           print("------- Enter ------${locationEvent.length}");
           var lat;
           var lng;
-          var latlobg = data[i]['location'].toString().split(",");
-          lat = latlobg[0];
-          lng = latlobg[1];
-          addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
 
-          /*load more change condition*/
-          // setState(() {
-          //   if(i==0){
-          //     _markers[0] = Marker(markerId: MarkerId(locationEvent[0].id), icon: bluePinLocationIcon,
-          //         position: LatLng(addressList[0].latitude, addressList[0].longitude));
-          //
-          //   }else{
-          //     _markers.add(Marker(markerId: MarkerId(data[i]['id']),position: LatLng(double.parse(lat),double.parse(lng)),
-          //         icon: redPinLocationIcon, onTap: (){}));
-          //   }
-          // });
+          print("getyegeteg::::::${data[i]["location"]}");
+          if(data[i]['location']!=null){
+            var latlobg = data[i]['location'].toString().split(",");
+            print("setLatLNG:::::$latlobg");
 
-          setState(() {
-            _markers.add(Marker(markerId: MarkerId(data[i]['id']), position: LatLng(double.parse(lat),double.parse(lng)),
-                icon: i==0?bluePinLocationIcon:redPinLocationIcon,
-                onTap: (){
+            lat = latlobg[0];
+            lng = latlobg[1];
+            addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
 
-                }));
-          });
+            setState(() {
+              _markers.add(Marker(markerId: MarkerId(data[i]['id']), position: LatLng(double.parse(lat),double.parse(lng)),
+                  icon: i==0 ? bluePinLocationIcon : redPinLocationIcon,
+                  onTap: (){}));
+            });
+          }
         }
       }
+
+      // if(locationEvent.length!=0){
+      //   for(int i =0; i<locationEvent.length; i++){
+      //     print("------- Enter ------${locationEvent.length}");
+      //     var lat;
+      //     var lng;
+      //     var latlobg = data[i]['location'].toString().split(",");
+      //     lat = latlobg[0];
+      //     lng = latlobg[1];
+      //     addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
+      //
+      //     setState(() {
+      //       _markers.add(Marker(markerId: MarkerId(data[i]['id']), position: LatLng(double.parse(lat),double.parse(lng)),
+      //           icon: i==0?bluePinLocationIcon:redPinLocationIcon,
+      //           onTap: (){}));
+      //     });
+      //   }
+      // }
+
 
       full_address.clear();
       for(int i=0; i<addressList.length; i++){
@@ -519,6 +575,33 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
       });
     }
     print("Length${locationEvent.length}");
+
+
+    if (latitude == null) {
+      setState(() => latitude = 0.0);
+    }
+    if (longitude == null) {
+      setState(() => longitude = 0.0);
+    }
+    if (radius == null) {
+      setState(() => radius = 0.0);
+    }
+
+    print("set latlong:::::$latitude    $longitude");
+    GeofencingManager.registerGeofence(
+        GeofenceRegion('mtv', latitude, longitude, radius, triggers, androidSettings: androidSettings), callback).then((_) {
+      GeofencingManager.getRegisteredGeofenceIds().then((value) {
+        setState(() {
+          registeredGeofences = value;
+        });
+      });
+    });
+  }
+
+  static void callback(List<String> ids, Location l, GeofenceEvent e) async {
+    print('Fences: $ids Location $l Event: $e');
+    final SendPort send = IsolateNameServer.lookupPortByName('geofencing_send_port');
+    send?.send(e.toString());
   }
 
   Future getLocation(LatLng latLng) async {
@@ -579,7 +662,7 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     _markers.clear();
     presenter = new HomePresenter(this, token: accessToken);
     presenter.attachView(this);
-    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
+    initialLoad = presenter.getCalendarEvent(maxResult: 10, minTime: DateTime.now().toUtc(), isPageToken: false);
     hasMoreItems = true;
   }
 

@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'package:appointment/home/model/CalendarList.dart';
 import 'package:appointment/home/presenter/HomePresentor.dart';
 import 'package:appointment/interface/IsAcceptAppointment.dart';
 import 'package:appointment/interface/IsCreatedOrUpdate.dart';
@@ -11,7 +9,6 @@ import 'package:appointment/utils/values/Palette.dart';
 import 'package:appointment/utils/values/Strings/Strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_geofence/geofence.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
@@ -94,16 +91,12 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     super.initState();
     init();
 
-    // widget.isEdit? address = widget.address: widget.latLng!= null?getLocation() : null;
-
     print("fmfnfhgfj::::${widget.address}");
     if (widget.isEdit) {
       widget.address != null ? address = widget.address : address = null;
     } else {
       widget.latLng != null ? getLocation() :  address = null;
     }
-
-    // print()
 
     widget.isEdit ? _startDateTime = widget.getStartDate.toLocal() : _startDateTime = DateTime.now();
 
@@ -139,7 +132,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     selectedStartTime = TimeOfDay();
     selectedEndTime = TimeOfDay();
 
-    initPlatformState();
 
     var initializationSettingsAndroid = new AndroidInitializationSettings('@mipmap/ic_launcher.png');
     var initializationSettingsIOS = IOSInitializationSettings(onDidReceiveLocalNotification: null);
@@ -154,20 +146,6 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
     setState(() {
       address = first.addressLine;
     });
-  }
-
-  Future<void> initPlatformState() async {
-    if (!mounted) return;
-    Geofence.initialize();
-    Geofence.startListening(GeolocationEvent.entry, (entry) {
-      scheduleNotification("Entry of a georegion", "Welcome to: ${entry.id}");
-    });
-
-    Geofence.startListening(GeolocationEvent.exit, (entry) {
-      scheduleNotification("Exit of a georegion", "Byebye to: ${entry.id}");
-    });
-
-    setState(() {});
   }
 
   void scheduleNotification(String title, String subtitle) {
@@ -750,11 +728,8 @@ class _MyBottomSheetState extends State<MyBottomSheet> implements OnHomeView, Is
 
   @override
   onDelete(delete) {
-    // eventItem.removeWhere((element) => element.id == delete);
     Constant.showToast(Resources.from(context, Constant.languageCode).strings.eventDeleteMsg,Toast.LENGTH_SHORT);
     Navigator.pop(context);
-
-    // pass interface to geo fence for delete event id
     widget.deleteEvent.delete_event(delete);
   }
 
