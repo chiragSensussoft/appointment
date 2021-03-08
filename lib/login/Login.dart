@@ -13,6 +13,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../outlookLogin.dart';
+
 
 class Login extends StatefulWidget {
   @override
@@ -136,9 +138,9 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin{
                           width: 1,
                           color: Colors.white,
                           onPressed: (){
-                            // Navigator.pushReplacement(context, MaterialPageRoute(
-                            //   builder: (_) => Home(),
-                            // ));
+                            Navigator.pushReplacement(context, MaterialPageRoute(
+                              builder: (_) => OutlookLogin(),
+                            ));
                             // toast.overLay = false;
                             // toast.showOverLay("Coming Soon!", Colors.white, Colors.black54, context);
 

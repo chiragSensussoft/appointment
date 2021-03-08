@@ -64,10 +64,8 @@ class HomeState extends State<Home> implements OnHomeView{
   );
 
   Future<String> refreshToken() async {
-    final GoogleSignInAccount googleSignInAccount =
-    await googleSignIn.signInSilently();
-    final GoogleSignInAuthentication googleSignInAuthentication =
-    await googleSignInAccount.authentication;
+    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signInSilently();
+    final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
 
     final AuthCredential credential = GoogleAuthProvider.getCredential(
       accessToken: googleSignInAuthentication.accessToken,

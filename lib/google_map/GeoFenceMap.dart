@@ -144,8 +144,6 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     super.dispose();
   }
 
-  //21.724100000867107, 71.21560011059046
-
   /* get state --> onResume */
   void didChangeAppLifecycleState(AppLifecycleState appLifecycleState) {
     state = appLifecycleState;
@@ -153,7 +151,6 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     print("AppLifecycleState:::::::$state");
   }
 
-// 23.457472  72.562007
 
   Future<String> refreshToken() async {
     final GoogleSignInAccount googleSignInAccount =
@@ -542,25 +539,6 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
         }
       }
 
-      // if(locationEvent.length!=0){
-      //   for(int i =0; i<locationEvent.length; i++){
-      //     print("------- Enter ------${locationEvent.length}");
-      //     var lat;
-      //     var lng;
-      //     var latlobg = data[i]['location'].toString().split(",");
-      //     lat = latlobg[0];
-      //     lng = latlobg[1];
-      //     addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
-      //
-      //     setState(() {
-      //       _markers.add(Marker(markerId: MarkerId(data[i]['id']), position: LatLng(double.parse(lat),double.parse(lng)),
-      //           icon: i==0?bluePinLocationIcon:redPinLocationIcon,
-      //           onTap: (){}));
-      //     });
-      //   }
-      // }
-
-
       full_address.clear();
       for(int i=0; i<addressList.length; i++){
         getLocation(LatLng(addressList[i].latitude, addressList[i].longitude)).then((value){
@@ -577,25 +555,26 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     print("Length${locationEvent.length}");
 
 
-    if (latitude == null) {
-      setState(() => latitude = 0.0);
-    }
-    if (longitude == null) {
-      setState(() => longitude = 0.0);
-    }
-    if (radius == null) {
-      setState(() => radius = 0.0);
-    }
-
-    print("set latlong:::::$latitude    $longitude");
-    GeofencingManager.registerGeofence(
-        GeofenceRegion('mtv', latitude, longitude, radius, triggers, androidSettings: androidSettings), callback).then((_) {
-      GeofencingManager.getRegisteredGeofenceIds().then((value) {
-        setState(() {
-          registeredGeofences = value;
-        });
-      });
-    });
+    // if (latitude == null) {
+    //   setState(() => latitude = 0.0);
+    // }
+    // if (longitude == null) {
+    //   setState(() => longitude = 0.0);
+    // }
+    // if (radius == null) {
+    //   setState(() => radius = 0.0);
+    // }
+    //
+    // print("set latlong:::::$latitude    $longitude");
+    // GeofencingManager.registerGeofence(
+    //     GeofenceRegion('mtv', latitude, longitude, radius, triggers, androidSettings: androidSettings), callback).then((_) {
+    //   GeofencingManager.getRegisteredGeofenceIds().then((value) {
+    //     setState(() {
+    //       registeredGeofences = value;
+    //       print("REGISTERED:::::$registeredGeofences");
+    //     });
+    //   });
+    // });
   }
 
   static void callback(List<String> ids, Location l, GeofenceEvent e) async {
@@ -649,6 +628,28 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
    locationEvent.clear();
    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
    hasMoreItems = true;
+
+   /*add geofencing*/
+    if (latitude == null) {
+      setState(() => latitude = 0.0);
+    }
+    if (longitude == null) {
+      setState(() => longitude = 0.0);
+    }
+    if (radius == null) {
+      setState(() => radius = 0.0);
+    }
+
+    print("set latlong:::::$latitude    $longitude");
+    GeofencingManager.registerGeofence(
+        GeofenceRegion('mtv', latitude, longitude, radius, triggers, androidSettings: androidSettings), callback).then((_) {
+      GeofencingManager.getRegisteredGeofenceIds().then((value) {
+        setState(() {
+          registeredGeofences = value;
+          print("REGISTERED:::::$registeredGeofences");
+        });
+      });
+    });
   }
 
   @override
