@@ -70,7 +70,7 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
   String geofenceState = 'N/A';
   double latitude;
   double longitude;
-  double radius = 80.0;
+  double radius = 150.0;
   List<String> registeredGeofences = [];
 
   final List<GeofenceEvent> triggers = <GeofenceEvent>[
@@ -124,8 +124,6 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     print('Initialization done');
   }
 
-  // 21.7241   71.2156
-
   String numberValidator(String value) {
     if (value == null) {
       return null;
@@ -149,6 +147,16 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     state = appLifecycleState;
     print(appLifecycleState);
     print("AppLifecycleState:::::::$state");
+
+    IsolateNameServer.registerPortWithName(port.sendPort, 'geofencing_send_port');
+    port.listen((dynamic data) {
+      print('Event: $data');
+      setState(() {
+        geofenceState = data;
+        scheduleNotification("My Appointment App", geofenceState);
+      });
+    });
+    initPlatformState();
   }
 
 
@@ -269,15 +277,13 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     return Scaffold(
         body: isVisible == false ?  Stack(
           children:[
-
             GoogleMap(
             initialCameraPosition: CameraPosition(target: LatLng(21.1702,72.8311), zoom: 7),
             markers: Set.of(_markers),
             mapType: MapType.normal,
             myLocationEnabled: true,
               zoomControlsEnabled: false,
-            onTap: (p){
-            },
+            onTap: (p){},
 
             onLongPress: (LatLng latLng){
               latitude = latLng.latitude;
@@ -295,7 +301,8 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
             onMapCreated: (GoogleMapController controller) async {
               _controller.complete(controller);
               gController = controller;
-              gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(addressList[0].latitude, addressList[0].longitude),zoom: 7)));
+              gController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target:
+              LatLng(addressList[0].latitude, addressList[0].longitude),zoom: 7)));
             },
           ),
 
@@ -303,11 +310,10 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
               padding: EdgeInsets.only(left: 10 ,top: 5),
               child: RaisedButton(
                 onPressed: (){
+
                   /*remove geo fence code*/
-                  GeofencingManager.removeGeofenceById('mtv')
-                      .then((_) {
-                    GeofencingManager.getRegisteredGeofenceIds()
-                        .then((value) {
+                  GeofencingManager.removeGeofenceById('mtv').then((_) {
+                    GeofencingManager.getRegisteredGeofenceIds().then((value) {
                       setState(() {
                         registeredGeofences = value;
                         Constant.showToast("Geofencing remove successfully!", Toast.LENGTH_SHORT);
@@ -491,7 +497,26 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
 
   @override
   onCreateEvent(response) {
+    print("CRRATED:::::${response.toString()}");
+    if (latitude == null) {
+      setState(() => latitude = 0.0);
+    }
+    if (longitude == null) {
+      setState(() => longitude = 0.0);
+    }
+    if (radius == null) {
+      setState(() => radius = 0.0);
+    }
 
+    print("set latlong:::::$latitude    $longitude");
+    GeofencingManager.registerGeofence(
+        GeofenceRegion('mtv', latitude, longitude, radius, triggers, androidSettings: androidSettings), callback).then((_) {
+      GeofencingManager.getRegisteredGeofenceIds().then((value) {
+        setState(() {
+          registeredGeofences = value;
+        });
+      });
+    });
   }
 
   @override
@@ -522,10 +547,9 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
           var lng;
 
           print("getyegeteg::::::${data[i]["location"]}");
+
           if(data[i]['location']!=null){
             var latlobg = data[i]['location'].toString().split(",");
-            print("setLatLNG:::::$latlobg");
-
             lat = latlobg[0];
             lng = latlobg[1];
             addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
@@ -538,6 +562,25 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
           }
         }
       }
+
+      // if(locationEvent.length!=0){
+      //   for(int i =0; i<locationEvent.length; i++){
+      //     print("------- Enter ------${locationEvent.length}");
+      //     var lat;
+      //     var lng;
+      //     var latlobg = data[i]['location'].toString().split(",");
+      //     lat = latlobg[0];
+      //     lng = latlobg[1];
+      //     addressList.add(LatLong(latitude: double.parse(lat),longitude: double.parse(lng)));
+      //
+      //     setState(() {
+      //       _markers.add(Marker(markerId: MarkerId(data[i]['id']), position: LatLng(double.parse(lat),double.parse(lng)),
+      //           icon: i==0?bluePinLocationIcon:redPinLocationIcon,
+      //           onTap: (){}));
+      //     });
+      //   }
+      // }
+
 
       full_address.clear();
       for(int i=0; i<addressList.length; i++){
@@ -555,26 +598,26 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
     print("Length${locationEvent.length}");
 
 
-    // if (latitude == null) {
-    //   setState(() => latitude = 0.0);
-    // }
-    // if (longitude == null) {
-    //   setState(() => longitude = 0.0);
-    // }
-    // if (radius == null) {
-    //   setState(() => radius = 0.0);
-    // }
-    //
-    // print("set latlong:::::$latitude    $longitude");
-    // GeofencingManager.registerGeofence(
-    //     GeofenceRegion('mtv', latitude, longitude, radius, triggers, androidSettings: androidSettings), callback).then((_) {
-    //   GeofencingManager.getRegisteredGeofenceIds().then((value) {
-    //     setState(() {
-    //       registeredGeofences = value;
-    //       print("REGISTERED:::::$registeredGeofences");
-    //     });
-    //   });
-    // });
+    print("SET_LATLNG::::$latitude   $longitude");
+    if (latitude == null) {
+      setState(() => latitude = 0.0);
+    }
+    if (longitude == null) {
+      setState(() => longitude = 0.0);
+    }
+    if (radius == null) {
+      setState(() => radius = 0.0);
+    }
+
+    print("set_latlng:::::$latitude    $longitude");
+    GeofencingManager.registerGeofence(
+        GeofenceRegion('mtv', latitude, longitude, radius, triggers, androidSettings: androidSettings), callback).then((_) {
+      GeofencingManager.getRegisteredGeofenceIds().then((value) {
+        setState(() {
+          registeredGeofences = value;
+        });
+      });
+    });
   }
 
   static void callback(List<String> ids, Location l, GeofenceEvent e) async {
@@ -591,7 +634,7 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
       add.add(first.addressLine);
     });
 
-    print("CALLED::::${first.addressLine}");
+    print("CALLED_getLocation::::${first.addressLine}");
     return first.addressLine;
   }
 
@@ -628,28 +671,6 @@ class GeoFenceMapState extends State<GeoFenceMap> with WidgetsBindingObserver im
    locationEvent.clear();
    initialLoad = presenter.getCalendarEvent(maxResult: 10,minTime: DateTime.now().toUtc(),isPageToken: false);
    hasMoreItems = true;
-
-   /*add geofencing*/
-    if (latitude == null) {
-      setState(() => latitude = 0.0);
-    }
-    if (longitude == null) {
-      setState(() => longitude = 0.0);
-    }
-    if (radius == null) {
-      setState(() => radius = 0.0);
-    }
-
-    print("set latlong:::::$latitude    $longitude");
-    GeofencingManager.registerGeofence(
-        GeofenceRegion('mtv', latitude, longitude, radius, triggers, androidSettings: androidSettings), callback).then((_) {
-      GeofencingManager.getRegisteredGeofenceIds().then((value) {
-        setState(() {
-          registeredGeofences = value;
-          print("REGISTERED:::::$registeredGeofences");
-        });
-      });
-    });
   }
 
   @override

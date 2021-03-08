@@ -49,12 +49,13 @@ dependencies:
   shimmer: ^1.1.2
 
   # Outlook sign in
-  flutter_microsoft_authentication: ^0.1.0
+  flutter_microsoft_authentication:
 
   # Calendar
   syncfusion_flutter_calendar: ^18.4.39
 
   # deep linking
+
   firebase_dynamic_links:
 
   # share
@@ -77,6 +78,9 @@ dependencies:
 #  firebase_crashlytics: any
 
   geofencing: ^0.1.0
+
+  #msal_flutter
+  msal_flutter: ^1.0.0+3
 
 
 

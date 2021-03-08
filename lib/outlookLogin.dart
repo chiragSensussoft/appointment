@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_microsoft_authentication/flutter_microsoft_authentication.dart';
 import 'package:http/http.dart' as http;
+
 
 class OutlookLogin extends StatefulWidget {
   @override
@@ -33,8 +33,6 @@ class _MyAppState extends State<MyApp> {
   FlutterMicrosoftAuthentication fma = new FlutterMicrosoftAuthentication();
 
 
-
-
   @override
   void initState() {
     super.initState();
@@ -42,7 +40,7 @@ class _MyAppState extends State<MyApp> {
     fma = FlutterMicrosoftAuthentication(
         kClientID: "1419fd8c-c3d0-43d3-b67f-612aadc81fa2",
         kAuthority: "https://login.microsoftonline.com/db49d5f6-5a1c-4da2-9dcc-7f11c7919243",
-        kScopes: ["User.Read", "User.ReadBasic.All"],
+        kScopes: ["User.Read"],
         androidConfigAssetPath: "json/auth_config.json"
     );
   }
@@ -102,8 +100,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   _fetchMicrosoftProfile() async {
-    var response = await http.get(this._graphURI,
-        headers: {"Authorization": "Bearer " + this._authToken});
+    var response = await http.get(this._graphURI, headers: {"Authorization": "Bearer " + this._authToken});
 
     setState(() {
       _msProfile = json.decode(response.body).toString();
